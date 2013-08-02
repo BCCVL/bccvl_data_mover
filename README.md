@@ -14,5 +14,5 @@ Data Mover API for BCCVL
 
 **Start server**
 
-    python data_mover/application.py
+    python src/org/bccvl/data_mover/application.py
     
