@@ -7,8 +7,10 @@ class DataMoverServices(XMLRPCView):
 		job = Job(type = type, data_id = id)
 		DBSession.add(job)
 		DBSession.flush()
-		return job.id
+		response = {'id': job.id, 'status': job.status}
+		return response
 
 	def check(self, id):
 		job = DBSession.query(Job).get(id)
-		return job.status
+		response = {'id': job.id, 'status': job.status}
+		return response
