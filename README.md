@@ -1,8 +1,5 @@
-bccvl_data_mover
-================
-
 Data Mover API for BCCVL
-
+================
 The Data Mover is a component in the system responsible for moving files around. It should have a "registry" of destinations where it can move files to, which contains configuration about the location of the destination, credentials to access the destination and file transmission protocol details.
 One of these destinations should be the visualizer, since it needs datasets in order to render map visualizations to be displayed on the front-end.
 The component requesting the data of the data mover should be responsible for telling the data mover which directory/location it wants the file to be placed.
