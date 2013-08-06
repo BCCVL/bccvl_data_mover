@@ -21,7 +21,7 @@ class Job(Base):
 	def __init__(self, type, data_id):
 		self.type = type
 		self.data_id = data_id
-		self.status = None
+		self.status = 'PENDING'
 		self.start_timestamp = None
 		self.end_timestamp = None
 		self.source = None
