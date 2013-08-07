@@ -17,6 +17,7 @@ requires = [
     'pyramid_xmlrpc',
     'redis',
     'rq',
+    'psycopg2',
     ]
 
 setup(name='data_mover',
