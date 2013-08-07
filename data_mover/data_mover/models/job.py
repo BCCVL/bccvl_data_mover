@@ -18,11 +18,11 @@ class Job(Base):
 	source = Column(Text)
 	destination = Column(Text)
 
-	def __init__(self, type, data_id):
+	def __init__(self, type, data_id, destination):
 		self.type = type
 		self.data_id = data_id
 		self.status = 'PENDING'
 		self.start_timestamp = None
 		self.end_timestamp = None
 		self.source = None
-		self.destination = None
+		self.destination = destination

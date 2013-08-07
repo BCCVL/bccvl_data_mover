@@ -14,6 +14,9 @@ requires = [
     'pyramid_debugtoolbar',
     'zope.sqlalchemy',
     'waitress',
+    'pyramid_xmlrpc',
+    'redis',
+    'rq',
     ]
 
 setup(name='data_mover',
