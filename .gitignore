@@ -44,3 +44,6 @@ env
 .swp
 
 *.rdb
+data_mover/.idea
+.Python
+python2.7
