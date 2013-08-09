@@ -62,12 +62,12 @@ Edit the configuration file, making sure to perform the following changes:
 
 	$ sudo vi /etc/redis/6379.conf
 
-Set daemonize to yes (by default it is set to no).
-Set the pidfile to /var/run/redis_6379.pid (modify the port if needed).
-Change the port accordingly. It is not needed as the default port is already 6379.
-Set your preferred loglevel.
-Set the logfile to /var/log/redis_6379.log
-Set the dir to /var/redis/6379 (very important step!)
+* Set daemonize to yes (by default it is set to no).
+* Set the pidfile to /var/run/redis_6379.pid (modify the port if needed).
+* Change the port accordingly. It is not needed as the default port is already 6379.
+* Set your preferred loglevel.
+* Set the logfile to /var/log/redis_6379.log
+* Set the dir to /var/redis/6379 (very important step!)
 
 **Starting up Redis service**
 
