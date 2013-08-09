@@ -47,3 +47,7 @@ env
 data_mover/.idea
 .Python
 python2.7
+
+# Sample Files
+data_mover/sample/sample_local/*
+data_mover/sample/sample_destination/*

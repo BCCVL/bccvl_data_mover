@@ -24,5 +24,5 @@ class Job(Base):
 		self.status = 'PENDING'
 		self.start_timestamp = None
 		self.end_timestamp = None
-		self.source = None
+		self.source = 'sample/sample_source'
 		self.destination = destination

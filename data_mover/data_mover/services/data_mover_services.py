@@ -4,6 +4,12 @@ from data_mover.scripts.worker_queue import background_queue
 from data_mover.services.background_services import *
 import transaction
 
+#create a new db session
+# TODO: Write a better way to create a new engine without exposing credentials
+engine = create_engine('postgresql+psycopg2://data_mover:data_mover@localhost:5432/data_mover')
+BGDBSession = scoped_session(sessionmaker(extension=ZopeTransactionExtension()))
+BGDBSession.configure(bind=engine)
+
 class DataMoverServices(XMLRPCView):
 
 	def move(self, destination_args, source_args):
@@ -11,12 +17,6 @@ class DataMoverServices(XMLRPCView):
 		type = source_args['type']
 		data_id = source_args['id']
 		destination = destination_args['host']
-
-		#create a new db session
-		# TODO: Write a better way to create a new engine without exposing credentials
-		engine = create_engine('postgresql+psycopg2://data_mover:data_mover@localhost:5432/data_mover')
-		BGDBSession = scoped_session(sessionmaker(extension=ZopeTransactionExtension()))
-		BGDBSession.configure(bind=engine)
 
 		# TODO: Perform validation on the inputs and return early on error
 		# TODO: Query the dataset manager to obtain the source details of the file requested - should probably be persisted along with the job
