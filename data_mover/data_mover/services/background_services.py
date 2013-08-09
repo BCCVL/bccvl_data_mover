@@ -71,6 +71,6 @@ def move_data(job):
 	destination_path = "sample/sample_destination/%s" % (job.data_id)
 
 	subprocess.call(["cp", "-r", source_path, destination_path])
-	update_status(job, 'COMPLETED')
+	job = update_status(job, 'COMPLETED')
 	update_timestamp(job, False)
 	return
