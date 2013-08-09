@@ -12,17 +12,33 @@ The data mover shall be asynchronous. When a request to move a file is made via 
     $ cd bccvl_data_mover/data_mover
     $ python bootstrap.py
     $ ./bin/buildout
-    $ ./bin/initialize_data_mover_db development.ini
 
+**Initializing the database**
+
+You will need to create:
+* database user: data_mover (with password data_mover)
+* database: data_mover (owner is data_mover)
+
+Then run:
+
+    $ ./bin/initialize_data_mover_db development.ini
+    
 **Start server**
 
     $ ./bin/pserve development.ini
+  
+**On update**
+
+    $ ./bin/buildout
+    $ ./bin/initialize_data_mover_db development.ini
     
 **How to test XMLRPC (Python)**
 
     from xmlrpclib import ServerProxy
     s = ServerProxy('http://0.0.0.0:6543/data_mover', verbose = 1)
-    s.move('DATA_TYPE', 12)
+    source = {'type': 'png', 'id': 3}
+    destination = {'path': '/home', 'host': 'NECTAR'}
+    s.move(destination, source)
     
 ## Redis
 Redis is an open source, BSD licensed, advanced key-value store. It is often referred to as a data structure server since keys can contain strings, hashes, lists, sets and sorted sets. This is used in conjunction with Resque to store queues in Redis.
@@ -69,7 +85,8 @@ Edit the configuration file, making sure to perform the following changes:
 * Set the logfile to /var/log/redis_6379.log
 * Set the dir to /var/redis/6379 (very important step!)
 
-**Starting up Redis service**
+**Starting up Redis server and worker**
 
 	$ redis-server
+	$ ./bin/rqworker
 
