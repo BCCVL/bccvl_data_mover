@@ -18,6 +18,7 @@ requires = [
     'redis',
     'rq',
     'psycopg2',
+    'coverage',
     ]
 
 setup(name='data_mover',

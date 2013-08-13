@@ -5,30 +5,24 @@ import transaction
 import subprocess
 import datetime
 
+BGDBSession = generate_session()
+
 # TODO: Error checking and exception handling for almost everything...
 # TODO: Query the dataset manager to obtain the source details of the file requested - should probably be persisted along with the job
 # TODO: return early if the file can't be found.
-BGDBSession = generate_session()
-
 def start_job(job):
-	
-	# TODO error checking
-	# Changes the status of the job to ACCEPTED
+	# Changes the status of the job to ACCEPTED and update start_time
 	job = update_status(job, 'ACCEPTED')
-
-	# Changes the start_timestamp
-	job = update_timestamp(job, True)
+	job = update_timestamp(job, 'START')
 
 	# Get data from the source and puts it in the local directory for transfer
-	get_data(job)
+	if (get_data(job) and move_data(job)):
+		job = update_status(job, 'COMPLETED')
+	else:
+		job = update_status(job, 'FAILED')
 
-	# TODO: Execute the file transfer
-	# Will we be copying the file from the source to our tmp and then transfering that to the destination?
-	# get_data(job.source, job.destination)
-	move_data(job)
-	# TODO: Change the job status depending on the result of the file transfer (ERROR and etc.)
-
-	return "some response"
+	job = update_timestamp(job, 'END')
+	return job
 
 def update_status(job, value):
 	id = job.id
@@ -38,12 +32,13 @@ def update_status(job, value):
 	job = BGDBSession.query(Job).get(id)
 	return job
 
-def update_timestamp(job, isStart):
+def update_timestamp(job, start_or_end):
 	id = job.id
-	if isStart:
+	if start_or_end == 'START':
 		job.start_timestamp = datetime.datetime.now()
 	else:
 		job.end_timestamp = datetime.datetime.now()
+	
 	BGDBSession.add(job)
 	transaction.commit()
 
@@ -57,17 +52,22 @@ def get_data(job):
 	source_path = "%s/%s" % (job.source, job.data_id)
 	destination_path = "sample/sample_local/%s" % (job.data_id)
 
-	subprocess.call(["cp", "-r", source_path, destination_path])
-
-	return destination_path
+	try:
+		subprocess.call(["cp", "-r", source_path, destination_path])
+	except:
+		return False
+	
+	return True
 
 # Moves data from our local directory to the destination i.e. HPC or VM
 def move_data(job):
 	# Check host table for protocol details
 	source_path = "sample/sample_local/%s" % (job.data_id)
 	destination_path = "sample/sample_destination/%s" % (job.data_id)
-
-	subprocess.call(["cp", "-r", source_path, destination_path])
-	job = update_status(job, 'COMPLETED')
-	update_timestamp(job, False)
-	return
+	
+	try:
+		subprocess.call(["cp", "-r", source_path, destination_path])
+	except:
+		return False
+	
+	return True
