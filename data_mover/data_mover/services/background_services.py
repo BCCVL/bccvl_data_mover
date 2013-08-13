@@ -1,18 +1,14 @@
 from data_mover.scripts.worker_queue import background_queue
 from data_mover.models import *
-from sqlalchemy import create_engine
-from sqlalchemy.ext.declarative import declarative_base
+from data_mover.scripts.generate_session import generate_session
 import transaction
 import subprocess
 import datetime
 
 # TODO: Error checking and exception handling for almost everything...
-# TODO: Write a better way to create a new engine without exposing credentials
-engine = create_engine('postgresql+psycopg2://data_mover:data_mover@localhost:5432/data_mover')
-BGDBSession = scoped_session(sessionmaker(extension=ZopeTransactionExtension()))
-BGDBSession.configure(bind=engine)
-BGBase = declarative_base()
-BGBase.metadata.bind = engine
+
+BGDBSession = generate_session()
+
 def start_job(job):
 	
 	# TODO error checking

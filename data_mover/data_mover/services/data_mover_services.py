@@ -1,14 +1,8 @@
 from pyramid_xmlrpc import XMLRPCView
 from data_mover.models import *
 from data_mover.scripts.worker_queue import background_queue
+from data_mover.scripts.generate_session import generate_session
 from data_mover.services.background_services import *
-import transaction
-
-#create a new db session
-# TODO: Write a better way to create a new engine without exposing credentials
-engine = create_engine('postgresql+psycopg2://data_mover:data_mover@localhost:5432/data_mover')
-BGDBSession = scoped_session(sessionmaker(extension=ZopeTransactionExtension()))
-BGDBSession.configure(bind=engine)
 
 class DataMoverServices(XMLRPCView):
 
@@ -25,9 +19,9 @@ class DataMoverServices(XMLRPCView):
 		# create a new job
 		job = Job(type, data_id, destination)
 
-		BGDBSession.add(job)
-		BGDBSession.flush()
-		BGDBSession.expunge(job)
+		DBSession.add(job)
+		DBSession.flush()
+		DBSession.expunge(job)
 
 		#create the response
 		response = {'id': job.id, 'status': job.status}
@@ -38,7 +32,7 @@ class DataMoverServices(XMLRPCView):
 		return response
 
 	def check(self, id):
-		job = BGDBSession.query(Job).get(id)
+		job = DBSession.query(Job).get(id)
 		response = {'id': job.id, 'status': job.status}
 		return response
 
