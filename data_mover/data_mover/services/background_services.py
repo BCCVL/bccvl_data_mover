@@ -6,7 +6,8 @@ import subprocess
 import datetime
 
 # TODO: Error checking and exception handling for almost everything...
-
+# TODO: Query the dataset manager to obtain the source details of the file requested - should probably be persisted along with the job
+# TODO: return early if the file can't be found.
 BGDBSession = generate_session()
 
 def start_job(job):
