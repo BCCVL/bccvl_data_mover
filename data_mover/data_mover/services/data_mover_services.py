@@ -1,9 +1,9 @@
 from pyramid_xmlrpc import XMLRPCView
 from data_mover.models import *
 from data_mover.scripts.worker_queue import background_queue
-from data_mover.scripts.generate_session import generate_session
 from data_mover.services.background_services import *
 from data_mover.models.error_messages import *
+from data_mover.scripts.populate import *
 
 class DataMoverServices(XMLRPCView):
 	def move(self, destination_args=None, source_args=None):
@@ -41,6 +41,9 @@ class DataMoverServices(XMLRPCView):
 		return response
 
 	def check(self, id=None):
+		for obj in DBSession:
+			print obj
+
 		# Check for inputs
 		if (id == None):
 			return REJECTED(MISSING_PARAMS)
@@ -56,3 +59,8 @@ class DataMoverServices(XMLRPCView):
 		else:
 			return REJECTED(INVALID_PARAMS)
 		return response
+
+	def populate_data(self):
+		populate_protocol()
+		populate_host()
+		return "DONE"

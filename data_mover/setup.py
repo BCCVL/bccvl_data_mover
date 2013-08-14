@@ -19,6 +19,7 @@ requires = [
     'rq',
     'psycopg2',
     'coverage',
+    'pexpect',
     ]
 
 setup(name='data_mover',

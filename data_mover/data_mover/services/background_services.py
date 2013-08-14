@@ -1,6 +1,7 @@
 from data_mover.scripts.worker_queue import background_queue
 from data_mover.models import *
 from data_mover.scripts.generate_session import generate_session
+from data_mover.helpers.data_mover import *
 import transaction
 import subprocess
 import datetime
@@ -22,7 +23,7 @@ def start_job(job):
 		job = update_status(job, 'FAILED')
 
 	job = update_timestamp(job, 'END')
-	return job
+	return job.status
 
 def update_status(job, value):
 	id = job.id
@@ -49,25 +50,17 @@ def update_timestamp(job, start_or_end):
 def get_data(job):
 	# Check host table for protocol details
 	# Current source is set to the sample_source folder
-	source_path = "%s/%s" % (job.source, job.data_id)
-	destination_path = "sample/sample_local/%s" % (job.data_id)
+	source_path = "%s/%d" % (job.source, job.data_id)
+	destination_path = "sample/sample_local/%d" % (job.data_id)
 
-	try:
-		subprocess.call(["cp", "-r", source_path, destination_path])
-	except:
-		return False
-	
-	return True
+	# TODO: Change to the host given by the dataset manager - this host is for destination
+	host = BGDBSession.query(Host).filter(Host.name == job.destination).first()
+	return scp_from(host, source_path, destination_path)
 
 # Moves data from our local directory to the destination i.e. HPC or VM
 def move_data(job):
 	# Check host table for protocol details
 	source_path = "sample/sample_local/%s" % (job.data_id)
-	destination_path = "sample/sample_destination/%s" % (job.data_id)
-	
-	try:
-		subprocess.call(["cp", "-r", source_path, destination_path])
-	except:
-		return False
-	
-	return True
+	destination_path = "sample/sample_destination/%d" % (job.data_id)
+	host = BGDBSession.query(Host).filter(Host.name == job.destination).first()
+	return scp_to(host, source_path, destination_path)	

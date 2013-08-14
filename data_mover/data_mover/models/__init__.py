@@ -11,3 +11,4 @@ Base = declarative_base()
 
 from data_mover.models.job import *
 from data_mover.models.host import *
+from data_mover.models.protocol import *
