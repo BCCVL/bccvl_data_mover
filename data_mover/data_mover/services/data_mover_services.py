@@ -59,8 +59,3 @@ class DataMoverServices(XMLRPCView):
 		else:
 			return REJECTED(INVALID_PARAMS)
 		return response
-
-	def populate_data(self):
-		populate_protocol()
-		populate_host()
-		return "DONE"

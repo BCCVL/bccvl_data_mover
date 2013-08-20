@@ -7,7 +7,8 @@ def populate_protocol():
 	return
 
 def populate_host():
-	bccvl_hpc = Host('BCCVL_HPC', '115.146.85.28', 2, 'ubuntu', 'password')
+	scpProtocol = DBSession.query(Protocol).filter_by(name='SCP').first()
+	bccvl_hpc = Host('BCCVL_HPC', '115.146.85.28', scpProtocol.id, 'ubuntu', 'password')
 	DBSession.add(bccvl_hpc)
 	DBSession.flush()
 	return

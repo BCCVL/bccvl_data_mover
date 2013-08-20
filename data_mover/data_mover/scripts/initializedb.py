@@ -1,3 +1,4 @@
+from data_mover.scripts.populate import populate_host, populate_protocol
 import os
 import sys
 import transaction
@@ -33,3 +34,7 @@ def main(argv=sys.argv):
 
     # Create all the models
     Base.metadata.create_all(engine)
+
+    populate_protocol()
+    populate_host()
+    transaction.commit()
