@@ -16,5 +16,5 @@ cd virtualenv-1.9
 cd data_mover
 source bin/activate
 
-
+python setup.py develop
 
