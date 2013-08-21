@@ -41,9 +41,6 @@ class DataMoverServices(XMLRPCView):
 		return response
 
 	def check(self, id=None):
-		for obj in DBSession:
-			print obj
-
 		# Check for inputs
 		if (id == None):
 			return REJECTED(MISSING_PARAMS)

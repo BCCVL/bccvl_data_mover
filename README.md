@@ -37,7 +37,7 @@ Then run:
     from xmlrpclib import ServerProxy
     s = ServerProxy('http://0.0.0.0:6543/data_mover', verbose = 1)
     source = {'type': 'png', 'id': 3}
-    destination = {'path': '/home', 'host': 'NECTAR'}
+    destination = {'path': '/home', 'host': 'BCCVL_HPC'}
     s.move(destination, source)
     
 ## Redis
