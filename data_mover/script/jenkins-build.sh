@@ -19,5 +19,5 @@ cd virtualenv-1.9
 cd "$WORKING_DIR"
 source bin/activate
 
-#"$WORKSPACE_PYTHON" setup.py develop
+"$WORKSPACE_PYTHON" setup.py develop
 "$WORKSPACE_PYTHON" bootstrap.py
