@@ -5,6 +5,8 @@ if [ -z "$WORKSPACE" ]; then
     WORKSPACE='..'
 fi
 
+WORKSPACE_PYTHON="$WORKSPACE/data_mover/python"
+
 echo "Using WORKSPACE $WORKSPACE"
 cd $WORKSPACE
 
@@ -16,5 +18,8 @@ cd virtualenv-1.9
 cd data_mover
 source bin/activate
 
-python setup.py develop
+echo "PWD: "
+pwd
+
+$WORKSPACE_PYTHON setup.py develop
 
