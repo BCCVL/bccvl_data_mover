@@ -6,9 +6,10 @@ if [ -z "$WORKSPACE" ]; then
 fi
 
 WORKSPACE_PYTHON="$WORKSPACE/data_mover/python"
+WORKING_DIR="$WORKSPACE/data_mover"
 
 echo "Using WORKSPACE $WORKSPACE"
-cd $WORKSPACE
+cd "$WORKSPACE"
 
 echo "Setting up virtualenv in $WORKSPACE"
 curl -O https://pypi.python.org/packages/source/v/virtualenv/virtualenv-1.9.tar.gz
@@ -18,8 +19,8 @@ cd virtualenv-1.9
 cd data_mover
 source bin/activate
 
-echo "PWD: "
+cd "$WORKING_DIR"
 pwd
 
-$WORKSPACE_PYTHON setup.py develop
+"$WORKSPACE_PYTHON" setup.py develop
 
