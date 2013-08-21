@@ -15,12 +15,9 @@ echo "Setting up virtualenv in $WORKSPACE"
 curl -O https://pypi.python.org/packages/source/v/virtualenv/virtualenv-1.9.tar.gz
 tar -xvzf virtualenv-1.9.tar.gz
 cd virtualenv-1.9
-/usr/bin/env python26 virtualenv.py data_mover
-cd data_mover
-source bin/activate
-
+/usr/bin/env python26 virtualenv.py "$WORKING_DIR"
 cd "$WORKING_DIR"
-pwd
+source bin/activate
 
 "$WORKSPACE_PYTHON" setup.py develop
 
