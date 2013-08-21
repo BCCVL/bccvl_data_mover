@@ -21,4 +21,4 @@ cd "$WORKSPACE"
 
 #"$WORKSPACE_PYTHON" setup.py develop
 
-python bootstrap.py
+python "$WORKING_DIR/bootstrap.py"
