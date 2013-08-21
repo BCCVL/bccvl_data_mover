@@ -5,7 +5,7 @@ if [ -z "$WORKSPACE" ]; then
     WORKSPACE='..'
 fi
 
-WORKSPACE_PYTHON="$WORKSPACE/data_mover/python"
+WORKSPACE_PYTHON="$WORKSPACE/data_mover/bin/python26"
 WORKING_DIR="$WORKSPACE/data_mover"
 
 echo "Using WORKSPACE $WORKSPACE"
