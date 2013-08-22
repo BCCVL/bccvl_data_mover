@@ -10,8 +10,9 @@ The data mover shall be asynchronous. When a request to move a file is made via 
 
     $ git clone https://github.com/BCCVL/bccvl_data_mover.git
     $ cd bccvl_data_mover/data_mover
-    $ python bootstrap.py
-    $ ./bin/buildout
+    $ virtualenv .
+    $ source bin/activate
+    $ pip install -r requirements.txt
 
 **Initializing the database**
 
@@ -29,7 +30,7 @@ Then run:
   
 **On update**
 
-    $ ./bin/buildout
+    $ pip install -r requirements.txt
     $ ./bin/initialize_data_mover_db development.ini
     
 **How to test XMLRPC (Python)**
