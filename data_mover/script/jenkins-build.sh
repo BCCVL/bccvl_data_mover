@@ -20,4 +20,8 @@ source bin/activate
 
 pip install -r requirements.txt
 nosetests --with-xunit
+RESULT=$?
 coverage xml
+
+# So the build fails in Jenkins when unit test fails
+exit $RESULT
