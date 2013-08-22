@@ -51,3 +51,4 @@ python2.7
 # Sample Files
 data_mover/sample/sample_local/*
 data_mover/sample/sample_destination/*
+coverage.xml

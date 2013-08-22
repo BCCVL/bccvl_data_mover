@@ -20,3 +20,4 @@ source bin/activate
 
 pip install -r requirements.txt
 nosetests --with-xunit
+coverage xml
