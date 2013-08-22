@@ -1,0 +1,14 @@
+pyramid
+SQLAlchemy
+transaction
+pyramid_tm
+pyramid_debugtoolbar
+zope.sqlalchemy
+waitress
+pyramid_xmlrpc
+redis
+rq
+psycopg2
+coverage
+nose
+test

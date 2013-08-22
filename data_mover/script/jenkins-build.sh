@@ -5,20 +5,16 @@ if [ -z "$WORKSPACE" ]; then
     WORKSPACE='..'
 fi
 
-#WORKSPACE_PYTHON="$WORKSPACE/data_mover/bin/python26"
-WORKING_DIR="$WORKSPACE/data_mover"
-
 echo "Using WORKSPACE $WORKSPACE"
-cd "$WORKSPACE"
+cd $WORKSPACE
 
-#echo "Setting up virtualenv in $WORKSPACE"
-#curl -O https://pypi.python.org/packages/source/v/virtualenv/virtualenv-1.9.tar.gz
-#tar -xvzf virtualenv-1.9.tar.gz
-#cd virtualenv-1.9
-#/usr/bin/env python26 virtualenv.py --no-setuptools "$WORKING_DIR"
-#cd "$WORKING_DIR"
-#source bin/activate
+echo "Setting up virtualenv in $WORKSPACE"
+curl -O https://pypi.python.org/packages/source/v/virtualenv/virtualenv-1.9.tar.gz
+tar -xvzf virtualenv-1.9.tar.gz
+cd virtualenv-1.9
+/usr/bin/env python26 virtualenv.py data_mover
+cd data_mover
+source bin/activate
 
-#"$WORKSPACE_PYTHON" setup.py develop
-
-python "$WORKING_DIR/bootstrap.py"
+pip install -r requirements.txt
+nosetests
