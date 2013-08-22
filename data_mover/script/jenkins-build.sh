@@ -16,5 +16,12 @@ cd virtualenv-1.9
 cd data_mover
 source bin/activate
 
+
+echo "***"
+pwd
+echo "***"
+ls
+echo "***"
+
 pip install -r requirements.txt
 nosetests
