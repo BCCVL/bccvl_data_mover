@@ -19,4 +19,4 @@ cd $DATA_MOVER_DIR
 source bin/activate
 
 pip install -r requirements.txt
-nosetests
+nosetests --with-xunit
