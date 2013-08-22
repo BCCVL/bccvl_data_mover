@@ -23,13 +23,16 @@ class TestBackgroundServices(unittest.TestCase):
         Base.metadata.drop_all(engine)
 
     # TODO: FINISH
-    # def testStartJob(self):
-    #     type = "Test"
-    #     data_id = 3
-    #     destination = "BCCVL_HPC"
-    #     job = Job(type, data_id, destination)
-    #     DBSession.add(job)
-    #     DBSession.flush()
-    #     DBSession.expunge(job)
-    #     result = start_job(job)
-    #     self.assertEqual(result, 'COMPLETED')
+    def testStartJobFail(self):
+        from data_mover.scripts.populate import populate_host, populate_protocol
+        populate_protocol()
+        populate_host()
+        type = "Test"
+        data_id = 3
+        destination = "BCCVL_HPC"
+        job = Job(type, data_id, destination)
+        DBSession.add(job)
+        DBSession.flush()
+        DBSession.expunge(job)
+        result = start_job(job)
+        self.assertEqual(result, 'FAILED')
