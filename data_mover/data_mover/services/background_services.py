@@ -1,9 +1,8 @@
-from data_mover.scripts.worker_queue import background_queue
-from data_mover.models import *
+from data_mover.models.job import Job
+from data_mover.models.host import Host
 from data_mover.scripts.generate_session import generate_session
 from data_mover.helpers.data_mover import *
 import transaction
-import subprocess
 import datetime
 
 BGDBSession = generate_session()
@@ -12,55 +11,57 @@ BGDBSession = generate_session()
 # TODO: Query the dataset manager to obtain the source details of the file requested - should probably be persisted along with the job
 # TODO: return early if the file can't be found.
 def start_job(job):
-	# Changes the status of the job to ACCEPTED and update start_time
-	job = update_status(job, 'ACCEPTED')
-	job = update_timestamp(job, 'START')
+    # Changes the status of the job to ACCEPTED and update start_time
+    job = update_status(job, 'ACCEPTED')
+    job = update_timestamp(job, 'START')
 
-	# Get data from the source and puts it in the local directory for transfer
-	if (get_data(job) and move_data(job)):
-		job = update_status(job, 'COMPLETED')
-	else:
-		job = update_status(job, 'FAILED')
+    # Get data from the source and puts it in the local directory for transfer
+    if (get_data(job) and move_data(job)):
+        job = update_status(job, 'COMPLETED')
+    else:
+        job = update_status(job, 'FAILED')
 
-	job = update_timestamp(job, 'END')
-	return job.status
+    job = update_timestamp(job, 'END')
+    return job.status
+
 
 def update_status(job, value):
-	id = job.id
-	job.status = value
-	BGDBSession.add(job)
-	transaction.commit()
-	job = BGDBSession.query(Job).get(id)
-	return job
+    id = job.id
+    job.status = value
+    BGDBSession.add(job)
+    transaction.commit()
+    job = BGDBSession.query(Job).get(id)
+    return job
+
 
 def update_timestamp(job, start_or_end):
-	id = job.id
-	if start_or_end == 'START':
-		job.start_timestamp = datetime.datetime.now()
-	else:
-		job.end_timestamp = datetime.datetime.now()
-	
-	BGDBSession.add(job)
-	transaction.commit()
+    id = job.id
+    if start_or_end == 'START':
+        job.start_timestamp = datetime.datetime.now()
+    else:
+        job.end_timestamp = datetime.datetime.now()
 
-	job = BGDBSession.query(Job).get(id)
-	return job
+    BGDBSession.add(job)
+    transaction.commit()
+
+    job = BGDBSession.query(Job).get(id)
+    return job
 
 # Get data from the source i.e. from whatever the dataset manager tells us
 def get_data(job):
-	# Check host table for protocol details
-	# Current source is set to the sample_source folder
-	source_path = "%s/%d" % (job.source, job.data_id)
-	destination_path = "sample/sample_local/%d" % (job.data_id)
+    # Check host table for protocol details
+    # Current source is set to the sample_source folder
+    source_path = "%s/%d" % (job.source, job.data_id)
+    destination_path = "sample/sample_local/%d" % (job.data_id)
 
-	# TODO: Change to the host given by the dataset manager - this host is for destination
-	host = BGDBSession.query(Host).filter(Host.name == job.destination).first()
-	return scp_from(host, source_path, destination_path)
+    # TODO: Change to the host given by the dataset manager - this host is for destination
+    host = BGDBSession.query(Host).filter(Host.name == job.destination).first()
+    return scp_from(host, source_path, destination_path)
 
 # Moves data from our local directory to the destination i.e. HPC or VM
 def move_data(job):
-	# Check host table for protocol details
-	source_path = "sample/sample_local/%s" % (job.data_id)
-	destination_path = "sample/sample_destination/%d" % (job.data_id)
-	host = BGDBSession.query(Host).filter(Host.name == job.destination).first()
-	return scp_to(host, source_path, destination_path)	
+    # Check host table for protocol details
+    source_path = "sample/sample_local/%s" % (job.data_id)
+    destination_path = "sample/sample_destination/%d" % (job.data_id)
+    host = BGDBSession.query(Host).filter(Host.name == job.destination).first()
+    return scp_to(host, source_path, destination_path)

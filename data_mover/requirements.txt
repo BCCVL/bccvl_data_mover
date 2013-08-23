@@ -12,3 +12,4 @@ psycopg2
 coverage
 nose
 test
+mock

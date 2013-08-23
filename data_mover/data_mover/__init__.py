@@ -1,13 +1,22 @@
 from pyramid.config import Configurator
 from sqlalchemy import engine_from_config
+from zope.sqlalchemy import ZopeTransactionExtension
 
-from data_mover.services.data_mover_services import DataMoverServices
+from data_mover.models import Base
 
-from .models import (
-    DBSession,
-    Base,
+from sqlalchemy.orm import (
+    scoped_session,
+    sessionmaker,
     )
 
+DBSession = scoped_session(sessionmaker(extension=ZopeTransactionExtension()))
+
+from data_mover.services.job_service import JobService
+
+
+JOB_SERVICE = JobService()
+
+from data_mover.services.data_mover_services import DataMoverServices
 
 def main(global_config, **settings):
     """ This function returns a Pyramid WSGI application.
