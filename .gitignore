@@ -52,3 +52,4 @@ python2.7
 data_mover/sample/sample_local/*
 data_mover/sample/sample_destination/*
 coverage.xml
+:tmp:
