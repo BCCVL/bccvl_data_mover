@@ -1,16 +1,18 @@
 from pyramid_xmlrpc import XMLRPCView
-from data_mover.scripts.worker_queue import background_queue
 from data_mover.models.error_messages import *
 from data_mover import JOB_SERVICE
-from data_mover.services.background_services import *
+from data_mover import BACKGROUND_QUEUE
+from data_mover.worker.background_services import *
+
 
 class DataMoverServices(XMLRPCView):
 
     _jobService = JOB_SERVICE
+    _backgroundQueue = BACKGROUND_QUEUE
 
     def move(self, destination_args=None, source_args=None):
         # Initialize variables
-        type = None
+        sourceType = None
         data_id = None
         destination = None
         job = None
@@ -18,20 +20,20 @@ class DataMoverServices(XMLRPCView):
 
         # Check for input
         if destination_args is not None and source_args is not None:
-            type = source_args['type']
+            sourceType = source_args['type']
             data_id = source_args['id']
             destination = destination_args['host']
         else:
             return REJECTED(MISSING_PARAMS)
 
-        if type is None or data_id is None or not isinstance(data_id, int) or destination is None:
+        if sourceType is None or data_id is None or not isinstance(data_id, int) or destination is None:
             return REJECTED(INVALID_PARAMS)
 
-        job = self._jobService.createNewJob(type, data_id, destination)
+        job = self._jobService.createNewJob(sourceType, data_id, destination)
         if job is None:
             return REJECTED(DB_ERROR)
 
-        background_queue.enqueue(start_job, job)
+        self._backgroundQueue.enqueue(start_job, job)
         return {'id': job.id, 'status': job.status}
 
 

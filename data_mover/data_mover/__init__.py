@@ -1,6 +1,8 @@
 from pyramid.config import Configurator
 from sqlalchemy import engine_from_config
 from zope.sqlalchemy import ZopeTransactionExtension
+from redis import Redis
+from rq import Queue
 
 from data_mover.models import Base
 
@@ -13,8 +15,8 @@ DBSession = scoped_session(sessionmaker(extension=ZopeTransactionExtension()))
 
 from data_mover.services.job_service import JobService
 
-
 JOB_SERVICE = JobService()
+BACKGROUND_QUEUE = Queue(connection=Redis())
 
 from data_mover.services.data_mover_services import DataMoverServices
 

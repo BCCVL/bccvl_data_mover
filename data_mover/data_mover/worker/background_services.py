@@ -12,14 +12,14 @@ BGDBSession = generate_session()
 # TODO: return early if the file can't be found.
 def start_job(job):
     # Changes the status of the job to ACCEPTED and update start_time
-    job = update_status(job, 'ACCEPTED')
+    job = update_status(job, Job.STATUS_ACCEPTED)
     job = update_timestamp(job, 'START')
 
     # Get data from the source and puts it in the local directory for transfer
-    if (get_data(job) and move_data(job)):
-        job = update_status(job, 'COMPLETED')
+    if get_data(job) and move_data(job):
+        job = update_status(job, Job.STATUS_COMPLETED)
     else:
-        job = update_status(job, 'FAILED')
+        job = update_status(job, Job.STATUS_FAILED)
 
     job = update_timestamp(job, 'END')
     return job.status

@@ -1,9 +1,8 @@
 import unittest
-import transaction
 
 from pyramid import testing
 from sqlalchemy import create_engine
-from data_mover.models import *
+from data_mover.models.host import Host
 
 class TestHelpers(unittest.TestCase):
     def setUp(self):

@@ -42,6 +42,6 @@ def main(argv=sys.argv):
     # Create all the models
     Base.metadata.create_all(engine)
 
-    populate_protocol()
-    populate_host()
+    populate_protocol(DBSession)
+    populate_host(DBSession)
     transaction.commit()

@@ -8,7 +8,9 @@ from sqlalchemy import (
 
 
 class Protocol(Base):
+
     __tablename__ = 'protocols'
+
     id = Column(Integer, primary_key=True)
     name = Column(Text, nullable=False)
     command = Column(Text, nullable=False)
