@@ -6,6 +6,11 @@ if [ -z "$WORKSPACE" ]; then
 fi
 
 DATA_MOVER_DIR="$WORKSPACE/data_mover"
+BIN_DIR="$DATA_MOVER_DIR/bin"
+
+PIP="$BIN_DIR/pip"
+NOSETESTS="$BIN_DIR/nosetests"
+COVERAGE="$BIN_DIR/coverage"
 
 echo "Using WORKSPACE $WORKSPACE"
 cd $WORKSPACE
@@ -18,10 +23,11 @@ cd virtualenv-1.9
 cd $DATA_MOVER_DIR
 source bin/activate
 
-pip install -r requirements.txt
-nosetests --with-xunit
+$PIP install -r requirements.txt
+$NOSETESTS --with-xunit
 RESULT=$?
-coverage xml
 
-# So the build fails in Jenkins when unit test fails
+$COVERAGE xml
+
+# So the build fails in Jenkins when unit tests fail
 exit $RESULT
