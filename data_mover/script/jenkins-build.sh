@@ -33,7 +33,10 @@ $PIP install -r requirements.txt
 $NOSETESTS --with-xunit
 RESULT=$?
 
-$COVERAGE xml
+$COVERAGE xml --omit=./lib/*/*.py,./tests/*/*.py
+
+# So that Jenkins can see the source
+sed 's/filename="/filename=$WORKSPACE/data_mover//g' coverage.xml > coverage-fixed.xml
 
 # So the build fails in Jenkins when unit tests fail
 exit $RESULT
