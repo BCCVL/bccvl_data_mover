@@ -23,6 +23,12 @@ cd virtualenv-1.9
 cd $DATA_MOVER_DIR
 source bin/activate
 
+echo "Python version:"
+python --version
+
+echo "Deleting all .pyc files"
+find . -name "*.pyc" | xargs rm -rf
+
 $PIP install -r requirements.txt
 $NOSETESTS --with-xunit
 RESULT=$?
