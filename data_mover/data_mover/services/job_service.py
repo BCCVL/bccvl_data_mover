@@ -22,6 +22,7 @@ class JobService:
     def findById(self, job_id):
         try:
             job = self._dbSession.query(Job).get(job_id)
+            return job
         except:
             self._logger.exception('Could not find job in db with id %s', job_id)
             return None;
