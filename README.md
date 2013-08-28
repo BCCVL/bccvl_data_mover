@@ -13,6 +13,7 @@ The data mover shall be asynchronous. When a request to move a file is made via 
     $ virtualenv .
     $ source bin/activate
     $ pip install -r requirements.txt
+    $ python setup.py develop
 
 **Initializing the database**
 
