@@ -39,8 +39,8 @@ class TestXMLRPC(unittest.TestCase):
         destination = {'path': '/home', 'host': 'NECTAR'}
 
         newJob = Job(source['type'], source['id'], destination['host'])
-        newJob.id = 541;
-        service._jobService.createNewJob = MagicMock(return_value = None)
+        newJob.id = 541
+        service._jobService.createNewJob = MagicMock(return_value=None)
         response = service.move(destination, source)
 
         service._jobService.createNewJob.assert_called_with(source['type'], source['id'], destination['host'])
@@ -54,7 +54,7 @@ class TestXMLRPC(unittest.TestCase):
         destination = {'path': '/home', 'host': 'NECTAR'}
 
         newJob = Job(source['type'], source['id'], destination['host'])
-        newJob.id = 4322;
+        newJob.id = 4322
         service._jobService.createNewJob = MagicMock(return_value = newJob)
         service._backgroundQueue.enqueue = MagicMock()
         response = service.move(destination, source)

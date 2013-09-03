@@ -6,19 +6,15 @@ from data_mover.worker.background_services import *
 
 
 class DataMoverServices(XMLRPCView):
+    # Contains methods that are callable from the XML RPC Interface
+    # See https://wiki.intersect.org.au/display/BCCVL/Data+Mover+and+Data+Movement+API
 
     _jobService = JOB_SERVICE
     _backgroundQueue = BACKGROUND_QUEUE
 
     def move(self, destination_args=None, source_args=None):
-        # Initialize variables
-        sourceType = None
-        data_id = None
-        destination = None
-        job = None
-        response = None
 
-        # Check for input
+        # Check input
         if destination_args is not None and source_args is not None:
             sourceType = source_args['type']
             data_id = source_args['id']
@@ -51,3 +47,13 @@ class DataMoverServices(XMLRPCView):
             return REJECTED(JOB_DOES_NOT_EXIST)
 
         return {'id': job.id, 'status': job.status}
+
+
+    def pullOccurrenceFromALA(self, lsid=None):
+        # Pulls occurrence data from ALA, given an LSID of the species to pull data for.
+        if lsid is None:
+            return REJECTED(MISSING_PARAMS)
+
+
+
+

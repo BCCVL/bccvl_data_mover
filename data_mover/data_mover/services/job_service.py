@@ -8,8 +8,8 @@ class JobService:
     _logger = logging.getLogger(__name__)
     _dbSession = DBSession
 
-    def createNewJob(self, type, data_id, destination):
-        job = Job(type, data_id, destination)
+    def createNewJob(self, data_type, data_id, destination):
+        job = Job(data_type, data_id, destination)
         try:
             self._dbSession.add(job)
             self._dbSession.flush()
@@ -25,4 +25,4 @@ class JobService:
             return job
         except:
             self._logger.exception('Could not find job in db with id %s', job_id)
-            return None;
+            return None
