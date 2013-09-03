@@ -1,7 +1,5 @@
-from data_mover.scripts.populate import populate_host, populate_protocol
 import os
 import sys
-import transaction
 
 from sqlalchemy import engine_from_config
 
@@ -41,7 +39,3 @@ def main(argv=sys.argv):
 
     # Create all the models
     Base.metadata.create_all(engine)
-
-    populate_protocol(DBSession)
-    populate_host(DBSession)
-    transaction.commit()

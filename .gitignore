@@ -53,3 +53,13 @@ data_mover/sample/sample_local/*
 data_mover/sample/sample_destination/*
 coverage.xml
 :tmp:
+.idea/.name
+.idea/bccvl_data_mover.iml
+.idea/encodings.xml
+.idea/misc.xml
+.idea/modules.xml
+.idea/other.xml
+.idea/scopes/scope_settings.xml
+.idea/testrunner.xml
+.idea/vcs.xml
+.idea/workspace.xml

@@ -1,7 +1,5 @@
 from data_mover.models.job import Job
-from data_mover.models.host import Host
 from data_mover.scripts.generate_session import generate_session
-from data_mover.helpers.data_mover import *
 import transaction
 import datetime
 
@@ -16,10 +14,10 @@ def start_job(job):
     job = update_timestamp(job, 'START')
 
     # Get data from the source and puts it in the local directory for transfer
-    if get_data(job) and move_data(job):
-        job = update_status(job, Job.STATUS_COMPLETED)
-    else:
-        job = update_status(job, Job.STATUS_FAILED)
+    # if get_data(job) and move_data(job):
+    #     job = update_status(job, Job.STATUS_COMPLETED)
+    # else:
+    #     job = update_status(job, Job.STATUS_FAILED)
 
     job = update_timestamp(job, 'END')
     return job.status
@@ -47,21 +45,19 @@ def update_timestamp(job, start_or_end):
     job = BGDBSession.query(Job).get(id)
     return job
 
-# Get data from the source i.e. from whatever the dataset manager tells us
-def get_data(job):
-    # Check host table for protocol details
-    # Current source is set to the sample_source folder
-    source_path = "%s/%d" % (job.source, job.data_id)
-    destination_path = "sample/sample_local/%d" % (job.data_id)
-
-    # TODO: Change to the host given by the dataset manager - this host is for destination
-    host = BGDBSession.query(Host).filter(Host.name == job.destination).first()
-    return scp_from(host, source_path, destination_path)
+# TODO: Get data from the source i.e. from whatever the dataset manager tells us
+# def get_data(job):
+#     # Check host table for protocol details
+#     # Current source is set to the sample_source folder
+#     source_path = "%s/%d" % (job.source, job.data_id)
+#     destination_path = "sample/sample_local/%d" % (job.data_id)
+#
+#     # TODO: Change to the host given by the dataset manager - this host is for destination
+#     return scp_from(host, source_path, destination_path)
 
 # Moves data from our local directory to the destination i.e. HPC or VM
-def move_data(job):
-    # Check host table for protocol details
-    source_path = "sample/sample_local/%s" % (job.data_id)
-    destination_path = "sample/sample_destination/%d" % (job.data_id)
-    host = BGDBSession.query(Host).filter(Host.name == job.destination).first()
-    return scp_to(host, source_path, destination_path)
+# def move_data(job):
+#     # TODO: Check host table for protocol details
+#     source_path = "sample/sample_local/%s" % (job.data_id)
+#     destination_path = "sample/sample_destination/%d" % (job.data_id)
+#     return scp_to(host, source_path, destination_path)
