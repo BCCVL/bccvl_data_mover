@@ -1,13 +1,14 @@
 import io
 import logging
-import urllib2
+import requests
 
 
 def http_get(url, localFile):
     logging.info('Downloading from %s to %s', url, localFile)
-    source = urllib2.urlopen(url)
-    destination = io.open(localFile, 'w')
-    destination.write(source.read())
-    destination.close()
+    request = requests.get(url)
+    # TODO: Check response code is a 200 before writing
+    outFile = io.open(localFile, 'wb')
+    outFile.write(request.content)
+
 
 
