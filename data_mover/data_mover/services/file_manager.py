@@ -19,7 +19,10 @@ class ALAFileManager(BaseFileManager):
 
 
 class FileManager:
-    def __init__(self, settings, key):
+    def __init__(self):
+        self.data_directory = None
+        self.ala_manager = None
+
+    def setValues(self, settings, key):
         self.data_directory = settings[key + 'data_directory']
         self.ala_manager = ALAFileManager(self.data_directory)
-

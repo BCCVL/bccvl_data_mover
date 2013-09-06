@@ -1,4 +1,8 @@
+import tempfile
 from data_mover.endpoints.protocols import http_get
+from data_mover.endpoints.postprocess import gunzip
+from data_mover import FILE_MANAGER
+import os
 
 
 class ALAOccurrence():
@@ -9,5 +13,10 @@ class ALAOccurrence():
 
     def getOccurrenceByLSID(self, lsid):
         url = ALAOccurrence.url.replace("${lsid}", lsid)
-        http_get(url, '/tmp/' + lsid + ".csv.gz")
-
+        content = http_get(url)
+        with tempfile.NamedTemporaryFile(mode='w+b', suffix='.csv.gz') as t:
+            t.write(content)
+            t.flush()
+            t.seek(0)
+            path = "%s/%s.csv" % (FILE_MANAGER.ala_manager.directory, lsid)
+            gunzip(t.name, path)

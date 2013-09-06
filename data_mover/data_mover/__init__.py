@@ -20,17 +20,14 @@ BACKGROUND_QUEUE = Queue(connection=Redis())
 
 from data_mover.services.file_manager import FileManager
 
-FILE_MANAGER = None
+FILE_MANAGER = FileManager()
 
 from data_mover.services.data_mover_services import DataMoverServices
 
 def main(global_config, **settings):
     """ This function returns a Pyramid WSGI application.
     """
-    FILE_MANAGER = FileManager(settings, 'file_manager.')
-
-    print FILE_MANAGER.ala_manager.directory
-    print FILE_MANAGER.temp_manager.directory
+    FILE_MANAGER.setValues(settings, 'file_manager.')
 
     # host = settings['sqlalchemy.url']
     engine = engine_from_config(settings, 'sqlalchemy.')
