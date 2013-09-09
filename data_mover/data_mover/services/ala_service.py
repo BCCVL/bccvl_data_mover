@@ -8,6 +8,7 @@ from data_mover import FILE_MANAGER
 class ALAService():
 
     _logger = logging.getLogger(__name__)
+    file_manager = FILE_MANAGER
 
     # URL to ALA. Substitute {$lsid} for the LSID
     url = "http://biocache.ala.org.au/ws/webportal/occurrences.gz?q=lsid:${lsid}&fl=raw_taxon_name,longitude,latitude&pageSize=999999999"
@@ -27,4 +28,4 @@ class ALAService():
                 t.write(d.decompress(content))
                 t.flush()
                 t.seek(0)
-                FILE_MANAGER.ala_file_manager.add(lsid, t.name)
+                self.file_manager.ala_file_manager.add(lsid, t.name)

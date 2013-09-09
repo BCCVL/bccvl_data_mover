@@ -15,8 +15,9 @@ class TestEndpoints(unittest.TestCase):
     def testAlaOccurrence(self):
         lsid = 'urn:lsid:biodiversity.org.au:afd.taxon:31a9b8b8-4e8f-4343-a15f-2ed24e0bf1ae'
         alaService = ALAService()
-        alaService._alaFileManager = MagicMock()
+        alaService.file_manager.ala_file_manager = MagicMock()
+        alaService.file_manager.ala_file_manager.add = MagicMock()
 
         out = alaService.getOccurrenceByLSID(lsid)
 
-        alaService._alaFileManager.add.assert_called_with(lsid, ANY)
+        alaService.file_manager.ala_file_manager.add.assert_called_with(lsid, ANY)
