@@ -13,10 +13,10 @@ class JobService:
         try:
             self._dbSession.add(job)
             self._dbSession.flush()
-            self._logger.info("Added new job in db with id %s", job.id)
+            JobService._logger.info("Added new job in db with id %s", job.id)
             return job
         except:
-            self._logger.exception('Could create new job in db')
+            JobService._logger.exception('Could create new job in db')
             return None
 
     def findById(self, job_id):
@@ -24,5 +24,5 @@ class JobService:
             job = self._dbSession.query(Job).get(job_id)
             return job
         except:
-            self._logger.exception('Could not find job in db with id %s', job_id)
+            JobService._logger.exception('Could not find job in db with id %s', job_id)
             return None

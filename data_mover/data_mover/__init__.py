@@ -1,3 +1,5 @@
+import logging
+
 from pyramid.config import Configurator
 from sqlalchemy import engine_from_config
 from zope.sqlalchemy import ZopeTransactionExtension
@@ -22,11 +24,15 @@ FILE_MANAGER = FileManager()
 
 from data_mover.services.data_mover_services import DataMoverServices
 
+
 def main(global_config, **settings):
     """ This function returns a Pyramid WSGI application.
     """
+    logger = logging.getLogger(__name__)
+    logger.info('******************************')
+    logger.info('Starting DataMover Pyramid App')
+    logger.info('******************************')
 
-    # host = settings['sqlalchemy.url']
     engine = engine_from_config(settings, 'sqlalchemy.')
     DBSession.configure(bind=engine)
     Base.metadata.bind = engine

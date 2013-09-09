@@ -1,6 +1,7 @@
 import logging
 import requests
 
+_logger = logging.getLogger(__name__)
 
 def http_get(url):
     """
@@ -11,7 +12,7 @@ def http_get(url):
 
     response = requests.get(url)
     if response.status_code is not 200:
-        logging.info('Obtained status code %s from URL %s', response.status_code, url)
+        _logger.info('Obtained status code %s from URL %s', response.status_code, url)
         return None
 
     return response.content

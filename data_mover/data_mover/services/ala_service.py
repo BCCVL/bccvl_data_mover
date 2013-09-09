@@ -7,6 +7,8 @@ from data_mover import FILE_MANAGER
 
 class ALAService():
 
+    _logger = logging.getLogger(__name__)
+
     # URL to ALA. Substitute {$lsid} for the LSID
     url = "http://biocache.ala.org.au/ws/webportal/occurrences.gz?q=lsid:${lsid}&fl=raw_taxon_name,longitude,latitude&pageSize=999999999"
 
@@ -16,7 +18,7 @@ class ALAService():
         :param lsid: the lsid of the species to download occurrence data for
         """
 
-        logging.info("Obtaining occurance data for LSID %s", lsid)
+        ALAService._logger.info("Obtaining occurrence data from ALA for LSID %s", lsid)
         url = ALAService.url.replace("${lsid}", lsid)
         content = http_get(url)
         if content is not None:
