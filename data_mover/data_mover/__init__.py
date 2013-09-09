@@ -14,12 +14,10 @@ from sqlalchemy.orm import (
 DBSession = scoped_session(sessionmaker(extension=ZopeTransactionExtension()))
 
 from data_mover.services.job_service import JobService
+from data_mover.services.file_manager import FileManager
 
 JOB_SERVICE = JobService()
 BACKGROUND_QUEUE = Queue(connection=Redis())
-
-from data_mover.services.file_manager import FileManager
-
 FILE_MANAGER = FileManager()
 
 from data_mover.services.data_mover_services import DataMoverServices
@@ -27,13 +25,14 @@ from data_mover.services.data_mover_services import DataMoverServices
 def main(global_config, **settings):
     """ This function returns a Pyramid WSGI application.
     """
-    FILE_MANAGER.setValues(settings, 'file_manager.')
 
     # host = settings['sqlalchemy.url']
     engine = engine_from_config(settings, 'sqlalchemy.')
     DBSession.configure(bind=engine)
     Base.metadata.bind = engine
-    
+
+    FILE_MANAGER.configure(settings, 'file_manager.')
+
     config = Configurator(settings=settings)
     config.add_view(DataMoverServices, name='data_mover')
     config.scan()

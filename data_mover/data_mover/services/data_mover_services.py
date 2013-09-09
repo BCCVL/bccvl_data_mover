@@ -3,14 +3,17 @@ from data_mover.models.error_messages import *
 from data_mover import JOB_SERVICE
 from data_mover import BACKGROUND_QUEUE
 from data_mover.worker.background_services import *
-from data_mover.endpoints.ala_occurrence import ALAOccurrence
+from data_mover.services.ala_service import ALAService
 
 class DataMoverServices(XMLRPCView):
-    # Contains methods that are callable from the XML RPC Interface
-    # See https://wiki.intersect.org.au/display/BCCVL/Data+Mover+and+Data+Movement+API
+    """
+    Contains methods that are callable from the XML RPC Interface
+    See https://wiki.intersect.org.au/display/BCCVL/Data+Mover+and+Data+Movement+API
+    """
 
     _jobService = JOB_SERVICE
     _backgroundQueue = BACKGROUND_QUEUE
+    _alaService = ALAService()
 
     def move(self, destination_args=None, source_args=None):
 
@@ -53,6 +56,5 @@ class DataMoverServices(XMLRPCView):
         if lsid is None:
             return REJECTED(MISSING_PARAMS)
         else:
-            alaOccurrence = ALAOccurrence()
-            alaOccurrence.getOccurrenceByLSID(lsid)
+            alaOccurrence = self._alaService.getOccurrenceByLSID(lsid)
             return "COMPLETED"
