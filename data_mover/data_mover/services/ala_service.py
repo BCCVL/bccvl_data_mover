@@ -1,5 +1,4 @@
 import logging
-import tempfile
 import zlib
 from data_mover.endpoints.protocols import http_get
 from data_mover import FILE_MANAGER
@@ -24,8 +23,4 @@ class ALAService():
         content = http_get(url)
         if content is not None:
             d = zlib.decompressobj(16 + zlib.MAX_WBITS)
-            with tempfile.NamedTemporaryFile(mode='w+b', suffix='.csv.gz', delete=False) as t:
-                t.write(d.decompress(content))
-                t.flush()
-                t.seek(0)
-                self.file_manager.ala_file_manager.add(lsid, t.name)
+            self.file_manager.ala_file_manager.addNewFile(lsid, d.decompress(content))

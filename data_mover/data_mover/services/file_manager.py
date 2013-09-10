@@ -1,22 +1,39 @@
+import io
 import os
 import shutil
+
 
 class BaseFileManager:
     def __init__(self):
         self.directory = None
         self.fileSuffix = None
 
-    def add(self, name, file):
+    def addExistingFile(self, name, path):
         """
          Adds the provided file path to the file manager.
          :param name: the 'internal' name of the file.
-         :param file: the path to the file to store. Note this will perform a MOVE and the original file will no longer exist.
+         :param path: the path to the file to store. Note this will perform a MOVE and the original file will no longer exist.
         """
         destination = os.path.join(self.directory, name + self.fileSuffix)
+        self._createParent(destination)
+        shutil.move(path, destination)
+
+    def addNewFile(self, name, content):
+        """
+         Adds the provided file content to the file manager.
+         :param name: the 'internal' name of the file.
+         :param content the content of the file to store.
+        """
+        destination = os.path.join(self.directory, name + self.fileSuffix)
+        self._createParent(destination)
+        f = io.open(destination, mode='wb')
+        f.write(content)
+        f.close()
+
+    def _createParent(self, destination):
         parent = os.path.dirname(destination)
         if not os.path.isdir(parent):
             os.makedirs(parent)
-        shutil.move(file, destination)
 
     def delete(self, name):
         destination = os.path.join(self.directory, name + self.fileSuffix)
@@ -26,6 +43,7 @@ class BaseFileManager:
 
 class ALAFileManager(BaseFileManager):
     def __init__(self, root):
+        BaseFileManager.__init__(self)
         self.directory = root + "/ALA"
         self.fileSuffix = '.csv'
 
