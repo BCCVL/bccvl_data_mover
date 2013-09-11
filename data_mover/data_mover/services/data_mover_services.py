@@ -4,6 +4,9 @@ from data_mover import JOB_SERVICE
 from data_mover import BACKGROUND_QUEUE
 from data_mover.worker.background_services import *
 from data_mover.services.ala_service import ALAService
+import multiprocessing
+import logging
+
 
 class DataMoverServices(XMLRPCView):
     """
@@ -56,5 +59,8 @@ class DataMoverServices(XMLRPCView):
         if lsid is None:
             return REJECTED(MISSING_PARAMS)
         else:
-            alaOccurrence = self._alaService.getOccurrenceByLSID(lsid)
-            return "COMPLETED"
+            multiprocessing.log_to_stderr(logging.DEBUG)
+            alaOccurrences = multiprocessing.Process(name='alaOccurencesDaemon', target=self._alaService.getOccurrenceByLSID, args=(lsid,))
+            alaOccurrences._daemon = True
+            alaOccurrences.start()
+            return "ACCEPTED"
