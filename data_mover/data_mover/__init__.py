@@ -15,9 +15,11 @@ DBSession = scoped_session(sessionmaker(extension=ZopeTransactionExtension()))
 
 from data_mover.services.job_service import JobService
 from data_mover.services.file_manager import FileManager
+from data_mover.scripts.session_generator import SessionGenerator
 
 JOB_SERVICE = JobService()
 FILE_MANAGER = FileManager()
+SESSION_GENERATOR = SessionGenerator()
 
 from data_mover.services.data_mover_services import DataMoverServices
 
@@ -34,6 +36,7 @@ def main(global_config, **settings):
     DBSession.configure(bind=engine)
     Base.metadata.bind = engine
 
+    SESSION_GENERATOR.configure(settings, 'sqlalchemy.')
     FILE_MANAGER.configure(settings, 'file_manager.')
 
     config = Configurator(settings=settings)

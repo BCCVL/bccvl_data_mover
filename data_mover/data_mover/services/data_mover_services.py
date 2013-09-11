@@ -1,7 +1,7 @@
 from pyramid_xmlrpc import XMLRPCView
 from data_mover.models.error_messages import *
 from data_mover import JOB_SERVICE
-from data_mover.worker.background_services import *
+from data_mover.worker.background_services import BackgroundServices
 from data_mover.services.ala_service import ALAService
 import multiprocessing
 import logging
@@ -33,9 +33,11 @@ class DataMoverServices(XMLRPCView):
         if job is None:
             return REJECTED(DB_ERROR)
 
-        # self._backgroundQueue.enqueue(start_job, job)
         self._jobService.expungeJob(job)
-        worker = multiprocessing.Process(name='startJob', target=start_job, args=(job,))
+
+        background_worker = BackgroundServices()
+
+        worker = multiprocessing.Process(name='startJob', target=background_worker.start_job, args=(job,))
         worker.daemon = True
         worker.start()
 
@@ -61,6 +63,7 @@ class DataMoverServices(XMLRPCView):
         if lsid is None:
             return REJECTED(MISSING_PARAMS)
         else:
+            # Uncomment the next line for debug/log for multiprocessing
             multiprocessing.log_to_stderr(logging.DEBUG)
             alaOccurrences = multiprocessing.Process(name='alaOccurencesDaemon', target=self._alaService.getOccurrenceByLSID, args=(lsid,))
             alaOccurrences.daemon = True
