@@ -3,8 +3,6 @@ import logging
 from pyramid.config import Configurator
 from sqlalchemy import engine_from_config
 from zope.sqlalchemy import ZopeTransactionExtension
-from redis import Redis
-from rq import Queue
 
 from data_mover.models import Base
 
@@ -19,7 +17,6 @@ from data_mover.services.job_service import JobService
 from data_mover.services.file_manager import FileManager
 
 JOB_SERVICE = JobService()
-BACKGROUND_QUEUE = Queue(connection=Redis())
 FILE_MANAGER = FileManager()
 
 from data_mover.services.data_mover_services import DataMoverServices

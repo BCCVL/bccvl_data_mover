@@ -55,12 +55,11 @@ class TestXMLRPC(unittest.TestCase):
 
         newJob = Job(source['type'], source['id'], destination['host'])
         newJob.id = 4322
-        service._jobService.createNewJob = MagicMock(return_value = newJob)
-        service._backgroundQueue.enqueue = MagicMock()
+        service._jobService.createNewJob = MagicMock(return_value=newJob)
+        service._jobService.expungeJob = MagicMock(return_value=None)
         response = service.move(destination, source)
 
         service._jobService.createNewJob.assert_called_with(source['type'], source['id'], destination['host'])
-        service._backgroundQueue.enqueue.assert_called_with(start_job, newJob)
         self.assertEqual(Job.STATUS_PENDING, response['status'])
         self.assertEqual(newJob.id, response['id'])
 

@@ -1,7 +1,6 @@
 from pyramid_xmlrpc import XMLRPCView
 from data_mover.models.error_messages import *
 from data_mover import JOB_SERVICE
-from data_mover import BACKGROUND_QUEUE
 from data_mover.worker.background_services import *
 from data_mover.services.ala_service import ALAService
 import multiprocessing
@@ -15,7 +14,6 @@ class DataMoverServices(XMLRPCView):
     """
 
     _jobService = JOB_SERVICE
-    _backgroundQueue = BACKGROUND_QUEUE
     _alaService = ALAService()
 
     def move(self, destination_args=None, source_args=None):
@@ -35,9 +33,13 @@ class DataMoverServices(XMLRPCView):
         if job is None:
             return REJECTED(DB_ERROR)
 
-        self._backgroundQueue.enqueue(start_job, job)
-        return {'id': job.id, 'status': job.status}
+        # self._backgroundQueue.enqueue(start_job, job)
+        self._jobService.expungeJob(job)
+        worker = multiprocessing.Process(name='startJob', target=start_job, args=(job,))
+        worker.daemon = True
+        worker.start()
 
+        return {'id': job.id, 'status': job.status}
 
     def check(self, id=None):
         # Check for inputs
@@ -61,6 +63,6 @@ class DataMoverServices(XMLRPCView):
         else:
             multiprocessing.log_to_stderr(logging.DEBUG)
             alaOccurrences = multiprocessing.Process(name='alaOccurencesDaemon', target=self._alaService.getOccurrenceByLSID, args=(lsid,))
-            alaOccurrences._daemon = True
+            alaOccurrences.daemon = True
             alaOccurrences.start()
             return "ACCEPTED"

@@ -26,3 +26,10 @@ class JobService:
         except:
             JobService._logger.exception('Could not find job in db with id %s', job_id)
             return None
+
+    def expungeJob(self, job):
+        """
+        Expunge removes an object from the Session. We need this so that we can use the job in another process.
+        """
+        self._dbSession.expunge(job)
+        return None
