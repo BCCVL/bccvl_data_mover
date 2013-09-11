@@ -1,10 +1,12 @@
 import unittest
 import logging
-
-from mock import MagicMock
-from mock import ANY
+import io
+import os
+import shutil
+import tempfile
 
 from data_mover.services.ala_service import ALAService
+from data_mover.services.file_manager import ALAFileManager
 
 
 class TestEndpoints(unittest.TestCase):
@@ -15,8 +17,35 @@ class TestEndpoints(unittest.TestCase):
     def testAlaOccurrence(self):
         lsid = 'urn:lsid:biodiversity.org.au:afd.taxon:31a9b8b8-4e8f-4343-a15f-2ed24e0bf1ae'
         alaService = ALAService()
-        alaService.file_manager.ala_file_manager = MagicMock()
 
-        out = alaService.getOccurrenceByLSID(lsid)
+        temp_dir = tempfile.mkdtemp(suffix=__name__)
 
-        alaService.file_manager.ala_file_manager.addNewFile.assert_called_with(lsid, ANY)
+        # Directory is empty
+        self.assertEqual(0, len(os.listdir(temp_dir)))
+
+        alaService.file_manager.ala_file_manager = ALAFileManager(temp_dir)
+        alaService.getOccurrenceByLSID(lsid)
+
+        # ALA directory exists
+        ala_dir = os.path.join(temp_dir, 'ALA')
+        self.assertTrue(os.path.isdir(ala_dir))
+
+        # The file exists
+        occurrence_file = os.path.join(ala_dir, lsid + ".csv")
+        self.assertTrue(os.path.isfile(occurrence_file))
+
+        # The file has been normalized
+        with io.open(occurrence_file, mode='r+') as f:
+            lines = f.readlines()
+            self.assertTrue(len(lines) > 1)
+            header = lines[0]
+            self.assertEqual(1, header.count('SPPCODE'))
+            self.assertEqual(1, header.count('LNGDEC'))
+            self.assertEqual(1, header.count('LATDEC'))
+
+        # Remove temp dir
+        shutil.rmtree(temp_dir)
+
+
+
+
