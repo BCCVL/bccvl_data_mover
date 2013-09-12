@@ -1,7 +1,6 @@
 from pyramid_xmlrpc import XMLRPCView
 from data_mover.models.error_messages import *
-from data_mover import JOB_SERVICE
-from data_mover.worker.background_services import BackgroundServices
+from data_mover import (ALA_JOB_SERVICE,)
 from data_mover.services.ala_service import ALAService
 import multiprocessing
 import logging
@@ -13,59 +12,35 @@ class DataMoverServices(XMLRPCView):
     See https://wiki.intersect.org.au/display/BCCVL/Data+Mover+and+Data+Movement+API
     """
 
-    _jobService = JOB_SERVICE
     _alaService = ALAService()
+    _alaJobService = ALA_JOB_SERVICE
+    _backgroundJob = None
 
-    def move(self, destination_args=None, source_args=None):
-
-        # Check input
-        if destination_args is not None and source_args is not None:
-            sourceType = source_args['type']
-            data_id = source_args['id']
-            destination = destination_args['host']
-        else:
-            return REJECTED(MISSING_PARAMS)
-
-        if sourceType is None or data_id is None or not isinstance(data_id, int) or destination is None:
-            return REJECTED(INVALID_PARAMS)
-
-        job = self._jobService.createNewJob(sourceType, data_id, destination)
-        if job is None:
-            return REJECTED(DB_ERROR)
-
-        self._jobService.expungeJob(job)
-
-        background_worker = BackgroundServices()
-
-        worker = multiprocessing.Process(name='startJob', target=background_worker.start_job, args=(job,))
-        worker.daemon = True
-        worker.start()
-
-        return {'id': job.id, 'status': job.status}
-
-    def check(self, id=None):
-        # Check for inputs
-        if id is None:
-            return REJECTED(MISSING_PARAMS)
-
-        # Validation of parameters
-        if not isinstance(id, int):
-            return REJECTED(INVALID_PARAMS)
-
-        job = self._jobService.findById(id)
-        if job is None:
-            return REJECTED(JOB_DOES_NOT_EXIST)
-
-        return {'id': job.id, 'status': job.status}
-
-    def pullOccurrenceFromALA(self, lsid=None):
+    def pullOccurrenceFromALA(self, lsid, dataset_id):
         # Pulls occurrence data from ALA, given an LSID of the species to pull data for.
         if lsid is None:
             return REJECTED(MISSING_PARAMS)
         else:
-            # Uncomment the next line for debug/log for multiprocessing
-            multiprocessing.log_to_stderr(logging.DEBUG)
-            alaOccurrences = multiprocessing.Process(name='alaOccurencesDaemon', target=self._alaService.getOccurrenceByLSID, args=(lsid,))
-            alaOccurrences.daemon = True
-            alaOccurrences.start()
-            return "ACCEPTED"
+            job = self._alaJobService.createNewJob(lsid, dataset_id)
+
+            self._alaJobService.expunge(job)
+
+            self._backgroundJob = multiprocessing.Process(name='alaOccurrencesDaemon',
+                                                          target=self._alaService.worker, args=(job,))
+            self._backgroundJob.daemon = True
+            self._backgroundJob.start()
+
+            return {'id': job.id, 'status': job.status}
+
+    def checkALAJobStatus(self, id=None):
+        if id is None:
+            return REJECTED(MISSING_PARAMS)
+
+        if not isinstance(id, int):
+            return REJECTED(INVALID_PARAMS)
+
+        job = self._alaJobService.findById(id)
+
+        if job is not None:
+            response = {'id': id, 'status': job.status}
+            return response

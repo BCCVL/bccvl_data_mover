@@ -1,10 +1,10 @@
 import unittest
 import logging
 import io
-import os
 import shutil
 import tempfile
 
+import os
 from data_mover.services.ala_service import ALAService
 from data_mover.services.file_manager import ALAFileManager
 
@@ -23,8 +23,9 @@ class TestEndpoints(unittest.TestCase):
         # Directory is empty
         self.assertEqual(0, len(os.listdir(temp_dir)))
 
-        alaService.file_manager.ala_file_manager = ALAFileManager(temp_dir)
-        alaService.getOccurrenceByLSID(lsid)
+        alaService._file_manager.ala_file_manager = ALAFileManager(temp_dir)
+        result = alaService.getOccurrenceByLSID(lsid)
+        self.assertTrue(result)
 
         # ALA directory exists
         ala_dir = os.path.join(temp_dir, 'ALA')
@@ -45,7 +46,3 @@ class TestEndpoints(unittest.TestCase):
 
         # Remove temp dir
         shutil.rmtree(temp_dir)
-
-
-
-
