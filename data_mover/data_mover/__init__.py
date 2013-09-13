@@ -35,9 +35,9 @@ def main(global_config, **settings):
     """ This function returns a Pyramid WSGI application.
     """
     logger = logging.getLogger(__name__)
-    logger.info('******************************')
-    logger.info('Starting DataMover Pyramid App')
-    logger.info('******************************')
+    logger.info('**********************************')
+    logger.info('* Starting DataMover Pyramid App *')
+    logger.info('**********************************')
 
     engine = engine_from_config(settings, 'sqlalchemy.')
     DBSession.configure(bind=engine)

@@ -4,6 +4,7 @@ from data_mover import (ALA_JOB_SERVICE,)
 from data_mover.services.ala_service import ALAService
 import multiprocessing
 import logging
+import threading
 
 
 class DataMoverServices(XMLRPCView):
@@ -14,10 +15,11 @@ class DataMoverServices(XMLRPCView):
 
     _alaService = ALAService()
     _alaJobService = ALA_JOB_SERVICE
-    _backgroundJob = None
 
     def pullOccurrenceFromALA(self, lsid=None):
-        # Pulls occurrence data from ALA, given an LSID of the species to pull data for.
+        """
+         XML RPC endpoint for pulling occurrence data from ALA for a given LSID of a species.
+        """
         if lsid is None:
             return REJECTED(MISSING_PARAMS)
         else:
@@ -25,10 +27,9 @@ class DataMoverServices(XMLRPCView):
 
             self._alaJobService.expunge(job)
 
-            self._backgroundJob = multiprocessing.Process(name='alaOccurrencesDaemon',
-                                                          target=self._alaService.worker, args=(job,))
-            self._backgroundJob.daemon = True
-            self._backgroundJob.start()
+            thread_name = 'ala-get-' + lsid
+            thread = threading.Thread(target=self._alaService.worker, args=(job,), name=thread_name)
+            thread.start()
 
             return {'id': job.id, 'status': job.status}
 

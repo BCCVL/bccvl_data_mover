@@ -19,7 +19,7 @@ class SessionGenerator:
         :param url: The url of database
         :return: A new session
         """
-        Engine = create_engine(self._url)
-        Session = scoped_session(sessionmaker(extension=ZopeTransactionExtension()))
-        Session.configure(bind=Engine)
-        return Session
+        engine = create_engine(self._url)
+        session = scoped_session(sessionmaker(extension=ZopeTransactionExtension()))
+        session.configure(bind=engine)
+        return session

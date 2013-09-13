@@ -22,9 +22,10 @@ class ALAService():
         Downloads Species Occurrence data from ALA (Atlas of Living Australia) based on an LSID (Life Science Identifier)
         :param lsid: the lsid of the species to download occurrence data for
         """
-        ALAService._logger.info("Obtaining occurrence data from ALA for LSID %s", lsid)
+        self._logger.info("Obtaining occurrence data from ALA for LSID %s", lsid)
         url = ALAService.url.replace("${lsid}", lsid)
         content = http_get(url)
+        self._logger.info("Completed download of raw occurrence data form ALA for LSID %s", lsid)
         if content is not None:
             d = zlib.decompressobj(16 + zlib.MAX_WBITS)
             path = self._file_manager.ala_file_manager.addNewFile(lsid, d.decompress(content))
@@ -44,6 +45,7 @@ class ALAService():
         with io.open(file_path, mode='r+') as file:
             lines = file.readlines()
             file.seek(0)
+            file.truncate()
             newHeader = lines[0].replace("raw_taxon_name", "SPPCODE").replace("longitude", "LNGDEC").replace("latitude", "LATDEC")
             lines[0] = newHeader
             for line in lines:
