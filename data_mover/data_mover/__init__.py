@@ -15,12 +15,14 @@ DBSession = scoped_session(sessionmaker(extension=ZopeTransactionExtension()))
 
 from data_mover.database_services.database_service import DatabaseService
 from data_mover.database_services.ala_job_service import ALAJobService
+from data_mover.database_services.ala_file_service import ALAFileService
 from data_mover.services.file_manager import FileManager
 from data_mover.database_services.session_generator import SessionGenerator
 
 ### DATABASE AND MODEL SERVICES ###
 DB_SERVICE = DatabaseService(DBSession)
 ALA_JOB_SERVICE = ALAJobService(DB_SERVICE)
+ALA_FILE_SERVICE = ALAFileService(DB_SERVICE)
 SESSION_GENERATOR = SessionGenerator()
 
 ### SERVICES AND MANAGERS ###

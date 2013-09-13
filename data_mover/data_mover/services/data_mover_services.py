@@ -44,3 +44,5 @@ class DataMoverServices(XMLRPCView):
         if job is not None:
             response = {'id': id, 'status': job.status}
             return response
+        else:
+            return REJECTED(JOB_DOES_NOT_EXIST)

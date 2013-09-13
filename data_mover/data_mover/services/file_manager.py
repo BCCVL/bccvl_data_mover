@@ -44,9 +44,9 @@ class BaseFileManager:
 
 
 class ALAFileManager(BaseFileManager):
-    def __init__(self, root):
+    def __init__(self, directory):
         BaseFileManager.__init__(self)
-        self.directory = root + "/ALA"
+        self.directory = directory
         self.fileSuffix = '.csv'
 
 
@@ -57,4 +57,4 @@ class FileManager:
 
     def configure(self, settings, key):
         self.data_directory = settings[key + 'data_directory']
-        self.ala_file_manager = ALAFileManager(self.data_directory)
+        self.ala_file_manager = ALAFileManager(settings[key + 'ala_data_directory'])

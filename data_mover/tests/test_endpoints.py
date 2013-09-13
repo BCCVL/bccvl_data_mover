@@ -28,7 +28,7 @@ class TestALAService(unittest.TestCase):
         self.assertTrue(result)
 
         # ALA directory exists
-        ala_dir = os.path.join(temp_dir, 'ALA')
+        ala_dir = os.path.join(temp_dir)
         self.assertTrue(os.path.isdir(ala_dir))
 
         # The file exists
