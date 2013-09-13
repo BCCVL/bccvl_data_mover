@@ -1,6 +1,7 @@
 import io
 import logging
 import zlib
+import time
 from data_mover.endpoints.protocols import http_get
 from data_mover import (FILE_MANAGER, SESSION_GENERATOR,)
 from data_mover.database_services.database_service import DatabaseService
@@ -68,7 +69,7 @@ class ALAService():
         job = ala_job_service.incrementAttempts(job)
 
         while not download_success and job.attempts < 3:
-            #sleep()
+            time.sleep(10)
             download_success = self.getOccurrenceByLSID(job.lsid)
             job = ala_job_service.incrementAttempts(job)
 
