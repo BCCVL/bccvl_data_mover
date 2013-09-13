@@ -18,16 +18,16 @@ class ALAJob(Base):
 
     id = Column(Integer, primary_key=True)
     lsid = Column(Text, nullable=False)
-    dataset_id = Column(Integer, nullable=False)
+    dataset_id = Column(Integer)
     status = Column(Text)
     submitted_time = Column(DateTime)
     start_time = Column(DateTime)
     end_time = Column(DateTime)
     attempts = Column(Integer)
 
-    def __init__(self, lsid, dataset_id):
+    def __init__(self, lsid):
         self.lsid = lsid
-        self.dataset_id = dataset_id
+        self.dataset_id = None
         self.status = STATUS_PENDING
         self.submitted_time = datetime.datetime.now()
         self.attempts = 0

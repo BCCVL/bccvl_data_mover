@@ -20,10 +20,8 @@ class TestModels(unittest.TestCase):
 
     def testALAJobModel(self):
         lsid = 'urn:lsid:biodiversity.org.au:afd.taxon:31a9b8b8-4e8f-4343-a15f-2ed24e0bf1ae'
-        dataset_id = 1337
-        ala_job = ALAJob(lsid, dataset_id)
+        ala_job = ALAJob(lsid)
         self.assertEqual(lsid, ala_job.lsid)
-        self.assertEqual(dataset_id, ala_job.dataset_id)
         self.assertIsNotNone(ala_job.submitted_time)
         self.assertIsNone(ala_job.start_time)
         self.assertIsNone(ala_job.end_time)

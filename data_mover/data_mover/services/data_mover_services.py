@@ -16,12 +16,12 @@ class DataMoverServices(XMLRPCView):
     _alaJobService = ALA_JOB_SERVICE
     _backgroundJob = None
 
-    def pullOccurrenceFromALA(self, lsid, dataset_id):
+    def pullOccurrenceFromALA(self, lsid=None):
         # Pulls occurrence data from ALA, given an LSID of the species to pull data for.
         if lsid is None:
             return REJECTED(MISSING_PARAMS)
         else:
-            job = self._alaJobService.createNewJob(lsid, dataset_id)
+            job = self._alaJobService.createNewJob(lsid)
 
             self._alaJobService.expunge(job)
 

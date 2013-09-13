@@ -6,8 +6,8 @@ class ALAJobService:
     def __init__(self, service):
         self._db_service = service
 
-    def createNewJob(self, lsid, dataset_id, ):
-        job = ALAJob(lsid, dataset_id)
+    def createNewJob(self, lsid):
+        job = ALAJob(lsid)
         return self._db_service.add(job)
 
     def findById(self, job_id):

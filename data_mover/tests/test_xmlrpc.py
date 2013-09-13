@@ -14,7 +14,7 @@ class TestXMLRPC(unittest.TestCase):
         context = None
         request = None
         service = DataMoverServices(context, request)
-        response = service.pullOccurrenceFromALA(None, 1)
+        response = service.pullOccurrenceFromALA(None)
         self.assertEqual('REJECTED', response['status'])
 
     def testXMLPullOccurrencesFromALASuccess(self):
@@ -22,7 +22,7 @@ class TestXMLRPC(unittest.TestCase):
         context = None
         request = None
 
-        newJob = ALAJob(lsid, 1337)
+        newJob = ALAJob(lsid)
         newJob.status = 'PENDING'
 
         service = DataMoverServices(context, request)
@@ -33,7 +33,7 @@ class TestXMLRPC(unittest.TestCase):
         service._backgroundJob.start = MagicMock()
 
 
-        response = service.pullOccurrenceFromALA(lsid, 1337)
+        response = service.pullOccurrenceFromALA(lsid)
         self.assertEqual('PENDING', response['status'])
 
     def testXMLCheckALAJobStatus(self):
@@ -42,7 +42,7 @@ class TestXMLRPC(unittest.TestCase):
         request = None
         service = DataMoverServices(context, request)
 
-        job = ALAJob(lsid, 1337)
+        job = ALAJob(lsid)
         job.id = 1
         service._alaJobService.findById = MagicMock(return_value=job)
 
@@ -56,7 +56,7 @@ class TestXMLRPC(unittest.TestCase):
         request = None
         service = DataMoverServices(context, request)
 
-        job = ALAJob(lsid, 1337)
+        job = ALAJob(lsid)
         job.id = 1
         service._alaJobService.findById = MagicMock(return_value=job)
 
@@ -70,7 +70,7 @@ class TestXMLRPC(unittest.TestCase):
         request = None
         service = DataMoverServices(context, request)
 
-        job = ALAJob(lsid, 1337)
+        job = ALAJob(lsid)
         job.id = 1
         service._alaJobService.findById = MagicMock(return_value=job)
 
