@@ -13,17 +13,15 @@ from sqlalchemy.orm import (
 
 DBSession = scoped_session(sessionmaker(extension=ZopeTransactionExtension()))
 
-from data_mover.dao.generic_dao import GenericDAO
 from data_mover.dao.ala_job_dao import ALAJobDAO
 from data_mover.dao.ala_file_dao import ALAFileDAO
 from data_mover.dao.session_generator import SessionGenerator
 from data_mover.files.file_manager import FileManager
 
 ### DATABASE AND MODEL SERVICES ###
-DB_SERVICE = GenericDAO(DBSession)
-ALA_JOB_SERVICE = ALAJobDAO(DB_SERVICE)
-ALA_FILE_SERVICE = ALAFileDAO(DB_SERVICE)
-SESSION_GENERATOR = SessionGenerator()
+SESSION_MAKER = SessionGenerator()
+ALA_JOB_DAO = ALAJobDAO(SESSION_MAKER)
+ALA_FILE_DAO = ALAFileDAO(SESSION_MAKER)
 
 ### SERVICES AND MANAGERS ###
 FILE_MANAGER = FileManager()
@@ -43,7 +41,7 @@ def main(global_config, **settings):
     DBSession.configure(bind=engine)
     Base.metadata.bind = engine
 
-    SESSION_GENERATOR.configure(settings, 'sqlalchemy.')
+    SESSION_MAKER.configure(settings, 'sqlalchemy.')
     FILE_MANAGER.configure(settings, 'file_manager.')
 
     config = Configurator(settings=settings)

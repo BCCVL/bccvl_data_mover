@@ -13,10 +13,6 @@ class ALAFileDAO:
     def findById(self, job_id):
         return self._db_service.findById(ALAFile, job_id)
 
-    def expunge(self, file):
-        self._db_service.expunge(file)
-        return
-
     def update(self, file):
         job = self._db_service.update(file)
         return job

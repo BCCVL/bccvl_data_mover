@@ -1,38 +1,53 @@
 from data_mover.models.ala_job import ALAJob
 import datetime
+import logging
+import transaction
 
 class ALAJobDAO:
 
-    def __init__(self, service):
-        self._db_service = service
+    def __init__(self, session_maker):
+        self._session_maker = session_maker
+        self._logger = logging.getLogger(__name__)
 
-    def createNewJob(self, lsid):
-        job = ALAJob(lsid)
-        return self._db_service.add(job)
+    def findById(self, id):
+        session = self._session_maker.generate_session()
+        return session.query(ALAJob).get(id)
 
-    def findById(self, job_id):
-        return self._db_service.findById(ALAJob, job_id)
+    def create_new(self, lsid):
+        """
+         Creates a new ALA job given an LSID.
+         :return: the newly created job
+        """
+        session = self._session_maker.generate_session()
+        new_ala_job = ALAJob(lsid)
+        session.add(new_ala_job)
+        session.flush()
+        logging.info('Added new ALAJob to database with id %s', new_ala_job.id)
+        session.expunge(new_ala_job)
+        transaction.commit()
+        return new_ala_job
 
-    def expunge(self, job):
-        self._db_service.expunge(job)
-        return
+    def update(self, job, **kwargs):
 
-    def update(self, job):
-        job = self._db_service.update(job)
+        if 'lsid' in kwargs:
+            job.lsid = kwargs['lsid']
+        if 'dataset_id' in kwargs:
+            job.dataset_id = kwargs['dataset_id']
+        if 'status' in kwargs:
+            job.status = kwargs['status']
+        if 'submitted_time' in kwargs:
+            job.submitted_time = kwargs['submitted_time']
+        if 'start_time' in kwargs:
+            job.start_time = kwargs['start_time']
+        if 'end_time' in kwargs:
+            job.end_time = kwargs['end_time']
+        if 'attempts' in kwargs:
+            job.attempts = kwargs['attempts']
+
+        session = self._session_maker.generate_session()
+        session.add(job)
+        session.flush()
+        logging.info('Updated ALAJob with id %s', job.id)
+        session.expunge(job)
+        transaction.commit()
         return job
-
-    def updateStatus(self, job, new_status):
-        job.status = new_status
-        return self.update(job)
-
-    def updateStartTime(self, job):
-        job.start_time = datetime.datetime.now()
-        return self.update(job)
-
-    def updateEndTime(self, job):
-        job.end_time = datetime.datetime.now()
-        return self.update(job)
-
-    def incrementAttempts(self, job):
-        job.attempts += 1
-        return self.update(job)

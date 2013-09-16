@@ -1,18 +1,16 @@
+import datetime
 import io
 import logging
 import zlib
-import time
 from data_mover.endpoints.protocols import http_get
-from data_mover import (FILE_MANAGER, SESSION_GENERATOR,)
-from data_mover.dao.generic_dao import GenericDAO
-from data_mover.dao.ala_job_dao import ALAJobDAO
+from data_mover import (FILE_MANAGER, ALA_JOB_DAO)
 
 
 class ALAService():
 
     _logger = logging.getLogger(__name__)
     _file_manager = FILE_MANAGER
-    _session_generator = SESSION_GENERATOR
+    _ala_job_dao = ALA_JOB_DAO
 
     # URL to ALA. Substitute {$lsid} for the LSID
     url = "http://biocache.ala.org.au/ws/webportal/occurrences.gz?q=lsid:${lsid}&fq=geospatial_kosher:true&fl=raw_taxon_name,longitude,latitude&pageSize=999999999"
@@ -22,17 +20,17 @@ class ALAService():
         Downloads Species Occurrence data from ALA (Atlas of Living Australia) based on an LSID (Life Science Identifier)
         :param lsid: the lsid of the species to download occurrence data for
         """
-        self._logger.info("Obtaining occurrence data from ALA for LSID %s", lsid)
         url = ALAService.url.replace("${lsid}", lsid)
         content = http_get(url)
-        self._logger.info("Completed download of raw occurrence data form ALA for LSID %s", lsid)
-        if content is not None:
-            d = zlib.decompressobj(16 + zlib.MAX_WBITS)
-            path = self._file_manager.ala_file_manager.addNewFile(lsid, d.decompress(content))
-            self._normalizeOccurrence(path)
-            return True
-        else:
+        if content is None:
+            self._logger.warning("Could not download occurrence data from ALA for LSID %s", lsid)
             return False
+
+        self._logger.info("Completed download of raw occurrence data form ALA for LSID %s", lsid)
+        d = zlib.decompressobj(16 + zlib.MAX_WBITS)
+        path = self._file_manager.ala_file_manager.addNewFile(lsid, d.decompress(content))
+        self._normalizeOccurrence(path)
+        return True
 
     def _normalizeOccurrence(self, file_path):
         """
@@ -42,14 +40,14 @@ class ALAService():
            SPPCODE,LNGDEC,LATDEC
          :param file_path: the path to the occurrence CSV file to normalize
         """
-        with io.open(file_path, mode='r+') as file:
-            lines = file.readlines()
-            file.seek(0)
-            file.truncate()
+        with io.open(file_path, mode='r+') as f:
+            lines = f.readlines()
+            f.seek(0)
+            f.truncate()
             newHeader = lines[0].replace("raw_taxon_name", "SPPCODE").replace("longitude", "LNGDEC").replace("latitude", "LATDEC")
             lines[0] = newHeader
             for line in lines:
-                file.write(line)
+                f.write(line)
 
     def worker(self, job):
         """
@@ -57,29 +55,20 @@ class ALAService():
         A new database service and database session is required since it's on a different process.
         If the get fails 3 times, then the job fails.
         :param job: An ALAJob
-        :return:
         """
 
-        new_session = self._session_generator.generate_session()
-        database_service = GenericDAO(new_session)
-        ala_job_service = ALAJobDAO(database_service)
+        now = datetime.datetime.now()
 
-        job = ala_job_service.updateStartTime(job)
-        job = ala_job_service.updateStatus(job, "DOWNLOADING")
-
-        download_success = self.getOccurrenceByLSID(job.lsid)
-        job = ala_job_service.incrementAttempts(job)
-
-        while not download_success and job.attempts < 3:
-            time.sleep(10)
+        download_success = False
+        while not download_success and job.attempts <= 3:
+            attempt = job.attempts + 1
+            self._logger.info('Attempt %s to download LSID %s from ALA', attempt, job.lsid)
+            job = self._ala_job_dao.update(job, start_time=now, status='DOWNLOADING', attempts=attempt)
             download_success = self.getOccurrenceByLSID(job.lsid)
-            job = ala_job_service.incrementAttempts(job)
-
-        job = ala_job_service.updateEndTime(job)
 
         if download_success:
-            ala_job_service.updateStatus(job, "COMPLETE")
+            new_status = 'COMPLETE'
         else:
-            ala_job_service.updateStatus(job, "FAIL")
+            new_status = 'FAIL'
 
-        return
+        self._ala_job_dao.update(job, status=new_status, end_time=datetime.datetime.now())
