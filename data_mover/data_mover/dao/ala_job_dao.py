@@ -1,7 +1,7 @@
 from data_mover.models.ala_job import ALAJob
 import datetime
 
-class ALAJobService:
+class ALAJobDAO:
 
     def __init__(self, service):
         self._db_service = service

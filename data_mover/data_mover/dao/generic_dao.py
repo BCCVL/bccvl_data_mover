@@ -2,7 +2,7 @@ import logging
 import transaction
 
 
-class DatabaseService:
+class GenericDAO:
 
     def __init__(self, session):
         self._logger = logging.getLogger(__name__)

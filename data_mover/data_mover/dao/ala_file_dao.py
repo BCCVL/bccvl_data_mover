@@ -1,7 +1,7 @@
 from data_mover.models.ala_file import ALAFile
 
 
-class ALAFileService:
+class ALAFileDAO:
 
     def __init__(self, service):
         self._db_service = service

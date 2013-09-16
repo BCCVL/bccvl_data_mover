@@ -41,20 +41,3 @@ class BaseFileManager:
         destination = os.path.join(self.directory, name + self.fileSuffix)
         if os.path.isfile(destination):
             os.remove(destination)
-
-
-class ALAFileManager(BaseFileManager):
-    def __init__(self, directory):
-        BaseFileManager.__init__(self)
-        self.directory = directory
-        self.fileSuffix = '.csv'
-
-
-class FileManager:
-    def __init__(self):
-        self.data_directory = None
-        self.ala_file_manager = None
-
-    def configure(self, settings, key):
-        self.data_directory = settings[key + 'data_directory']
-        self.ala_file_manager = ALAFileManager(settings[key + 'ala_data_directory'])

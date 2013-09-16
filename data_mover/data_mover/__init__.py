@@ -13,16 +13,16 @@ from sqlalchemy.orm import (
 
 DBSession = scoped_session(sessionmaker(extension=ZopeTransactionExtension()))
 
-from data_mover.database_services.database_service import DatabaseService
-from data_mover.database_services.ala_job_service import ALAJobService
-from data_mover.database_services.ala_file_service import ALAFileService
-from data_mover.services.file_manager import FileManager
-from data_mover.database_services.session_generator import SessionGenerator
+from data_mover.dao.generic_dao import GenericDAO
+from data_mover.dao.ala_job_dao import ALAJobDAO
+from data_mover.dao.ala_file_dao import ALAFileDAO
+from data_mover.dao.session_generator import SessionGenerator
+from data_mover.files.file_manager import FileManager
 
 ### DATABASE AND MODEL SERVICES ###
-DB_SERVICE = DatabaseService(DBSession)
-ALA_JOB_SERVICE = ALAJobService(DB_SERVICE)
-ALA_FILE_SERVICE = ALAFileService(DB_SERVICE)
+DB_SERVICE = GenericDAO(DBSession)
+ALA_JOB_SERVICE = ALAJobDAO(DB_SERVICE)
+ALA_FILE_SERVICE = ALAFileDAO(DB_SERVICE)
 SESSION_GENERATOR = SessionGenerator()
 
 ### SERVICES AND MANAGERS ###

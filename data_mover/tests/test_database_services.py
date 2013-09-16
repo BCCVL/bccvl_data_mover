@@ -1,6 +1,6 @@
 import unittest
 from mock import MagicMock
-from data_mover.database_services.database_service import DatabaseService
+from data_mover.dao.generic_dao import GenericDAO
 from data_mover.models.ala_job import ALAJob
 
 
@@ -12,7 +12,7 @@ class TestDatabaseServices(unittest.TestCase):
 
         new_job = ALAJob(lsid)
 
-        toTest = DatabaseService(None)
+        toTest = GenericDAO(None)
 
         toTest._dbSession = MagicMock()
         toTest._dbSession.add = MagicMock()
@@ -27,7 +27,7 @@ class TestDatabaseServices(unittest.TestCase):
         self.assertEqual(None, out_job.dataset_id)
 
     def testAddFail(self):
-        toTest = DatabaseService(None)
+        toTest = GenericDAO(None)
 
         toTest._dbSession = MagicMock()
         toTest._dbSession.add = MagicMock(side_effect=Exception('Some Forced Exception'))
@@ -40,7 +40,7 @@ class TestDatabaseServices(unittest.TestCase):
     def testFindByIdSuccess(self):
         lsid = 'urn:lsid:biodiversity.org.au:afd.taxon:31a9b8b8-4e8f-4343-a15f-2ed24e0bf1ae'
 
-        toTest = DatabaseService(None)
+        toTest = GenericDAO(None)
 
         toTest._dbSession = MagicMock()
         toTest._dbSession.query.get = MagicMock()
@@ -58,7 +58,7 @@ class TestDatabaseServices(unittest.TestCase):
 
         new_job = ALAJob(lsid)
 
-        toTest = DatabaseService(None)
+        toTest = GenericDAO(None)
 
         toTest._dbSession = MagicMock()
         toTest._dbSession.query = MagicMock(side_effect=Exception('Some Forced Exception'))
@@ -72,7 +72,7 @@ class TestDatabaseServices(unittest.TestCase):
 
         new_job = ALAJob(lsid)
 
-        toTest = DatabaseService(None)
+        toTest = GenericDAO(None)
 
         toTest._dbSession = MagicMock()
         toTest._dbSession.add = MagicMock()
@@ -92,7 +92,7 @@ class TestDatabaseServices(unittest.TestCase):
 
         new_job = ALAJob(lsid)
 
-        toTest = DatabaseService(None)
+        toTest = GenericDAO(None)
 
         toTest._dbSession = MagicMock()
         toTest._dbSession.add = MagicMock(side_effect=Exception('Some Forced Exception'))
@@ -109,7 +109,7 @@ class TestDatabaseServices(unittest.TestCase):
 
         new_job = ALAJob(lsid)
 
-        toTest = DatabaseService(None)
+        toTest = GenericDAO(None)
 
         toTest._dbSession = MagicMock()
         toTest._dbSession.expunge = MagicMock()

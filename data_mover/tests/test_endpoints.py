@@ -4,9 +4,8 @@ import io
 import shutil
 import tempfile
 import os
-from mock import MagicMock
 from data_mover.services.ala_service import ALAService
-from data_mover.services.file_manager import ALAFileManager
+from data_mover.files.ala_file_manager import ALAFileManager
 
 
 class TestALAService(unittest.TestCase):

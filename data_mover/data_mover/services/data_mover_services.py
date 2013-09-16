@@ -2,8 +2,6 @@ from pyramid_xmlrpc import XMLRPCView
 from data_mover.models.error_messages import *
 from data_mover import (ALA_JOB_SERVICE,)
 from data_mover.services.ala_service import ALAService
-import multiprocessing
-import logging
 import threading
 
 

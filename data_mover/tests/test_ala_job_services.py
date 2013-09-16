@@ -2,7 +2,7 @@ import unittest
 import datetime
 from mock import MagicMock
 from data_mover.models.ala_job import ALAJob
-from data_mover.database_services.ala_job_service import ALAJobService
+from data_mover.dao.ala_job_dao import ALAJobDAO
 
 
 class TestAlaJobServices(unittest.TestCase):
@@ -10,7 +10,7 @@ class TestAlaJobServices(unittest.TestCase):
     def testCreateNewJob(self):
         lsid = 'urn:lsid:biodiversity.org.au:afd.taxon:31a9b8b8-4e8f-4343-a15f-2ed24e0bf1ae'
 
-        toTest = ALAJobService(None)
+        toTest = ALAJobDAO(None)
         toTest._db_service = MagicMock()
         toTest._db_service.add = MagicMock()
         toTest._db_service.add.return_value = ALAJob(lsid)
@@ -24,7 +24,7 @@ class TestAlaJobServices(unittest.TestCase):
     def testFindById(self):
         lsid = 'urn:lsid:biodiversity.org.au:afd.taxon:31a9b8b8-4e8f-4343-a15f-2ed24e0bf1ae'
 
-        toTest = ALAJobService(None)
+        toTest = ALAJobDAO(None)
         toTest._db_service = MagicMock()
         toTest._db_service.findById = MagicMock()
         toTest._db_service.findById.return_value = ALAJob(lsid)
@@ -38,7 +38,7 @@ class TestAlaJobServices(unittest.TestCase):
     def testExpunge(self):
         lsid = 'urn:lsid:biodiversity.org.au:afd.taxon:31a9b8b8-4e8f-4343-a15f-2ed24e0bf1ae'
 
-        toTest = ALAJobService(None)
+        toTest = ALAJobDAO(None)
         toTest._db_service = MagicMock()
         toTest._db_service.expunge = MagicMock()
         job = ALAJob(lsid)
@@ -50,7 +50,7 @@ class TestAlaJobServices(unittest.TestCase):
 
         updated_lsid = 'urn:lsid:biodiversity.org.au:afd.taxon:31a9b8b8-4e8f-4343-a15f-2ed24e11111'
 
-        toTest = ALAJobService(None)
+        toTest = ALAJobDAO(None)
         toTest._db_service = MagicMock()
         toTest._db_service.update = MagicMock()
         toTest._db_service.update.return_value = ALAJob(updated_lsid)
@@ -70,7 +70,7 @@ class TestAlaJobServices(unittest.TestCase):
         expected = ALAJob(lsid)
         expected.status = new_status
 
-        toTest = ALAJobService(None)
+        toTest = ALAJobDAO(None)
         toTest._db_service = MagicMock()
         toTest._db_service.update = MagicMock()
         toTest._db_service.update.return_value = expected
@@ -90,7 +90,7 @@ class TestAlaJobServices(unittest.TestCase):
         expected = ALAJob(lsid)
         expected.start_time = time
 
-        toTest = ALAJobService(None)
+        toTest = ALAJobDAO(None)
         toTest._db_service = MagicMock()
         toTest._db_service.update = MagicMock()
         toTest._db_service.update.return_value = expected
@@ -110,7 +110,7 @@ class TestAlaJobServices(unittest.TestCase):
         expected = ALAJob(lsid)
         expected.end_time = time
 
-        toTest = ALAJobService(None)
+        toTest = ALAJobDAO(None)
         toTest._db_service = MagicMock()
         toTest._db_service.update = MagicMock()
         toTest._db_service.update.return_value = expected
@@ -129,7 +129,7 @@ class TestAlaJobServices(unittest.TestCase):
         expected = ALAJob(lsid)
         expected.attempts = 1
 
-        toTest = ALAJobService(None)
+        toTest = ALAJobDAO(None)
         toTest._db_service = MagicMock()
         toTest._db_service.update = MagicMock()
         toTest._db_service.update.return_value = expected

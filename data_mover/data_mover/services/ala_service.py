@@ -4,8 +4,8 @@ import zlib
 import time
 from data_mover.endpoints.protocols import http_get
 from data_mover import (FILE_MANAGER, SESSION_GENERATOR,)
-from data_mover.database_services.database_service import DatabaseService
-from data_mover.database_services.ala_job_service import ALAJobService
+from data_mover.dao.generic_dao import GenericDAO
+from data_mover.dao.ala_job_dao import ALAJobDAO
 
 
 class ALAService():
@@ -61,8 +61,8 @@ class ALAService():
         """
 
         new_session = self._session_generator.generate_session()
-        database_service = DatabaseService(new_session)
-        ala_job_service = ALAJobService(database_service)
+        database_service = GenericDAO(new_session)
+        ala_job_service = ALAJobDAO(database_service)
 
         job = ala_job_service.updateStartTime(job)
         job = ala_job_service.updateStatus(job, "DOWNLOADING")

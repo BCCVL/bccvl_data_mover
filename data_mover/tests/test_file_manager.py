@@ -1,9 +1,5 @@
 import unittest
-from data_mover.services.file_manager import *
-import io
-import shutil
-import tempfile
-import os
+from data_mover.files.file_manager import FileManager
 
 
 class TestFileManager(unittest.TestCase):
