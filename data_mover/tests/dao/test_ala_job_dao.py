@@ -4,7 +4,7 @@ from mock import MagicMock
 from mock import ANY
 from data_mover.models.ala_job import ALAJob
 from data_mover.dao.ala_job_dao import ALAJobDAO
-
+from sqlalchemy.orm import scoped_session
 
 class TestAlaJobDAO(unittest.TestCase):
 
@@ -13,7 +13,7 @@ class TestAlaJobDAO(unittest.TestCase):
 
         toTest = ALAJobDAO(None)
         toTest._session_maker = MagicMock()
-        toTest._session_maker.generate_session.return_value = MagicMock()
+        toTest._session_maker.generate_session.return_value = MagicMock(spec=scoped_session)
 
         new_job = toTest.create_new(lsid)
 
@@ -27,7 +27,7 @@ class TestAlaJobDAO(unittest.TestCase):
         lsid = 'urn:lsid:biodiversity.org.au:afd.taxon:31a9b8b8-4e8f-4343-a15f-2ed24e0bf1ae'
 
         session_maker = MagicMock()
-        session = MagicMock()
+        session = MagicMock(spec=scoped_session)
         toTest = ALAJobDAO(session_maker)
 
         session_maker.generate_session.return_value = session
@@ -45,7 +45,7 @@ class TestAlaJobDAO(unittest.TestCase):
         existing_job = ALAJob(lsid)
 
         session_maker = MagicMock()
-        session = MagicMock()
+        session = MagicMock(spec=scoped_session)
         toTest = ALAJobDAO(session_maker)
 
         new_lsid = "a new lsid"

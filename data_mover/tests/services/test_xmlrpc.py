@@ -2,7 +2,9 @@ import unittest
 import logging
 from mock import MagicMock
 from data_mover.services.data_mover_services import DataMoverServices
+from data_mover.services.ala_service import ALAService
 from data_mover.models.ala_job import ALAJob
+from sqlalchemy.orm import scoped_session
 
 
 class TestXMLRPC(unittest.TestCase):
@@ -27,9 +29,9 @@ class TestXMLRPC(unittest.TestCase):
 
         service = DataMoverServices(context, request)
 
-        session = MagicMock()
+        session = MagicMock(spec=scoped_session)
         service._ala_job_dao._session_maker.generate_session = MagicMock(return_value=session)
-        service._ala_service = MagicMock()
+        service._ala_service = MagicMock(spec=ALAService)
         response = service.pullOccurrenceFromALA(lsid)
         self.assertEqual('PENDING', response['status'])
         service._ala_job_dao._session_maker.generate_session.assert_called()
