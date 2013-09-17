@@ -19,6 +19,7 @@ class TestALAService(unittest.TestCase):
         alaService = ALAService()
 
         alaService._ala_occurrence_dao.create_new = MagicMock()
+        alaService._ala_metadata_dao.create_new = MagicMock()
 
         temp_dir = tempfile.mkdtemp(suffix=__name__)
 
@@ -48,6 +49,7 @@ class TestALAService(unittest.TestCase):
 
         expected_path = '%s/%s.csv' % (ala_dir, lsid)
         alaService._ala_occurrence_dao.create_new.assert_called_with(expected_path, lsid)
+        alaService._ala_metadata_dao.create_new.assert_called()
 
         # Remove temp dir
         shutil.rmtree(temp_dir)

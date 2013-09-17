@@ -18,14 +18,14 @@ class BaseFileManager:
         self._createParent(destination)
         shutil.move(path, destination)
 
-    def addNewFile(self, name, content):
+    def addNewFile(self, name, content, fileSuffix):
         """
          Adds the provided file content to the file manager.
          :param name: the 'internal' name of the file.
          :param content the content of the file to store.
          :rtype : The path to the file that was written
         """
-        destination = os.path.join(self.directory, name + self.fileSuffix)
+        destination = os.path.join(self.directory, name + fileSuffix)
         self._createParent(destination)
         f = io.open(destination, mode='wb')
         f.write(content)

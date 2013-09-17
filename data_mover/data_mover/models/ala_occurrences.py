@@ -5,13 +5,8 @@ from sqlalchemy import (
     Integer,
     Text,
     DateTime,
+    Float,
     )
-
-STATUS_PENDING = 'PENDING'
-STATUS_ACCEPTED = 'ACCEPTED'
-STATUS_COMPLETED = 'COMPLETED'
-STATUS_FAILED = 'FAILED'
-STATUS_DOWNLOAD = 'DOWNLOADING'
 
 
 class ALAOccurrence(Base):
