@@ -13,6 +13,7 @@ STATUS_COMPLETED = 'COMPLETED'
 STATUS_FAILED = 'FAILED'
 STATUS_DOWNLOAD = 'DOWNLOADING'
 
+
 class ALAJob(Base):
     __tablename__ = 'ala_jobs'
 

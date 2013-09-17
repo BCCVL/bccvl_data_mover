@@ -32,6 +32,7 @@ class TestXMLRPC(unittest.TestCase):
         service._ala_service = MagicMock()
         response = service.pullOccurrenceFromALA(lsid)
         self.assertEqual('PENDING', response['status'])
+        service._ala_job_dao._session_maker.generate_session.assert_called()
 
     def testXMLCheckALAJobStatus(self):
         lsid = 'urn:lsid:biodiversity.org.au:afd.taxon:31a9b8b8-4e8f-4343-a15f-2ed24e0bf1ae'

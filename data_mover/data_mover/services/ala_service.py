@@ -2,8 +2,9 @@ import datetime
 import io
 import logging
 import zlib
+import time
 from data_mover.endpoints.protocols import http_get
-from data_mover import (FILE_MANAGER, ALA_JOB_DAO)
+from data_mover import (FILE_MANAGER, ALA_JOB_DAO, ALA_OCCURRENCE_DAO,)
 
 
 class ALAService():
@@ -11,6 +12,7 @@ class ALAService():
     _logger = logging.getLogger(__name__)
     _file_manager = FILE_MANAGER
     _ala_job_dao = ALA_JOB_DAO
+    _ala_occurrence_dao = ALA_OCCURRENCE_DAO
 
     # URL to ALA. Substitute {$lsid} for the LSID
     url = "http://biocache.ala.org.au/ws/webportal/occurrences.gz?q=lsid:${lsid}&fq=geospatial_kosher:true&fl=raw_taxon_name,longitude,latitude&pageSize=999999999"
@@ -30,6 +32,7 @@ class ALAService():
         d = zlib.decompressobj(16 + zlib.MAX_WBITS)
         path = self._file_manager.ala_file_manager.addNewFile(lsid, d.decompress(content))
         self._normalizeOccurrence(path)
+        self._ala_occurrence_dao.create_new(path, lsid)
         return True
 
     def _normalizeOccurrence(self, file_path):
@@ -60,10 +63,12 @@ class ALAService():
         now = datetime.datetime.now()
 
         download_success = False
-        while not download_success and job.attempts <= 3:
+        while not download_success and job.attempts <= 2:
             attempt = job.attempts + 1
             self._logger.info('Attempt %s to download LSID %s from ALA', attempt, job.lsid)
             job = self._ala_job_dao.update(job, start_time=now, status='DOWNLOADING', attempts=attempt)
+            if job.attempts > 0:
+                time.sleep(10) # need to define this
             download_success = self.getOccurrenceByLSID(job.lsid)
 
         if download_success:

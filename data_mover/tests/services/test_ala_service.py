@@ -4,6 +4,7 @@ import io
 import shutil
 import tempfile
 import os
+from mock import MagicMock
 from data_mover.services.ala_service import ALAService
 from data_mover.files.ala_file_manager import ALAFileManager
 
@@ -16,6 +17,8 @@ class TestALAService(unittest.TestCase):
     def testAlaOccurrence(self):
         lsid = 'urn:lsid:biodiversity.org.au:afd.taxon:31a9b8b8-4e8f-4343-a15f-2ed24e0bf1ae'
         alaService = ALAService()
+
+        alaService._ala_occurrence_dao.create_new = MagicMock()
 
         temp_dir = tempfile.mkdtemp(suffix=__name__)
 
@@ -42,6 +45,9 @@ class TestALAService(unittest.TestCase):
             self.assertEqual(1, header.count('SPPCODE'))
             self.assertEqual(1, header.count('LNGDEC'))
             self.assertEqual(1, header.count('LATDEC'))
+
+        expected_path = '%s/%s.csv' % (ala_dir, lsid)
+        alaService._ala_occurrence_dao.create_new.assert_called_with(expected_path, lsid)
 
         # Remove temp dir
         shutil.rmtree(temp_dir)

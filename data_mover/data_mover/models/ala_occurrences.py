@@ -13,8 +13,9 @@ STATUS_COMPLETED = 'COMPLETED'
 STATUS_FAILED = 'FAILED'
 STATUS_DOWNLOAD = 'DOWNLOADING'
 
-class ALAFile(Base):
-    __tablename__ = 'ala_files'
+
+class ALAOccurrence(Base):
+    __tablename__ = 'ala_occurrences'
 
     id = Column(Integer, primary_key=True)
     path = Column(Text, nullable=False)

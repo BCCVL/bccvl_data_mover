@@ -14,14 +14,14 @@ from sqlalchemy.orm import (
 DBSession = scoped_session(sessionmaker(extension=ZopeTransactionExtension()))
 
 from data_mover.dao.ala_job_dao import ALAJobDAO
-from data_mover.dao.ala_file_dao import ALAFileDAO
+from data_mover.dao.ala_occurrences_dao import ALAOccurrenceDAO
 from data_mover.dao.session_generator import SessionGenerator
 from data_mover.files.file_manager import FileManager
 
 ### DATABASE AND MODEL SERVICES ###
 SESSION_MAKER = SessionGenerator()
 ALA_JOB_DAO = ALAJobDAO(SESSION_MAKER)
-ALA_FILE_DAO = ALAFileDAO(SESSION_MAKER)
+ALA_OCCURRENCE_DAO = ALAOccurrenceDAO(SESSION_MAKER)
 
 ### SERVICES AND MANAGERS ###
 FILE_MANAGER = FileManager()

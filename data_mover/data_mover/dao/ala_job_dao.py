@@ -2,6 +2,7 @@ from data_mover.models.ala_job import ALAJob
 import logging
 import transaction
 
+
 class ALAJobDAO:
 
     def __init__(self, session_maker):
