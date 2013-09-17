@@ -27,14 +27,15 @@ class TestXMLRPC(unittest.TestCase):
 
         service = DataMoverServices(context, request)
 
-        service._alaJobService.createNewJob = MagicMock(return_value=newJob)
-        service._alaJobService.expunge = MagicMock()
+        service._ala_job_dao._session_maker.generate_session = MagicMock()
+        service._ala_job_dao.createNewJob = MagicMock(return_value=newJob)
+        service._ala_job_dao.expunge = MagicMock()
         service._backgroundJob = MagicMock()
         service._backgroundJob.start = MagicMock()
 
 
         response = service.pullOccurrenceFromALA(lsid)
-        self.assertEqual('PENDING', response['status'])
+        self.assertEqual('DOWNLOADING', response['status'])
 
     def testXMLCheckALAJobStatus(self):
         lsid = 'urn:lsid:biodiversity.org.au:afd.taxon:31a9b8b8-4e8f-4343-a15f-2ed24e0bf1ae'
@@ -44,7 +45,7 @@ class TestXMLRPC(unittest.TestCase):
 
         job = ALAJob(lsid)
         job.id = 1
-        service._alaJobService.findById = MagicMock(return_value=job)
+        service._ala_job_dao.findById = MagicMock(return_value=job)
 
         response = service.checkALAJobStatus(1)
         self.assertEqual(1, response['id'])
@@ -58,7 +59,7 @@ class TestXMLRPC(unittest.TestCase):
 
         job = ALAJob(lsid)
         job.id = 1
-        service._alaJobService.findById = MagicMock(return_value=job)
+        service._ala_job_dao.findById = MagicMock(return_value=job)
 
         response = service.checkALAJobStatus()
         self.assertEqual('REJECTED', response['status'])
@@ -72,7 +73,7 @@ class TestXMLRPC(unittest.TestCase):
 
         job = ALAJob(lsid)
         job.id = 1
-        service._alaJobService.findById = MagicMock(return_value=job)
+        service._ala_job_dao.findById = MagicMock(return_value=job)
 
         response = service.checkALAJobStatus('one')
         self.assertEqual('REJECTED', response['status'])
