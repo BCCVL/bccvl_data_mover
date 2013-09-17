@@ -1,5 +1,4 @@
 from data_mover.models.ala_job import ALAJob
-import datetime
 import logging
 import transaction
 

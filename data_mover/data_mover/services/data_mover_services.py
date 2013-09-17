@@ -11,7 +11,7 @@ class DataMoverServices(XMLRPCView):
     See https://wiki.intersect.org.au/display/BCCVL/Data+Mover+and+Data+Movement+API
     """
 
-    _alaService = ALAService()
+    _ala_service = ALAService()
     _ala_job_dao = ALA_JOB_DAO
 
     def pullOccurrenceFromALA(self, lsid=None):
@@ -24,7 +24,7 @@ class DataMoverServices(XMLRPCView):
             job = self._ala_job_dao.create_new(lsid)
 
             thread_name = 'ala-get-' + lsid
-            thread = threading.Thread(target=self._alaService.worker, args=(job,), name=thread_name)
+            thread = threading.Thread(target=self._ala_service.worker, args=(job,), name=thread_name)
             thread.start()
 
             id = job.id

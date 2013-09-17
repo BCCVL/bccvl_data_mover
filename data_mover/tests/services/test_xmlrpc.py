@@ -27,15 +27,11 @@ class TestXMLRPC(unittest.TestCase):
 
         service = DataMoverServices(context, request)
 
-        service._ala_job_dao._session_maker.generate_session = MagicMock()
-        service._ala_job_dao.createNewJob = MagicMock(return_value=newJob)
-        service._ala_job_dao.expunge = MagicMock()
-        service._backgroundJob = MagicMock()
-        service._backgroundJob.start = MagicMock()
-
-
+        session = MagicMock()
+        service._ala_job_dao._session_maker.generate_session = MagicMock(return_value=session)
+        service._ala_service = MagicMock()
         response = service.pullOccurrenceFromALA(lsid)
-        self.assertEqual('DOWNLOADING', response['status'])
+        self.assertEqual('PENDING', response['status'])
 
     def testXMLCheckALAJobStatus(self):
         lsid = 'urn:lsid:biodiversity.org.au:afd.taxon:31a9b8b8-4e8f-4343-a15f-2ed24e0bf1ae'
