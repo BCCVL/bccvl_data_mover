@@ -10,13 +10,12 @@ class ALAOccurrenceDAO:
         self._session_maker = session_maker
         self._logger = logging.getLogger(__name__)
 
-    def create_new(self, path, lsid):
+    def create_new(self, lsid, occurrence_path, metadata_path):
         session = self._session_maker.generate_session()
-        absolute_path = os.path.abspath(path)
-        new_ala_file = ALAOccurrence(absolute_path, lsid)
+        new_ala_file = ALAOccurrence(lsid, os.path.abspath(occurrence_path), os.path.abspath(metadata_path))
         session.add(new_ala_file)
         session.flush()
-        logging.info('Added new ALAJob to database with id %s', new_ala_file.id)
+        logging.info('Added new ALA occurrence to database with id %s', new_ala_file.id)
         session.expunge(new_ala_file)
         transaction.commit()
         return new_ala_file

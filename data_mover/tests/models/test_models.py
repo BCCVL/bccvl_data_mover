@@ -30,8 +30,8 @@ class TestModels(unittest.TestCase):
 
     def testALAFileModel(self):
         lsid = 'urn:lsid:biodiversity.org.au:afd.taxon:31a9b8b8-4e8f-4343-a15f-2ed24e0bf1ae'
-        ala_directory = 'sample/ALA'
-        path = '%s/%s' % (ala_directory, lsid)
-        ala_file = ALAOccurrence(path, lsid)
-        self.assertEqual(path, ala_file.path)
-        self.assertEqual(lsid, ala_file.lsid)
+        occurrence_path = "some/path/to/occurrence.csv"
+        metadata_path = "some/path/to/metadata.json"
+        ala_file = ALAOccurrence(lsid, occurrence_path, metadata_path)
+        self.assertEqual(occurrence_path, ala_file.occurrence_path)
+        self.assertEqual(metadata_path, ala_file.metadata_path)

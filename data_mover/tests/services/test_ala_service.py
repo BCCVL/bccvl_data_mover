@@ -19,7 +19,6 @@ class TestALAService(unittest.TestCase):
         alaService = ALAService()
 
         alaService._ala_occurrence_dao.create_new = MagicMock()
-        alaService._ala_metadata_dao.create_new = MagicMock()
 
         temp_dir = tempfile.mkdtemp(suffix=__name__)
 
@@ -38,6 +37,10 @@ class TestALAService(unittest.TestCase):
         occurrence_file = os.path.join(ala_dir, lsid + ".csv")
         self.assertTrue(os.path.isfile(occurrence_file))
 
+        # The metadata file exists
+        metadata_file = os.path.join(ala_dir, lsid + ".json")
+        self.assertTrue(os.path.isfile(metadata_file))
+
         # The file has been normalized
         with io.open(occurrence_file, mode='r+') as f:
             lines = f.readlines()
@@ -47,9 +50,9 @@ class TestALAService(unittest.TestCase):
             self.assertEqual(1, header.count('LNGDEC'))
             self.assertEqual(1, header.count('LATDEC'))
 
-        expected_path = '%s/%s.csv' % (ala_dir, lsid)
-        alaService._ala_occurrence_dao.create_new.assert_called_with(expected_path, lsid)
-        alaService._ala_metadata_dao.create_new.assert_called()
+        expected_occurrence_path = '%s/%s.csv' % (ala_dir, lsid)
+        expected_metadata_path = '%s/%s.json' % (ala_dir, lsid)
+        alaService._ala_occurrence_dao.create_new.assert_called_with(lsid, expected_occurrence_path, expected_metadata_path)
 
         # Remove temp dir
         shutil.rmtree(temp_dir)
