@@ -33,7 +33,7 @@ class ALAService():
 
         self._logger.info("Completed download of raw occurrence data form ALA for LSID %s", lsid)
         d = zlib.decompressobj(16 + zlib.MAX_WBITS)
-        occurrence_path = self._file_manager.ala_file_manager.addNewFile(lsid, d.decompress(content), '.csv')
+        occurrence_path = self._file_manager.ala_file_manager.add_new_file(lsid, d.decompress(content), '.csv')
         self._normalizeOccurrence(occurrence_path)
 
         # Get occurrence metadata
@@ -42,7 +42,7 @@ class ALAService():
         if content is None:
             self._logger.warning("Could not download occurrence metadata from ALA for LSID %s", lsid)
             return False
-        metadata_path = self._file_manager.ala_file_manager.addNewFile(lsid, content, '.json')
+        metadata_path = self._file_manager.ala_file_manager.add_new_file(lsid, content, '.json')
         ala_occurrence = self._ala_occurrence_dao.create_new(lsid, occurrence_path, metadata_path)
         return True
 

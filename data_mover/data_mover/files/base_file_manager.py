@@ -8,31 +8,32 @@ class BaseFileManager:
         self.directory = None
         self.fileSuffix = None
 
-    def addExistingFile(self, name, path):
+    def add_existing_file(self, name, path):
         """
          Adds the provided file path to the file manager.
          :param name: the 'internal' name of the file.
          :param path: the path to the file to store. Note this will perform a MOVE and the original file will no longer exist.
         """
         destination = os.path.join(self.directory, name + self.fileSuffix)
-        self._createParent(destination)
+        self._create_parent(destination)
         shutil.move(path, destination)
 
-    def addNewFile(self, name, content, fileSuffix):
+    def add_new_file(self, name, content, fileSuffix):
         """
          Adds the provided file content to the file manager.
          :param name: the 'internal' name of the file.
          :param content the content of the file to store.
-         :rtype : The path to the file that was written
+         :param fileSuffix: the suffix of the file to store
+         :return : The absolute path to the file that was written
         """
         destination = os.path.join(self.directory, name + fileSuffix)
-        self._createParent(destination)
+        self._create_parent(destination)
         f = io.open(destination, mode='wb')
         f.write(content)
         f.close()
-        return destination
+        return os.path.abspath(destination)
 
-    def _createParent(self, destination):
+    def _create_parent(self, destination):
         parent = os.path.dirname(destination)
         if not os.path.isdir(parent):
             os.makedirs(parent)

@@ -15,6 +15,9 @@ STATUS_DOWNLOAD = 'DOWNLOADING'
 
 
 class ALAJob(Base):
+    """
+     Represents a Job to fetch Occurrence data from ALA. Used to track the status of these jobs.
+    """
     __tablename__ = 'ala_jobs'
 
     id = Column(Integer, primary_key=True)
@@ -32,3 +35,13 @@ class ALAJob(Base):
         self.status = STATUS_PENDING
         self.submitted_time = datetime.datetime.now()
         self.attempts = 0
+
+    def __eq__(self, other):
+        if isinstance(other, ALAJob):
+            return self.id == other.id
+        return NotImplemented
+
+    def __ne__(self, other):
+        if isinstance(other, ALAJob):
+            return self.id != other.id
+        return NotImplemented

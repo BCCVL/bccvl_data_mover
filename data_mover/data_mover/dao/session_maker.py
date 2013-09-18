@@ -6,7 +6,7 @@ from sqlalchemy.orm import (
 from zope.sqlalchemy import ZopeTransactionExtension
 
 
-class SessionGenerator:
+class SessionMaker:
     def __init__(self):
         self._url = None
 

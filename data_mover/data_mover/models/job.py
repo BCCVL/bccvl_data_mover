@@ -33,3 +33,13 @@ class Job(Base):
         self.start_timestamp = None
         self.end_timestamp = None
         self.source = 'sample/sample_source'
+
+    def __eq__(self, other):
+        if isinstance(other, Job):
+            return self.id == other.id
+        return NotImplemented
+
+    def __ne__(self, other):
+        if isinstance(other, Job):
+            return self.id != other.id
+        return NotImplemented

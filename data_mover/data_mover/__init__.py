@@ -15,11 +15,11 @@ DBSession = scoped_session(sessionmaker(extension=ZopeTransactionExtension()))
 
 from data_mover.dao.ala_job_dao import ALAJobDAO
 from data_mover.dao.ala_occurrence_dao import ALAOccurrenceDAO
-from data_mover.dao.session_generator import SessionGenerator
+from data_mover.dao.session_maker import SessionMaker
 from data_mover.files.file_manager import FileManager
 
 ### DATABASE AND MODEL SERVICES ###
-SESSION_MAKER = SessionGenerator()
+SESSION_MAKER = SessionMaker()
 ALA_JOB_DAO = ALAJobDAO(SESSION_MAKER)
 ALA_OCCURRENCE_DAO = ALAOccurrenceDAO(SESSION_MAKER)
 

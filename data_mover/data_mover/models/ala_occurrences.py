@@ -29,3 +29,13 @@ class ALAOccurrence(Base):
         self.occurrence_path = occurrence_path
         self.metadata_path = metadata_path
         self.created_time = datetime.datetime.now()
+
+    def __eq__(self, other):
+        if isinstance(other, ALAOccurrence):
+            return self.id == other.id
+        return NotImplemented
+
+    def __ne__(self, other):
+        if isinstance(other, ALAOccurrence):
+            return self.id != other.id
+        return NotImplemented
