@@ -16,17 +16,17 @@ class TestALAService(unittest.TestCase):
 
     def testAlaOccurrence(self):
         lsid = 'urn:lsid:biodiversity.org.au:afd.taxon:31a9b8b8-4e8f-4343-a15f-2ed24e0bf1ae'
-        alaService = ALAService()
+        ala_service = ALAService()
 
-        alaService._ala_occurrence_dao.create_new = MagicMock()
+        ala_service._ala_occurrence_dao.create_new = MagicMock()
 
         temp_dir = tempfile.mkdtemp(suffix=__name__)
 
         # Directory is empty
         self.assertEqual(0, len(os.listdir(temp_dir)))
 
-        alaService._file_manager.ala_file_manager = ALAFileManager(temp_dir)
-        result = alaService.getOccurrenceByLSID(lsid)
+        ala_service._file_manager.ala_file_manager = ALAFileManager(temp_dir)
+        result = ala_service.getOccurrenceByLSID(lsid)
         self.assertTrue(result)
 
         # ALA directory exists
@@ -41,7 +41,7 @@ class TestALAService(unittest.TestCase):
         metadata_file = os.path.join(ala_dir, lsid + ".json")
         self.assertTrue(os.path.isfile(metadata_file))
 
-        # The file has been normalized
+        # The occurrence file has been normalized
         with io.open(occurrence_file, mode='r+') as f:
             lines = f.readlines()
             self.assertTrue(len(lines) > 1)
@@ -52,7 +52,7 @@ class TestALAService(unittest.TestCase):
 
         expected_occurrence_path = '%s/%s.csv' % (ala_dir, lsid)
         expected_metadata_path = '%s/%s.json' % (ala_dir, lsid)
-        alaService._ala_occurrence_dao.create_new.assert_called_with(lsid, expected_occurrence_path, expected_metadata_path)
+        ala_service._ala_occurrence_dao.create_new.assert_called_with(lsid, expected_occurrence_path, expected_metadata_path)
 
         # Remove temp dir
         shutil.rmtree(temp_dir)
