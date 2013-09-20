@@ -1,0 +1,64 @@
+import json
+import pprint
+import os
+import io
+from data_mover.domain.dataset import (Dataset, DatasetFile, DatasetProvenance)
+
+
+class ALADatasetFactory():
+
+    url = "http://bie.ala.org.au/species/${lsid}"
+
+    def generate_dataset(self, ala_occurrence):
+        """
+        Generates a dataset given an ALA occurrence object.
+        :param ala_occurrence:
+        :return: dataset:
+        """
+        imported_date = ala_occurrence.created_time.strftime('%m/%d/%Y')
+        url = self.url.replace("${lsid}", ala_occurrence.lsid)
+
+        occurrence_file = DatasetFile(ala_occurrence.occurrence_path, DatasetFile.TYPE_OCCURRENCES, os.path.getsize(ala_occurrence.occurrence_path))
+        metadata_file = DatasetFile(ala_occurrence.metadata_path, DatasetFile.TYPE_ATTRIBUTION, os.path.getsize(ala_occurrence.metadata_path))
+        files = [occurrence_file, metadata_file]
+
+        provenance = DatasetProvenance(DatasetProvenance.SOURCE_ALA, url, imported_date)
+
+        # Count number of occurrences
+        num_occurrences = self._count_num_of_occurrences(ala_occurrence.occurrence_path)
+
+        # Examine metadata json file
+        details = self._get_details_from_json(ala_occurrence.metadata_path)
+
+        if details['common_name'] is not None:
+            title = "%s (%s) occurrences" % (details['common_name'], details['scientific_name'])
+        else:
+            title = "%s occurrences" % (details['scientific_name'])
+
+        description = "Observed occurrences for %s (%s), imported from ALA on %s" % (details['common_name'], details['scientific_name'], imported_date)
+
+        ala_dataset = Dataset(title, description, num_occurrences, files, provenance)
+
+        return ala_dataset
+
+    def _count_num_of_occurrences(self, path):
+        with io.open(path, mode='r') as f:
+            lines = f.readlines()
+            num_of_occurrences = sum(1 for line in lines) - 1
+
+        return num_of_occurrences
+
+    def _get_details_from_json(self, path):
+        json_data = open(path)
+        metadata = json.load(json_data)
+        json_data.close()
+
+        scientific_name = metadata['taxonConcept']['nameString']
+
+        for record in metadata['commonNames']:
+            if record['nameString'] is not None:
+                common_name = record['nameString']
+                break
+
+        details = {'scientific_name': scientific_name, 'common_name': common_name}
+        return details

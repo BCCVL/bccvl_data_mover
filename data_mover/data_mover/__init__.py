@@ -17,11 +17,15 @@ from data_mover.dao.ala_job_dao import ALAJobDAO
 from data_mover.dao.ala_occurrence_dao import ALAOccurrenceDAO
 from data_mover.dao.session_maker import SessionMaker
 from data_mover.files.file_manager import FileManager
+from data_mover.factory.ala_dataset_factory import ALADatasetFactory
 
 ### DATABASE AND MODEL SERVICES ###
 SESSION_MAKER = SessionMaker()
 ALA_JOB_DAO = ALAJobDAO(SESSION_MAKER)
 ALA_OCCURRENCE_DAO = ALAOccurrenceDAO(SESSION_MAKER)
+
+## FACTORIES ##
+ALA_DATASET_FACTORY = ALADatasetFactory()
 
 ### SERVICES AND MANAGERS ###
 FILE_MANAGER = FileManager()

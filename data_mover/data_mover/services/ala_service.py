@@ -4,7 +4,7 @@ import logging
 import zlib
 import time
 from data_mover.endpoints.protocols import http_get
-from data_mover import (FILE_MANAGER, ALA_JOB_DAO, ALA_OCCURRENCE_DAO)
+from data_mover import (FILE_MANAGER, ALA_JOB_DAO, ALA_OCCURRENCE_DAO, ALA_DATASET_FACTORY)
 
 
 class ALAService():
@@ -13,6 +13,7 @@ class ALAService():
     _file_manager = FILE_MANAGER
     _ala_job_dao = ALA_JOB_DAO
     _ala_occurrence_dao = ALA_OCCURRENCE_DAO
+    _ala_dataset_factory = ALA_DATASET_FACTORY
 
     # URL to ALA. Substitute {$lsid} for the LSID
     url = "http://biocache.ala.org.au/ws/webportal/occurrences.gz?q=lsid:${lsid}&fq=geospatial_kosher:true&fl=raw_taxon_name,longitude,latitude&pageSize=999999999"
@@ -44,6 +45,23 @@ class ALAService():
             return False
         metadata_path = self._file_manager.ala_file_manager.add_new_file(lsid, content, '.json')
         ala_occurrence = self._ala_occurrence_dao.create_new(lsid, occurrence_path, metadata_path)
+        ala_dataset = self._ala_dataset_factory.generate_dataset(ala_occurrence)
+
+        self._logger.info("********************************************************")
+        self._logger.info("Title: %s", ala_dataset.title)
+        self._logger.info("Description: %s", ala_dataset.description)
+        self._logger.info("Number of Occurrences: %s", ala_dataset.num_occurrences)
+        self._logger.info("Provenance URL: %s", ala_dataset.provenance.url)
+        self._logger.info("________________________________________")
+        self._logger.info("File 1 path: %s", ala_dataset.files[0].path)
+        self._logger.info("File 1 type: %s", ala_dataset.files[0].dataset_type)
+        self._logger.info("File 1 size: %s", ala_dataset.files[0].size)
+        self._logger.info("________________________________________")
+        self._logger.info("File 2 path: %s", ala_dataset.files[1].path)
+        self._logger.info("File 2 type: %s", ala_dataset.files[1].dataset_type)
+        self._logger.info("File 2 size: %s", ala_dataset.files[1].size)
+        self._logger.info("********************************************************")
+
         return True
 
     def _normalizeOccurrence(self, file_path):
