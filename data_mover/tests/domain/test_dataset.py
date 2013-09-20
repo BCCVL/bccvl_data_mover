@@ -41,6 +41,9 @@ class TestDataset(unittest.TestCase):
         self.assertFalse(dp_1 == "dp_1")
         self.assertTrue(dp_1 != "dp_1")
 
+        self.assertFalse(dp_1 == None)
+        self.assertTrue(dp_1 != None)
+
     def test_dataset_file_init(self):
         path = "some/path/to/the/file"
         dataset_type = DatasetFile.TYPE_OCCURRENCES
@@ -75,6 +78,9 @@ class TestDataset(unittest.TestCase):
 
         self.assertFalse(df_1 == "df_1")
         self.assertTrue(df_1 != "df_1")
+
+        self.assertFalse(df_1 == None)
+        self.assertTrue(df_1 != None)
 
     def test_dataset_init(self):
         source = DatasetProvenance.SOURCE_ALA
@@ -138,3 +144,6 @@ class TestDataset(unittest.TestCase):
 
         self.assertFalse(ds_1 == "ds_1")
         self.assertTrue(ds_1 != "ds_1")
+
+        self.assertFalse(ds_1 == None)
+        self.assertTrue(ds_1 != None)
