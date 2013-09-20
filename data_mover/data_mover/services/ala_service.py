@@ -4,7 +4,7 @@ import logging
 import zlib
 import time
 from data_mover.endpoints.protocols import http_get
-from data_mover import (FILE_MANAGER, ALA_JOB_DAO, ALA_OCCURRENCE_DAO, ALA_DATASET_FACTORY)
+from data_mover import (FILE_MANAGER, ALA_JOB_DAO, ALA_OCCURRENCE_DAO, ALA_DATASET_FACTORY, ALA_SERVICE_SLEEP)
 
 
 class ALAService():
@@ -96,7 +96,7 @@ class ALAService():
             self._logger.info('Attempt %s to download LSID %s from ALA', attempt, job.lsid)
             job = self._ala_job_dao.update(job, start_time=now, status='DOWNLOADING', attempts=attempt)
             if job.attempts > 1:
-                time.sleep(10) # need to define this
+                time.sleep(ALA_SERVICE_SLEEP) # need to define this
             download_success = self.getOccurrenceByLSID(job.lsid)
 
         if download_success:

@@ -15,6 +15,17 @@ The data mover shall be asynchronous. When a request to move a file is made via 
     $ pip install -r requirements.txt
     $ python setup.py develop
 
+**Configuration File**
+
+You will need to configure the development.ini file.
+Make sure that you have the follow (or similar):
+
+    sqlalchemy.url = postgresql+psycopg2://data_mover:data_mover@localhost:5432/data_mover
+    file_manager.data_directory = sample
+    file_manager.ala_data_directory = sample/ALA
+
+    ala_service.sleep_time = 10
+
 **Initializing the database**
 
 You will need to create:
@@ -37,13 +48,11 @@ Then run:
 **How to test XMLRPC (Python)**
 
     from xmlrpclib import ServerProxy
-    s = ServerProxy('http://0.0.0.0:6543/data_mover', verbose = 1)
-    source = {'type': 'png', 'id': 3}
-    destination = {'path': '/home', 'host': 'BCCVL_HPC'}
-    s.move(destination, source)
+    s = ServerProxy('http://0.0.0.0:6543/data_mover')
+    lsid = 'urn:lsid:biodiversity.org.au:afd.taxon:31a9b8b8-4e8f-4343-a15f-2ed24e0bf1ae'
+    s.pullOccurrenceFromALA(lsid)
 
 **Available XMLRPC functions**
 
-* move(destination, source)
-* check(job_id)
-* pullOccurrenceFromALA(lsid)
+* pullOccurrenceFromALA(String lsid)
+* checkALAJobStatus(int job_id)

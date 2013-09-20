@@ -1,6 +1,4 @@
 import unittest
-import logging
-import io
 import shutil
 import tempfile
 import os
@@ -51,7 +49,7 @@ class TestALADatasetFactory(unittest.TestCase):
         expected_title = "Red Kangaroo (Macropus rufus) occurrences"
         expected_description = "Observed occurrences for Red Kangaroo (Macropus rufus), imported from ALA on 09/20/2013"
         expected_num_occurrences = 35136
-        expected_provenance_url = "http://bie.ala.org.au/species/urn:lsid:biodiversity.org.au:afd.taxon:31a9b8b8-4e8f-4343-a15f-2ed24e0bf1ae"
+        expected_provenance_url = "http://biocache.ala.org.au/ws/webportal/occurrences.gz?q=lsid:urn:lsid:biodiversity.org.au:afd.taxon:31a9b8b8-4e8f-4343-a15f-2ed24e0bf1ae&fq=geospatial_kosher:true&fl=raw_taxon_name,longitude,latitude&pageSize=999999999"
 
         self.assertEqual(expected_title, ala_dataset.title)
         self.assertEqual(expected_description, ala_dataset.description)
@@ -63,4 +61,3 @@ class TestALADatasetFactory(unittest.TestCase):
         self.assertEqual(os.path.getsize(metadata_file), ala_dataset.files[1].size)
 
         shutil.rmtree(temp_dir)
-        pass

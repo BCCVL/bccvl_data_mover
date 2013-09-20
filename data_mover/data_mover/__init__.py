@@ -30,6 +30,8 @@ ALA_DATASET_FACTORY = ALADatasetFactory()
 ### SERVICES AND MANAGERS ###
 FILE_MANAGER = FileManager()
 
+ALA_SERVICE_SLEEP = 5
+
 from data_mover.services.data_mover_services import DataMoverServices
 
 
@@ -47,6 +49,9 @@ def main(global_config, **settings):
 
     SESSION_MAKER.configure(settings, 'sqlalchemy.')
     FILE_MANAGER.configure(settings, 'file_manager.')
+
+    global ALA_SERVICE_SLEEP
+    ALA_SERVICE_SLEEP = settings['ala_service.sleep_time']
 
     config = Configurator(settings=settings)
     config.add_view(DataMoverServices, name='data_mover')

@@ -1,5 +1,4 @@
 import json
-import pprint
 import os
 import io
 from data_mover.domain.dataset import (Dataset, DatasetFile, DatasetProvenance)
@@ -7,7 +6,7 @@ from data_mover.domain.dataset import (Dataset, DatasetFile, DatasetProvenance)
 
 class ALADatasetFactory():
 
-    url = "http://bie.ala.org.au/species/${lsid}"
+    url = "http://biocache.ala.org.au/ws/webportal/occurrences.gz?q=lsid:${lsid}&fq=geospatial_kosher:true&fl=raw_taxon_name,longitude,latitude&pageSize=999999999"
 
     def generate_dataset(self, ala_occurrence):
         """
@@ -18,8 +17,10 @@ class ALADatasetFactory():
         imported_date = ala_occurrence.created_time.strftime('%m/%d/%Y')
         url = self.url.replace("${lsid}", ala_occurrence.lsid)
 
-        occurrence_file = DatasetFile(ala_occurrence.occurrence_path, DatasetFile.TYPE_OCCURRENCES, os.path.getsize(ala_occurrence.occurrence_path))
-        metadata_file = DatasetFile(ala_occurrence.metadata_path, DatasetFile.TYPE_ATTRIBUTION, os.path.getsize(ala_occurrence.metadata_path))
+        occurrence_file = DatasetFile(ala_occurrence.occurrence_path, DatasetFile.TYPE_OCCURRENCES,
+                                      os.path.getsize(ala_occurrence.occurrence_path))
+        metadata_file = DatasetFile(ala_occurrence.metadata_path, DatasetFile.TYPE_ATTRIBUTION,
+                                    os.path.getsize(ala_occurrence.metadata_path))
         files = [occurrence_file, metadata_file]
 
         provenance = DatasetProvenance(DatasetProvenance.SOURCE_ALA, url, imported_date)
@@ -32,10 +33,12 @@ class ALADatasetFactory():
 
         if details['common_name'] is not None:
             title = "%s (%s) occurrences" % (details['common_name'], details['scientific_name'])
+            description = "Observed occurrences for %s (%s), imported from ALA on %s" % \
+                          (details['common_name'], details['scientific_name'], imported_date)
         else:
             title = "%s occurrences" % (details['scientific_name'])
-
-        description = "Observed occurrences for %s (%s), imported from ALA on %s" % (details['common_name'], details['scientific_name'], imported_date)
+            description = "Observed occurrences for %s, imported from ALA on %s" % \
+                          (details['scientific_name'], imported_date)
 
         ala_dataset = Dataset(title, description, num_occurrences, files, provenance)
 
