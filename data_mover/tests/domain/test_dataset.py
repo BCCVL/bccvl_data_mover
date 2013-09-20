@@ -88,8 +88,9 @@ class TestDataset(unittest.TestCase):
 
         title = "the title of my dataset"
         description = "a dataset thats used in unit testing"
+        num_occurrences = 14432
 
-        to_test = Dataset(title, description, files, provenance)
+        to_test = Dataset(title, description, num_occurrences, files, provenance)
 
         self.assertEqual(title, to_test.title)
         self.assertEqual(description, to_test.description)
@@ -103,25 +104,29 @@ class TestDataset(unittest.TestCase):
         provenance = DatasetProvenance("some source", "http://intersect.org.au", datetime.datetime.now())
         title = "the title"
         description = "description"
-        ds_1 = Dataset(title, description, files, provenance)
-        ds_2 = Dataset(title, description, files, provenance)
+        num_occurrences = 153
+        ds_1 = Dataset(title, description, num_occurrences, files, provenance)
+        ds_2 = Dataset(title, description, num_occurrences, files, provenance)
 
         self.assertTrue(ds_1 == ds_1)
         self.assertFalse(ds_1 != ds_1)
         self.assertTrue(ds_1 == ds_2)
         self.assertFalse(ds_1 != ds_2)
 
-        self.assertTrue(ds_1 != Dataset("another title", description, files, provenance))
-        self.assertFalse(ds_1 == Dataset("another title", description, files, provenance))
+        self.assertTrue(ds_1 != Dataset("another title", description, num_occurrences, files, provenance))
+        self.assertFalse(ds_1 == Dataset("another title", description, num_occurrences, files, provenance))
 
-        self.assertTrue(ds_1 != Dataset(title, "another description", files, provenance))
-        self.assertFalse(ds_1 == Dataset(title, "another description", files, provenance))
+        self.assertTrue(ds_1 != Dataset(title, "another description", num_occurrences, files, provenance))
+        self.assertFalse(ds_1 == Dataset(title, "another description", num_occurrences, files, provenance))
 
-        self.assertTrue(ds_1 != Dataset(title, description, [file_1], provenance))
-        self.assertFalse(ds_1 == Dataset(title, description, [file_1], provenance))
+        self.assertTrue(ds_1 != Dataset(title, description, 111, files, provenance))
+        self.assertFalse(ds_1 == Dataset(title, description, 111, files, provenance))
 
-        self.assertTrue(ds_1 != Dataset(title, description, files, DatasetProvenance("another source", "http://intersect.org.au", datetime.datetime.now())))
-        self.assertFalse(ds_1 == Dataset(title, description, files, DatasetProvenance("another source", "http://intersect.org.au", datetime.datetime.now())))
+        self.assertTrue(ds_1 != Dataset(title, description, num_occurrences, [file_1], provenance))
+        self.assertFalse(ds_1 == Dataset(title, description, num_occurrences, [file_1], provenance))
+
+        self.assertTrue(ds_1 != Dataset(title, description, num_occurrences, files, DatasetProvenance("another source", "http://intersect.org.au", datetime.datetime.now())))
+        self.assertFalse(ds_1 == Dataset(title, description, num_occurrences, files, DatasetProvenance("another source", "http://intersect.org.au", datetime.datetime.now())))
 
         self.assertFalse(ds_1 == "ds_1")
         self.assertTrue(ds_1 != "ds_1")

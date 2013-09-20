@@ -5,17 +5,19 @@ class Dataset():
     A representation of a dataset, that can be serialized and sent to the dataset manager.
     """
 
-    def __init__(self, title, description, files, provenance):
+    def __init__(self, title, description, num_occurrences, files, provenance):
         """
         Constructor
 
         :param title: The title of the dataset
         :param description: The description of the dataset
+        :param num_occurrences: The number of occurrences in the dataset
         :param files: A list of files that belong to the dataset
         :param provenance: The provenance of the dataset
         """
         self.title = title
         self.description = description
+        self.num_occurrences = num_occurrences
         self.files = files
         self.provenance = provenance
 
@@ -23,6 +25,7 @@ class Dataset():
         if isinstance(other, Dataset):
             return self.title == other.title and \
                    self.description == other.description and \
+                   self.num_occurrences == other.num_occurrences and \
                    self.files == other.files and \
                    self.provenance == other.provenance
         return NotImplemented
@@ -31,6 +34,7 @@ class Dataset():
         if isinstance(other, Dataset):
             return self.title != other.title or \
                    self.description != other.description or \
+                   self.num_occurrences != other.num_occurrences or \
                    self.files != other.files or \
                    self.provenance != other.provenance
         return NotImplemented
