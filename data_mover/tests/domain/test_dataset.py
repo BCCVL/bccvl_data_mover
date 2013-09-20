@@ -44,28 +44,34 @@ class TestDataset(unittest.TestCase):
     def test_dataset_file_init(self):
         path = "some/path/to/the/file"
         dataset_type = DatasetFile.TYPE_OCCURRENCES
+        size = 1234
 
-        to_test = DatasetFile(path, dataset_type)
+        to_test = DatasetFile(path, dataset_type, size)
         self.assertEqual(path, to_test.path)
         self.assertEqual(dataset_type, to_test.dataset_type)
+        self.assertEqual(size, to_test.size)
 
     def test_dataset_file_eq_ne(self):
         path = "some/path/to/the/file"
         dataset_type = DatasetFile.TYPE_OCCURRENCES
+        size = 1234
 
-        df_1 = DatasetFile(path, dataset_type)
-        df_2 = DatasetFile(path, dataset_type)
+        df_1 = DatasetFile(path, dataset_type, size)
+        df_2 = DatasetFile(path, dataset_type, size)
 
         self.assertTrue(df_1 == df_1)
         self.assertFalse(df_1 != df_1)
         self.assertTrue(df_1 == df_2)
         self.assertFalse(df_1 != df_2)
 
-        self.assertFalse(df_1 == DatasetFile("some/other/path/to/dataset", dataset_type))
-        self.assertTrue(df_1 != DatasetFile("some/other/path/to/dataset", dataset_type))
+        self.assertFalse(df_1 == DatasetFile("some/other/path/to/dataset", dataset_type, size))
+        self.assertTrue(df_1 != DatasetFile("some/other/path/to/dataset", dataset_type, size))
 
-        self.assertFalse(df_1 == DatasetFile(path, DatasetFile.TYPE_ATTRIBUTION))
-        self.assertTrue(df_1 != DatasetFile(path, DatasetFile.TYPE_ATTRIBUTION))
+        self.assertFalse(df_1 == DatasetFile(path, DatasetFile.TYPE_ATTRIBUTION, size))
+        self.assertTrue(df_1 != DatasetFile(path, DatasetFile.TYPE_ATTRIBUTION, size))
+
+        self.assertFalse(df_1 == DatasetFile(path, dataset_type, 4562))
+        self.assertTrue(df_1 != DatasetFile(path, dataset_type, 4562))
 
         self.assertFalse(df_1 == "df_1")
         self.assertTrue(df_1 != "df_1")
@@ -77,11 +83,13 @@ class TestDataset(unittest.TestCase):
 
         path_1 = "some/path/to/the/file/1"
         dataset_type_1 = DatasetFile.TYPE_OCCURRENCES
+        size_1 = 1234
         path_2 = "some/path/to/the/file/2"
         dataset_type_2 = DatasetFile.TYPE_ATTRIBUTION
+        size_2 = 4567
 
-        file_1 = DatasetFile(path_1, dataset_type_1)
-        file_2 = DatasetFile(path_2, dataset_type_2)
+        file_1 = DatasetFile(path_1, dataset_type_1, size_1)
+        file_2 = DatasetFile(path_2, dataset_type_2, size_2)
 
         files = [file_1, file_2]
         provenance = DatasetProvenance(source, url, source_date)
@@ -98,8 +106,8 @@ class TestDataset(unittest.TestCase):
         self.assertEqual(provenance, to_test.provenance)
 
     def test_dataset_eq_ne(self):
-        file_1 = DatasetFile("path_1", DatasetFile.TYPE_ATTRIBUTION)
-        file_2 = DatasetFile("path_2", DatasetFile.TYPE_OCCURRENCES)
+        file_1 = DatasetFile("path_1", DatasetFile.TYPE_ATTRIBUTION, 1234)
+        file_2 = DatasetFile("path_2", DatasetFile.TYPE_OCCURRENCES, 5678)
         files = [file_1, file_2]
         provenance = DatasetProvenance("some source", "http://intersect.org.au", datetime.datetime.now())
         title = "the title"

@@ -47,7 +47,7 @@ class DatasetFile():
     TYPE_OCCURRENCES = "occurrences"
     TYPE_ATTRIBUTION = "attribution"
 
-    def __init__(self, path, dataset_type):
+    def __init__(self, path, dataset_type, size):
         """
         Constructor
 
@@ -56,17 +56,20 @@ class DatasetFile():
         """
         self.path = path
         self.dataset_type = dataset_type
+        self.size = size
 
     def __eq__(self, other):
         if isinstance(other, DatasetFile):
             return self.path == other.path and \
-                   self.dataset_type == other.dataset_type
+                   self.dataset_type == other.dataset_type and \
+                   self.size == other.size
         return NotImplemented
 
     def __ne__(self, other):
         if isinstance(other, DatasetFile):
             return self.path != other.path or \
-                   self.dataset_type != other.dataset_type
+                   self.dataset_type != other.dataset_type or \
+                   self.size != other.size
         return NotImplemented
 
 
