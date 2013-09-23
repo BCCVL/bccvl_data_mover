@@ -1,3 +1,4 @@
+import datetime
 import unittest
 import shutil
 import tempfile
@@ -42,12 +43,14 @@ class TestALADatasetFactory(unittest.TestCase):
 
         ala_occurrence = ALAOccurrence(lsid, occurrence_file, metadata_file)
 
-        ALA_DATASET_FACTORY = ALADatasetFactory()
+        ala_dataset_factory = ALADatasetFactory()
 
-        ala_dataset = ALA_DATASET_FACTORY.generate_dataset(ala_occurrence)
+        ala_dataset = ala_dataset_factory.generate_dataset(ala_occurrence)
+
+        now = datetime.datetime.now()
 
         expected_title = "Red Kangaroo (Macropus rufus) occurrences"
-        expected_description = "Observed occurrences for Red Kangaroo (Macropus rufus), imported from ALA on 09/20/2013"
+        expected_description = "Observed occurrences for Red Kangaroo (Macropus rufus), imported from ALA on " + now.strftime('%d/%m/%Y')
         expected_num_occurrences = 35136
         expected_provenance_url = "http://biocache.ala.org.au/ws/webportal/occurrences.gz?q=lsid:urn:lsid:biodiversity.org.au:afd.taxon:31a9b8b8-4e8f-4343-a15f-2ed24e0bf1ae&fq=geospatial_kosher:true&fl=raw_taxon_name,longitude,latitude&pageSize=999999999"
 

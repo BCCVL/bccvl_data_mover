@@ -1,12 +1,10 @@
 import json
 import os
 import io
+
 from data_mover.domain.dataset import (Dataset, DatasetFile, DatasetProvenance)
 
-
 class ALADatasetFactory():
-
-    url = "http://biocache.ala.org.au/ws/webportal/occurrences.gz?q=lsid:${lsid}&fq=geospatial_kosher:true&fl=raw_taxon_name,longitude,latitude&pageSize=999999999"
 
     def generate_dataset(self, ala_occurrence):
         """
@@ -14,13 +12,11 @@ class ALADatasetFactory():
         :param ala_occurrence:
         :return: dataset:
         """
-        imported_date = ala_occurrence.created_time.strftime('%m/%d/%Y')
-        url = self.url.replace("${lsid}", ala_occurrence.lsid)
+        imported_date = ala_occurrence.created_time.strftime('%d/%m/%Y')
+        url =  "".replace("${lsid}", ala_occurrence.lsid)
 
-        occurrence_file = DatasetFile(ala_occurrence.occurrence_path, DatasetFile.TYPE_OCCURRENCES,
-                                      os.path.getsize(ala_occurrence.occurrence_path))
-        metadata_file = DatasetFile(ala_occurrence.metadata_path, DatasetFile.TYPE_ATTRIBUTION,
-                                    os.path.getsize(ala_occurrence.metadata_path))
+        occurrence_file = DatasetFile(ala_occurrence.occurrence_path, DatasetFile.TYPE_OCCURRENCES, os.path.getsize(ala_occurrence.occurrence_path))
+        metadata_file = DatasetFile(ala_occurrence.metadata_path, DatasetFile.TYPE_ATTRIBUTION, os.path.getsize(ala_occurrence.metadata_path))
         files = [occurrence_file, metadata_file]
 
         provenance = DatasetProvenance(DatasetProvenance.SOURCE_ALA, url, imported_date)

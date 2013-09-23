@@ -14,7 +14,7 @@ def http_get(url):
 
     response = requests.get(url)
     if response.status_code is not 200:
+        _logger.warning('Obtained status code %s from URL %s', response.status_code, url)
         return None
 
-    _logger.warning('Obtained status code %s from URL %s', response.status_code, url)
     return response.content

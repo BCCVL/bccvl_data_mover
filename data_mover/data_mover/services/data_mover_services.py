@@ -1,7 +1,5 @@
 from pyramid_xmlrpc import XMLRPCView
 from data_mover.models.error_messages import *
-from data_mover import (ALA_JOB_DAO,)
-from data_mover.services.ala_service import ALAService
 import threading
 
 
@@ -11,8 +9,9 @@ class DataMoverServices(XMLRPCView):
     See https://wiki.intersect.org.au/display/BCCVL/Data+Mover+and+Data+Movement+API
     """
 
-    _ala_service = ALAService()
-    _ala_job_dao = ALA_JOB_DAO
+    def __init__(self, ala_service, ala_job_dao):
+        self._ala_service = ala_service
+        self._ala_job_dao = ala_job_dao
 
     def pullOccurrenceFromALA(self, lsid=None):
         """

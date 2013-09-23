@@ -4,20 +4,22 @@ import logging
 import zlib
 import time
 from data_mover.endpoints.protocols import http_get
-from data_mover import (FILE_MANAGER, ALA_JOB_DAO, ALA_OCCURRENCE_DAO, ALA_DATASET_FACTORY, ALA_SERVICE_SLEEP)
 
 
 class ALAService():
 
     _logger = logging.getLogger(__name__)
-    _file_manager = FILE_MANAGER
-    _ala_job_dao = ALA_JOB_DAO
-    _ala_occurrence_dao = ALA_OCCURRENCE_DAO
-    _ala_dataset_factory = ALA_DATASET_FACTORY
 
-    # URL to ALA. Substitute {$lsid} for the LSID
-    url = "http://biocache.ala.org.au/ws/webportal/occurrences.gz?q=lsid:${lsid}&fq=geospatial_kosher:true&fl=raw_taxon_name,longitude,latitude&pageSize=999999999"
-    metadata_url = "http://bie.ala.org.au/species/${lsid}.json"
+    def __init__(self, file_manager, ala_job_dao, ala_occurrence_dao, ala_dataset_factory):
+        self._file_manager = file_manager
+        self._ala_job_dao = ala_job_dao
+        self._ala_occurrence_dao = ala_occurrence_dao
+        self._ala_dataset_factory = ala_dataset_factory
+
+    def configure(self, settings, key):
+        self._occurrence_url = settings[key + 'occurrence_url']
+        self._metadata_url = settings[key + 'metadata_url']
+        self._sleep_time = settings[key + 'sleep_time']
 
     def getOccurrenceByLSID(self, lsid):
         """
@@ -26,7 +28,7 @@ class ALAService():
         """
 
         # Get occurrence data
-        occurrence_url = ALAService.url.replace("${lsid}", lsid)
+        occurrence_url = self._occurrence_url.replace("${lsid}", lsid)
         content = http_get(occurrence_url)
         if content is None:
             self._logger.warning("Could not download occurrence data from ALA for LSID %s", lsid)
@@ -38,7 +40,7 @@ class ALAService():
         self._normalizeOccurrence(occurrence_path)
 
         # Get occurrence metadata
-        metadata_url = ALAService.metadata_url.replace("${lsid}", lsid)
+        metadata_url = self._metadata_url.replace("${lsid}", lsid)
         content = http_get(metadata_url)
         if content is None:
             self._logger.warning("Could not download occurrence metadata from ALA for LSID %s", lsid)
@@ -96,7 +98,7 @@ class ALAService():
             self._logger.info('Attempt %s to download LSID %s from ALA', attempt, job.lsid)
             job = self._ala_job_dao.update(job, start_time=now, status='DOWNLOADING', attempts=attempt)
             if job.attempts > 1:
-                time.sleep(ALA_SERVICE_SLEEP) # need to define this
+                time.sleep(self._sleep_time) # need to define this
             download_success = self.getOccurrenceByLSID(job.lsid)
 
         if download_success:

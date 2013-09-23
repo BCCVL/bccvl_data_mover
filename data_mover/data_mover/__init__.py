@@ -18,6 +18,7 @@ from data_mover.dao.ala_occurrence_dao import ALAOccurrenceDAO
 from data_mover.dao.session_maker import SessionMaker
 from data_mover.files.file_manager import FileManager
 from data_mover.factory.ala_dataset_factory import ALADatasetFactory
+from data_mover.services.ala_service import ALAService
 
 ### DATABASE AND MODEL SERVICES ###
 SESSION_MAKER = SessionMaker()
@@ -29,11 +30,11 @@ ALA_DATASET_FACTORY = ALADatasetFactory()
 
 ### SERVICES AND MANAGERS ###
 FILE_MANAGER = FileManager()
+ALA_SERVICE = ALAService(FILE_MANAGER, ALA_JOB_DAO, ALA_OCCURRENCE_DAO, ALA_DATASET_FACTORY)
 
-ALA_SERVICE_SLEEP = 5
+data_mover_service = None
 
 from data_mover.services.data_mover_services import DataMoverServices
-
 
 def main(global_config, **settings):
     """ This function returns a Pyramid WSGI application.
@@ -49,11 +50,10 @@ def main(global_config, **settings):
 
     SESSION_MAKER.configure(settings, 'sqlalchemy.')
     FILE_MANAGER.configure(settings, 'file_manager.')
-
-    global ALA_SERVICE_SLEEP
-    ALA_SERVICE_SLEEP = settings['ala_service.sleep_time']
+    ALA_SERVICE.configure(settings, 'ala_service.')
 
     config = Configurator(settings=settings)
-    config.add_view(DataMoverServices, name='data_mover')
+    data_mover_service = DataMoverServices(ALA_SERVICE, ALA_JOB_DAO)
+    config.add_view(data_mover_service, name='data_mover')
     config.scan()
     return config.make_wsgi_app()
