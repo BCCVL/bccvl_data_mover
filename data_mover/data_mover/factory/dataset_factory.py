@@ -5,7 +5,7 @@ import io
 from data_mover.domain.dataset import (Dataset, DatasetFile, DatasetProvenance)
 
 
-class ALADatasetFactory():
+class DatasetFactory():
 
     def configure(self, settings, key):
         self._occurrence_url = settings[key + 'occurrence_url']
@@ -13,8 +13,8 @@ class ALADatasetFactory():
     def generate_dataset(self, ala_occurrence):
         """
         Generates a dataset given an ALA occurrence object.
-        :param ala_occurrence:
-        :return: dataset:
+        :param ala_occurrence: The ALA occurrence to convert to a dataset.
+        :return: dataset: The dataset.
         """
         imported_date = ala_occurrence.created_time.strftime('%d/%m/%Y')
         url = self._occurrence_url.replace("${lsid}", ala_occurrence.lsid)
@@ -33,15 +33,12 @@ class ALADatasetFactory():
 
         if details['common_name'] is not None:
             title = "%s (%s) occurrences" % (details['common_name'], details['scientific_name'])
-            description = "Observed occurrences for %s (%s), imported from ALA on %s" % \
-                          (details['common_name'], details['scientific_name'], imported_date)
+            description = "Observed occurrences for %s (%s), imported from ALA on %s" % (details['common_name'], details['scientific_name'], imported_date)
         else:
             title = "%s occurrences" % (details['scientific_name'])
-            description = "Observed occurrences for %s, imported from ALA on %s" % \
-                          (details['scientific_name'], imported_date)
+            description = "Observed occurrences for %s, imported from ALA on %s" % (details['scientific_name'], imported_date)
 
         ala_dataset = Dataset(title, description, num_occurrences, files, provenance)
-
         return ala_dataset
 
     def _count_num_of_occurrences(self, path):

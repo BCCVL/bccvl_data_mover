@@ -4,7 +4,7 @@ import shutil
 import tempfile
 import os
 from mock import MagicMock
-from data_mover.factory.ala_dataset_factory import ALADatasetFactory
+from data_mover.factory.dataset_factory import DatasetFactory
 from data_mover.models.ala_occurrences import ALAOccurrence
 from data_mover.services.ala_service import ALAService
 from data_mover.files.ala_file_manager import ALAFileManager
@@ -50,7 +50,7 @@ class TestALADatasetFactory(unittest.TestCase):
 
         ala_occurrence = ALAOccurrence(lsid, occurrence_file, metadata_file)
 
-        ala_dataset_factory = ALADatasetFactory()
+        ala_dataset_factory = DatasetFactory()
         ala_dataset_factory._occurrence_url = "http://biocache.ala.org.au/ws/webportal/occurrences.gz?q=lsid:${lsid}&fq=geospatial_kosher:true&fl=raw_taxon_name,longitude,latitude&pageSize=999999999"
 
         ala_dataset = ala_dataset_factory.generate_dataset(ala_occurrence)
