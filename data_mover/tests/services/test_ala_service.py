@@ -7,6 +7,7 @@ import os
 from mock import MagicMock
 from data_mover.services.ala_service import ALAService
 from data_mover.files.ala_file_manager import ALAFileManager
+from data_mover.util.url_utils import *
 
 
 class TestALAService(unittest.TestCase):
@@ -16,9 +17,17 @@ class TestALAService(unittest.TestCase):
 
     def testAlaOccurrence(self):
         lsid = 'urn:lsid:biodiversity.org.au:afd.taxon:31a9b8b8-4e8f-4343-a15f-2ed24e0bf1ae'
-        ala_service = ALAService()
 
-        ala_service._ala_occurrence_dao.create_new = MagicMock()
+        file_manager = MagicMock()
+        ala_job_dao = MagicMock()
+        ala_occurrence_dao = MagicMock()
+        ala_dataset_factory = MagicMock()
+
+        ala_service = ALAService(file_manager, ala_job_dao, ala_occurrence_dao, ala_dataset_factory)
+        ala_service._occurrence_url = "http://biocache.ala.org.au/ws/webportal/occurrences.gz?q=lsid:${lsid}&fq=geospatial_kosher:true&fl=raw_taxon_name,longitude,latitude&pageSize=999999999"
+        ala_service._metadata_url = "http://bie.ala.org.au/species/${lsid}.json"
+
+        ala_occurrence_dao.create_new = MagicMock()
 
         temp_dir = tempfile.mkdtemp(suffix=__name__)
 
@@ -50,8 +59,8 @@ class TestALAService(unittest.TestCase):
             self.assertEqual(1, header.count('LNGDEC'))
             self.assertEqual(1, header.count('LATDEC'))
 
-        expected_occurrence_path = '%s/%s.csv' % (ala_dir, lsid)
-        expected_metadata_path = '%s/%s.json' % (ala_dir, lsid)
+        expected_occurrence_path = path_to_url('%s/%s.csv' % (ala_dir, lsid))
+        expected_metadata_path = path_to_url('%s/%s.json' % (ala_dir, lsid))
         ala_service._ala_occurrence_dao.create_new.assert_called_with(lsid, expected_occurrence_path, expected_metadata_path)
 
         # Remove temp dir

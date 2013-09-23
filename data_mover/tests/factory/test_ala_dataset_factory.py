@@ -9,16 +9,23 @@ from data_mover.models.ala_occurrences import ALAOccurrence
 from data_mover.services.ala_service import ALAService
 from data_mover.files.ala_file_manager import ALAFileManager
 
-
 class TestALADatasetFactory(unittest.TestCase):
 
     def test_generate_dataset(self):
 
         lsid = 'urn:lsid:biodiversity.org.au:afd.taxon:31a9b8b8-4e8f-4343-a15f-2ed24e0bf1ae'
-        ala_service = ALAService()
 
-        ala_service._ala_occurrence_dao.create_new = MagicMock()
-        ala_service._ala_dataset_factory.generate_dataset = MagicMock()
+        file_manager = MagicMock()
+        ala_job_dao = MagicMock()
+        ala_occurrence_dao = MagicMock()
+        ala_dataset_factory = MagicMock()
+
+        ala_service = ALAService(file_manager, ala_job_dao, ala_occurrence_dao, ala_dataset_factory)
+        ala_service._occurrence_url = "http://biocache.ala.org.au/ws/webportal/occurrences.gz?q=lsid:${lsid}&fq=geospatial_kosher:true&fl=raw_taxon_name,longitude,latitude&pageSize=999999999"
+        ala_service._metadata_url = "http://bie.ala.org.au/species/${lsid}.json"
+
+        ala_occurrence_dao.create_new = MagicMock()
+        ala_dataset_factory.generate_dataset = MagicMock()
 
         temp_dir = tempfile.mkdtemp(suffix=__name__)
 
@@ -44,9 +51,9 @@ class TestALADatasetFactory(unittest.TestCase):
         ala_occurrence = ALAOccurrence(lsid, occurrence_file, metadata_file)
 
         ala_dataset_factory = ALADatasetFactory()
+        ala_dataset_factory._occurrence_url = "http://biocache.ala.org.au/ws/webportal/occurrences.gz?q=lsid:${lsid}&fq=geospatial_kosher:true&fl=raw_taxon_name,longitude,latitude&pageSize=999999999"
 
         ala_dataset = ala_dataset_factory.generate_dataset(ala_occurrence)
-
         now = datetime.datetime.now()
 
         expected_title = "Red Kangaroo (Macropus rufus) occurrences"
@@ -58,9 +65,9 @@ class TestALADatasetFactory(unittest.TestCase):
         self.assertEqual(expected_description, ala_dataset.description)
         self.assertEqual(expected_num_occurrences, ala_dataset.num_occurrences)
         self.assertEqual(expected_provenance_url, ala_dataset.provenance.url)
-        self.assertEqual(occurrence_file, ala_dataset.files[0].path)
+        self.assertEqual(occurrence_file, ala_dataset.files[0].url)
         self.assertEqual(os.path.getsize(occurrence_file), ala_dataset.files[0].size)
-        self.assertEqual(metadata_file, ala_dataset.files[1].path)
+        self.assertEqual(metadata_file, ala_dataset.files[1].url)
         self.assertEqual(os.path.getsize(metadata_file), ala_dataset.files[1].size)
 
         shutil.rmtree(temp_dir)

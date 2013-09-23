@@ -47,27 +47,28 @@ class DatasetFile():
     TYPE_OCCURRENCES = "occurrences"
     TYPE_ATTRIBUTION = "attribution"
 
-    def __init__(self, path, dataset_type, size):
+    def __init__(self, url, dataset_type, size):
         """
         Constructor
 
-        :param path: The path of the file
+        :param url: The fully-qualified URL to the file
         :param dataset_type: The type of the dataset (TYPE_OCCURRENCES, TYPE_ATTRIBUTION etc...)
+        :param size: the size of the file in bytes
         """
-        self.path = path
+        self.url = url
         self.dataset_type = dataset_type
         self.size = size
 
     def __eq__(self, other):
         if isinstance(other, DatasetFile):
-            return self.path == other.path and \
+            return self.url == other.url and \
                    self.dataset_type == other.dataset_type and \
                    self.size == other.size
         return NotImplemented
 
     def __ne__(self, other):
         if isinstance(other, DatasetFile):
-            return self.path != other.path or \
+            return self.url != other.url or \
                    self.dataset_type != other.dataset_type or \
                    self.size != other.size
         return NotImplemented
