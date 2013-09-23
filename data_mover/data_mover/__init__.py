@@ -51,9 +51,9 @@ def main(global_config, **settings):
     SESSION_MAKER.configure(settings, 'sqlalchemy.')
     FILE_MANAGER.configure(settings, 'file_manager.')
     ALA_SERVICE.configure(settings, 'ala_service.')
+    ALA_DATASET_FACTORY.configure(settings, 'ala_service.')
 
     config = Configurator(settings=settings)
-    data_mover_service = DataMoverServices(ALA_SERVICE, ALA_JOB_DAO)
-    config.add_view(data_mover_service, name='data_mover')
+    config.add_view(DataMoverServices, name='data_mover')
     config.scan()
     return config.make_wsgi_app()

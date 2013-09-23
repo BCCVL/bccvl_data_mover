@@ -4,7 +4,11 @@ import io
 
 from data_mover.domain.dataset import (Dataset, DatasetFile, DatasetProvenance)
 
+
 class ALADatasetFactory():
+
+    def configure(self, settings, key):
+        self._occurrence_url = settings[key + 'occurrence_url']
 
     def generate_dataset(self, ala_occurrence):
         """
@@ -13,7 +17,7 @@ class ALADatasetFactory():
         :return: dataset:
         """
         imported_date = ala_occurrence.created_time.strftime('%d/%m/%Y')
-        url =  "".replace("${lsid}", ala_occurrence.lsid)
+        url =  self._occurrence_url.replace("${lsid}", ala_occurrence.lsid)
 
         occurrence_file = DatasetFile(ala_occurrence.occurrence_path, DatasetFile.TYPE_OCCURRENCES, os.path.getsize(ala_occurrence.occurrence_path))
         metadata_file = DatasetFile(ala_occurrence.metadata_path, DatasetFile.TYPE_ATTRIBUTION, os.path.getsize(ala_occurrence.metadata_path))

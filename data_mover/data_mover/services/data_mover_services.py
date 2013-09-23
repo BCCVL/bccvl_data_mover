@@ -2,6 +2,8 @@ from pyramid_xmlrpc import XMLRPCView
 from data_mover.models.error_messages import *
 import threading
 
+from data_mover import ALA_SERVICE, ALA_JOB_DAO
+
 
 class DataMoverServices(XMLRPCView):
     """
@@ -9,9 +11,10 @@ class DataMoverServices(XMLRPCView):
     See https://wiki.intersect.org.au/display/BCCVL/Data+Mover+and+Data+Movement+API
     """
 
-    def __init__(self, ala_service, ala_job_dao):
-        self._ala_service = ala_service
-        self._ala_job_dao = ala_job_dao
+    def __init__(self, context, request):
+        XMLRPCView.__init__(self, context, request)
+        self._ala_service = ALA_SERVICE
+        self._ala_job_dao = ALA_JOB_DAO
 
     def pullOccurrenceFromALA(self, lsid=None):
         """
@@ -25,10 +28,7 @@ class DataMoverServices(XMLRPCView):
             thread_name = 'ala-get-' + lsid
             thread = threading.Thread(target=self._ala_service.worker, args=(job,), name=thread_name)
             thread.start()
-
-            id = job.id
-            status = job.status
-            return {'id': id, 'status': status}
+            return {'id': job.id, 'status': job.status}
 
     def checkALAJobStatus(self, id=None):
         if id is None:
