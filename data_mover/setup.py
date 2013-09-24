@@ -17,6 +17,11 @@ requires = [
     'pyramid_xmlrpc',
     'psycopg2',
     'coverage',
+    'nose',
+    'test',
+    'mock',
+    'pyyaml',
+    'requests',
     ]
 
 setup(name='data_mover',
