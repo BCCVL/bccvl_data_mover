@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/BCCVL/bccvl_data_mover.png?branch=master)](https://travis-ci.org/BCCVL/bccvl_data_mover)
+
 Data Mover API for BCCVL
 ================
 The Data Mover is a component in the system responsible for moving files around. It should have a "registry" of destinations where it can move files to, which contains configuration about the location of the destination, credentials to access the destination and file transmission protocol details.
