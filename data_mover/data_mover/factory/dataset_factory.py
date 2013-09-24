@@ -1,6 +1,7 @@
 import json
 import os
 import io
+from data_mover.util.url_utils import *
 
 from data_mover.domain.dataset import (Dataset, DatasetFile, DatasetProvenance)
 
@@ -19,17 +20,17 @@ class DatasetFactory():
         imported_date = ala_occurrence.created_time.strftime('%d/%m/%Y')
         url = self._occurrence_url.replace("${lsid}", ala_occurrence.lsid)
 
-        occurrence_file = DatasetFile(ala_occurrence.occurrence_path, DatasetFile.TYPE_OCCURRENCES, os.path.getsize(ala_occurrence.occurrence_path))
-        metadata_file = DatasetFile(ala_occurrence.metadata_path, DatasetFile.TYPE_ATTRIBUTION, os.path.getsize(ala_occurrence.metadata_path))
+        occurrence_file = DatasetFile(ala_occurrence.occurrence_path, DatasetFile.TYPE_OCCURRENCES, os.path.getsize(url_to_path(ala_occurrence.occurrence_path)))
+        metadata_file = DatasetFile(ala_occurrence.metadata_path, DatasetFile.TYPE_ATTRIBUTION, os.path.getsize(url_to_path(ala_occurrence.metadata_path)))
         files = [occurrence_file, metadata_file]
 
         provenance = DatasetProvenance(DatasetProvenance.SOURCE_ALA, url, imported_date)
 
         # Count number of occurrences
-        num_occurrences = self._count_num_of_occurrences(ala_occurrence.occurrence_path)
+        num_occurrences = self._count_num_of_occurrences(url_to_path(ala_occurrence.occurrence_path))
 
         # Examine metadata json file
-        details = self._get_details_from_json(ala_occurrence.metadata_path)
+        details = self._get_details_from_json(url_to_path(ala_occurrence.metadata_path))
 
         if details['common_name'] is not None:
             title = "%s (%s) occurrences" % (details['common_name'], details['scientific_name'])
