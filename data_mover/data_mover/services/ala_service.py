@@ -10,11 +10,12 @@ class ALAService():
 
     _logger = logging.getLogger(__name__)
 
-    def __init__(self, file_manager, ala_job_dao, ala_occurrence_dao, ala_dataset_factory):
+    def __init__(self, file_manager, ala_job_dao, ala_occurrence_dao, ala_dataset_factory, dataset_provider_service):
         self._file_manager = file_manager
         self._ala_job_dao = ala_job_dao
         self._ala_occurrence_dao = ala_occurrence_dao
         self._ala_dataset_factory = ala_dataset_factory
+        self._dataset_provider_service = dataset_provider_service
 
     def configure(self, settings, key):
         self._occurrence_url = settings[key + 'occurrence_url']
@@ -49,21 +50,8 @@ class ALAService():
         ala_occurrence = self._ala_occurrence_dao.create_new(lsid, occurrence_path, metadata_path)
         ala_dataset = self._ala_dataset_factory.generate_dataset(ala_occurrence)
 
-        self._logger.info("********************************************************")
-        self._logger.info("Title: %s", ala_dataset.title)
-        self._logger.info("Description: %s", ala_dataset.description)
-        self._logger.info("Number of Occurrences: %s", ala_dataset.num_occurrences)
-        self._logger.info("Provenance URL: %s", ala_dataset.provenance.url)
-        self._logger.info("________________________________________")
-        self._logger.info("File 1 path: %s", ala_dataset.files[0].url)
-        self._logger.info("File 1 type: %s", ala_dataset.files[0].dataset_type)
-        self._logger.info("File 1 size: %s", ala_dataset.files[0].size)
-        self._logger.info("________________________________________")
-        self._logger.info("File 2 path: %s", ala_dataset.files[1].url)
-        self._logger.info("File 2 type: %s", ala_dataset.files[1].dataset_type)
-        self._logger.info("File 2 size: %s", ala_dataset.files[1].size)
-        self._logger.info("********************************************************")
-
+        # Write the dataset to a file that can be picked up by the Dataset Manager
+        self._dataset_provider_service.deliver_dataset(ala_dataset)
         return True
 
     def _normalizeOccurrence(self, file_path):

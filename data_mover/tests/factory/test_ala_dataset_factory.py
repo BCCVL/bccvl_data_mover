@@ -21,8 +21,9 @@ class TestALADatasetFactory(unittest.TestCase):
         ala_job_dao = MagicMock()
         ala_occurrence_dao = MagicMock()
         ala_dataset_factory = MagicMock()
+        dataset_provider_service = MagicMock()
 
-        ala_service = ALAService(file_manager, ala_job_dao, ala_occurrence_dao, ala_dataset_factory)
+        ala_service = ALAService(file_manager, ala_job_dao, ala_occurrence_dao, ala_dataset_factory, dataset_provider_service)
         ala_service._occurrence_url = "http://biocache.ala.org.au/ws/webportal/occurrences.gz?q=lsid:${lsid}&fq=geospatial_kosher:true&fl=raw_taxon_name,longitude,latitude&pageSize=999999999"
         ala_service._metadata_url = "http://bie.ala.org.au/species/${lsid}.json"
 

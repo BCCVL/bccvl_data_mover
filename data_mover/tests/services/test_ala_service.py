@@ -7,7 +7,6 @@ import os
 from mock import MagicMock
 from data_mover.services.ala_service import ALAService
 from data_mover.files.ala_file_manager import ALAFileManager
-from data_mover.util.url_utils import *
 
 
 class TestALAService(unittest.TestCase):
@@ -15,15 +14,16 @@ class TestALAService(unittest.TestCase):
     def setUp(self):
         logging.basicConfig()
 
-    def testAlaOccurrence(self):
+    def test_get_occurrence(self):
         lsid = 'urn:lsid:biodiversity.org.au:afd.taxon:31a9b8b8-4e8f-4343-a15f-2ed24e0bf1ae'
 
         file_manager = MagicMock()
         ala_job_dao = MagicMock()
         ala_occurrence_dao = MagicMock()
         ala_dataset_factory = MagicMock()
+        dataset_provider_service = MagicMock()
 
-        ala_service = ALAService(file_manager, ala_job_dao, ala_occurrence_dao, ala_dataset_factory)
+        ala_service = ALAService(file_manager, ala_job_dao, ala_occurrence_dao, ala_dataset_factory, dataset_provider_service)
         ala_service._occurrence_url = "http://biocache.ala.org.au/ws/webportal/occurrences.gz?q=lsid:${lsid}&fq=geospatial_kosher:true&fl=raw_taxon_name,longitude,latitude&pageSize=999999999"
         ala_service._metadata_url = "http://bie.ala.org.au/species/${lsid}.json"
 

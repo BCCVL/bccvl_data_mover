@@ -1,6 +1,7 @@
 import io
 import os
 import shutil
+from data_mover.util.file_utils import *
 
 
 class BaseFileManager:
@@ -15,7 +16,7 @@ class BaseFileManager:
          :param path: the path to the file to store. Note this will perform a MOVE and the original file will no longer exist.
         """
         destination = os.path.join(self.directory, name + self.fileSuffix)
-        self._create_parent(destination)
+        create_parent(destination)
         shutil.move(path, destination)
 
     def add_new_file(self, name, content, fileSuffix):
@@ -27,16 +28,11 @@ class BaseFileManager:
          :return : The absolute path to the file that was written
         """
         destination = os.path.join(self.directory, name + fileSuffix)
-        self._create_parent(destination)
+        create_parent(destination)
         f = io.open(destination, mode='wb')
         f.write(content)
         f.close()
         return os.path.abspath(destination)
-
-    def _create_parent(self, destination):
-        parent = os.path.dirname(destination)
-        if not os.path.isdir(parent):
-            os.makedirs(parent)
 
     def delete(self, name):
         destination = os.path.join(self.directory, name + self.fileSuffix)

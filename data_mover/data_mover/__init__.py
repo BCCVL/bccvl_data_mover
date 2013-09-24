@@ -18,6 +18,7 @@ from data_mover.dao.ala_occurrence_dao import ALAOccurrenceDAO
 from data_mover.dao.session_maker import SessionMaker
 from data_mover.files.file_manager import FileManager
 from data_mover.factory.dataset_factory import DatasetFactory
+from data_mover.services.dataset_provider_service import DatasetProviderService
 from data_mover.services.ala_service import ALAService
 
 ### DATABASE AND MODEL SERVICES ###
@@ -30,7 +31,8 @@ ALA_DATASET_FACTORY = DatasetFactory()
 
 ### SERVICES AND MANAGERS ###
 FILE_MANAGER = FileManager()
-ALA_SERVICE = ALAService(FILE_MANAGER, ALA_JOB_DAO, ALA_OCCURRENCE_DAO, ALA_DATASET_FACTORY)
+DATASET_PROVIDER_SERVICE = DatasetProviderService()
+ALA_SERVICE = ALAService(FILE_MANAGER, ALA_JOB_DAO, ALA_OCCURRENCE_DAO, ALA_DATASET_FACTORY, DATASET_PROVIDER_SERVICE)
 
 data_mover_service = None
 
@@ -52,6 +54,7 @@ def main(global_config, **settings):
     FILE_MANAGER.configure(settings, 'file_manager.')
     ALA_SERVICE.configure(settings, 'ala_service.')
     ALA_DATASET_FACTORY.configure(settings, 'ala_service.')
+    DATASET_PROVIDER_SERVICE.configure(settings, 'dataset_provider.')
 
     config = Configurator(settings=settings)
     config.add_view(DataMoverServices, name='data_mover')
