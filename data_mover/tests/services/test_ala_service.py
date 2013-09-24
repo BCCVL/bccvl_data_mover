@@ -59,8 +59,8 @@ class TestALAService(unittest.TestCase):
             self.assertEqual(1, header.count('LNGDEC'))
             self.assertEqual(1, header.count('LATDEC'))
 
-        expected_occurrence_path = path_to_url('%s/%s.csv' % (ala_dir, lsid))
-        expected_metadata_path = path_to_url('%s/%s.json' % (ala_dir, lsid))
+        expected_occurrence_path = '%s/%s.csv' % (ala_dir, lsid)
+        expected_metadata_path = '%s/%s.json' % (ala_dir, lsid)
         ala_service._ala_occurrence_dao.create_new.assert_called_with(lsid, expected_occurrence_path, expected_metadata_path)
 
         # Remove temp dir

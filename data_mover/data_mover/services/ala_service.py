@@ -4,7 +4,6 @@ import logging
 import time
 import zlib
 from data_mover.endpoints.protocols import http_get
-from data_mover.util.url_utils import *
 
 
 class ALAService():
@@ -39,7 +38,6 @@ class ALAService():
         d = zlib.decompressobj(16 + zlib.MAX_WBITS)
         occurrence_path = self._file_manager.ala_file_manager.add_new_file(lsid, d.decompress(content), '.csv')
         self._normalizeOccurrence(occurrence_path)
-        occurrence_file_url = path_to_url(occurrence_path)
 
         # Get occurrence metadata
         metadata_url = self._metadata_url.replace("${lsid}", lsid)
@@ -48,8 +46,7 @@ class ALAService():
             self._logger.warning("Could not download occurrence metadata from ALA for LSID %s", lsid)
             return False
         metadata_path = self._file_manager.ala_file_manager.add_new_file(lsid, content, '.json')
-        metadata_file_url = path_to_url(metadata_path)
-        ala_occurrence = self._ala_occurrence_dao.create_new(lsid, occurrence_file_url, metadata_file_url)
+        ala_occurrence = self._ala_occurrence_dao.create_new(lsid, occurrence_path, metadata_path)
         ala_dataset = self._ala_dataset_factory.generate_dataset(ala_occurrence)
 
         self._logger.info("********************************************************")

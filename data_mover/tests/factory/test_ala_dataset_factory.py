@@ -8,6 +8,8 @@ from data_mover.factory.dataset_factory import DatasetFactory
 from data_mover.models.ala_occurrences import ALAOccurrence
 from data_mover.services.ala_service import ALAService
 from data_mover.files.ala_file_manager import ALAFileManager
+from data_mover.util.url_utils import *
+
 
 class TestALADatasetFactory(unittest.TestCase):
 
@@ -65,9 +67,9 @@ class TestALADatasetFactory(unittest.TestCase):
         self.assertEqual(expected_description, ala_dataset.description)
         self.assertEqual(expected_num_occurrences, ala_dataset.num_occurrences)
         self.assertEqual(expected_provenance_url, ala_dataset.provenance.url)
-        self.assertEqual(occurrence_file, ala_dataset.files[0].url)
+        self.assertEqual(path_to_url(occurrence_file), ala_dataset.files[0].url)
         self.assertEqual(os.path.getsize(occurrence_file), ala_dataset.files[0].size)
-        self.assertEqual(metadata_file, ala_dataset.files[1].url)
+        self.assertEqual(path_to_url(metadata_file), ala_dataset.files[1].url)
         self.assertEqual(os.path.getsize(metadata_file), ala_dataset.files[1].size)
 
         shutil.rmtree(temp_dir)
