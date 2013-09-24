@@ -12,8 +12,13 @@ The data mover shall be asynchronous. When a request to move a file is made via 
     $ cd bccvl_data_mover/data_mover
     $ virtualenv .
     $ source bin/activate
-    $ pip install -r requirements.txt
-    $ python setup.py develop
+
+    # if you have an old virtualenv - note, it should always be safe to run this
+    $ pip install distribute --upgrade
+
+    $ python bootstrap.py
+    $ ./bin/buildout
+
 
 **Configuration File**
 
@@ -35,16 +40,16 @@ You will need to create:
 Then run:
 
     $ ./bin/initialize_data_mover_db development.ini
-    
+
 **Start server**
 
     $ ./bin/pserve development.ini
-  
+
 **On update**
 
-    $ pip install -r requirements.txt
+    $ ./bin/buildout
     $ ./bin/initialize_data_mover_db development.ini
-    
+
 **How to test XMLRPC (Python)**
 
     from xmlrpclib import ServerProxy
