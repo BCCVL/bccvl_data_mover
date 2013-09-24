@@ -29,7 +29,20 @@ python --version
 echo "Deleting all .pyc files"
 find . -name "*.pyc" | xargs rm -rf
 
+# Note to Dan Y,
+# I think this just becomes:
+#
+#   PYTHON="$BIN_DIR/python"
+#   BUILDOUT="$BIN_DIR/buildout"
+#
+#   # If you have a particularly old virtual env, you will need to run:
+#   $PIP install distribute --upgrade
+#
+#   $PYTHON bootstrap.py
+#   $BUILDOUT
+#
 $PIP install -r requirements.txt
+
 $NOSETESTS --with-xunit
 RESULT=$?
 
