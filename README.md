@@ -30,6 +30,7 @@ Make sure that you have the follow (or similar):
     sqlalchemy.url = postgresql+psycopg2://data_mover:data_mover@localhost:5432/data_mover
     file_manager.data_directory = sample
     file_manager.ala_data_directory = sample/ALA
+    dataset_provider.dest_dir = sample/dataset_manager
 
     ala_service.sleep_time = 10
 
