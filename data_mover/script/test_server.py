@@ -7,9 +7,9 @@ class TestServer():
         self.proccess = None
 
     def start(self):
-        devnull = open('/dev/null', 'w')
-        self.proccess = subprocess.Popen(['./bin/pserve', 'test.ini'], stdout=devnull, stderr=subprocess.STDOUT)
-        time.sleep(10)
+        self.proccess = subprocess.Popen(['./bin/pserve', 'test.ini'])
+        print 'Sleeping for 30 seconds'
+        time.sleep(30)
 
     def stop(self):
         self.proccess.kill()

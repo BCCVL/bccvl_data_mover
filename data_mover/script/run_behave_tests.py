@@ -35,7 +35,7 @@ print "Test server has started."
 
 print "Running tests..."
 # Run tests
-subprocess.call(['./bin/behave'])
+subprocess.call(['./bin/behave', '--junit'])
 
 # Stop test server
 print "Shutting down test server..."

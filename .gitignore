@@ -69,3 +69,5 @@ data_mover/local
 
 # Dir created by Buildout
 data_mover/etc
+data_mover/behave_test
+data_mover/reports
