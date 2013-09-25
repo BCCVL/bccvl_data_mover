@@ -22,6 +22,7 @@ requires = [
     'mock',
     'pyyaml',
     'requests',
+    'behave',
     ]
 
 setup(name='data_mover',
