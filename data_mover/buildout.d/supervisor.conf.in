@@ -1,0 +1,11 @@
+[program:data_mover]
+command = ${buildout:bin-directory}/pserve ${conf:file}
+process_name = data_mover
+directory = ${buildout:directory}
+priority = 20
+redirect_stderr = true
+user = data_mover
+stdout_logfile_maxbytes=1MB
+stdout_logfile_backups=10
+stdout_logfile = ${buildout:directory}/var/log/data_mover
+autostart = true

@@ -9,6 +9,8 @@ DATA_MOVER_DIR="$WORKSPACE/data_mover"
 BIN_DIR="$DATA_MOVER_DIR/bin"
 
 PIP="$BIN_DIR/pip"
+PYTHON="$BIN_DIR/python"
+BUILDOUT="$BIN_DIR/buildout"
 NOSETESTS="$BIN_DIR/nosetests"
 COVERAGE="$BIN_DIR/coverage"
 
@@ -24,12 +26,15 @@ cd $DATA_MOVER_DIR
 source bin/activate
 
 echo "Python version:"
-python --version
+$PYTHON --version
 
 echo "Deleting all .pyc files"
 find . -name "*.pyc" | xargs rm -rf
 
-$PIP install -r requirements.txt
+$PIP install distribute --upgrade
+$PYTHON bootstrap.py
+$BUILDOUT
+
 $NOSETESTS --with-xunit
 RESULT=$?
 

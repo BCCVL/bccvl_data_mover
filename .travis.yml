@@ -1,0 +1,17 @@
+language: python
+virtualenv:
+  system_site_packages: true
+python:
+  - "2.7"
+# command to install dependencies
+install:
+  - sudo apt-get update
+  - sudo apt-get upgrade
+  - sudo apt-get install build-essential
+  - cd data_mover
+  - pip install setuptools --upgrade
+  - python bootstrap.py
+  - bin/buildout -N -t 3
+# command to run tests
+script:
+  - bin/test
