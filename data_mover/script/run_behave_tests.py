@@ -15,28 +15,33 @@ import psycopg2
 
 # Setup Database
 # Drop all tables in data_mover_test
+print "Setting up test database"
 conn = psycopg2.connect("dbname='data_mover_test' user='data_mover' password='data_mover'")
 cur = conn.cursor()
-cur.execute('DROP TABLE IF EXISTS ala_jobs;')
-cur.execute('DROP TABLE IF EXISTS ala_occurrences;')
+cur.execute('DROP SCHEMA public CASCADE;')
+cur.execute('CREATE SCHEMA public;')
 conn.commit()
 cur.close()
 conn.close()
 
 # Re-initialize db
-devnull = open('/dev/null', 'w')
-subprocess.Popen(['./bin/initialize_data_mover_db', 'test.ini'], stdout=devnull, stderr=subprocess.STDOUT)
+subprocess.call(['./bin/initialize_data_mover_db', 'test.ini'])
 
 # Start the test server
+print "Starting test server..."
 test_server = TestServer()
 test_server.start()
+print "Test server has started."
 
+print "Running tests..."
 # Run tests
 subprocess.call(['./bin/behave'])
 
 # Stop test server
+print "Shutting down test server..."
 test_server.stop()
 
+print "Cleaning test directory..."
 # Clean up the directory
 if os.path.isdir('behave_test'):
     shutil.rmtree('behave_test')

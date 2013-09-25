@@ -10,3 +10,4 @@ Scenario: Pull Red Kangaroo occurrences from ALA
     Then I should see that the job status is "COMPLETE"
     Then I should see the file "behave_test/ALA/urn:lsid:biodiversity.org.au:afd.taxon:31a9b8b8-4e8f-4343-a15f-2ed24e0bf1ae.csv"
     Then I should see the file "behave_test/ALA/urn:lsid:biodiversity.org.au:afd.taxon:31a9b8b8-4e8f-4343-a15f-2ed24e0bf1ae.json"
+    Then I should see the file "behave_test/dataset_provider/Red Kangaroo (Macropus rufus) occurrences.json"
