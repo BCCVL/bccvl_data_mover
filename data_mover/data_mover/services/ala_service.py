@@ -86,7 +86,7 @@ class ALAService():
             self._logger.info('Attempt %s to download LSID %s from ALA', attempt, job.lsid)
             job = self._ala_job_dao.update(job, start_time=now, status='DOWNLOADING', attempts=attempt)
             if job.attempts > 1:
-                time.sleep(self._sleep_time) # need to define this
+                time.sleep(self._sleep_time)
             download_success = self.getOccurrenceByLSID(job.lsid)
 
         if download_success:
