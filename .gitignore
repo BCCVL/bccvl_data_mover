@@ -63,3 +63,9 @@ coverage.xml
 .idea/testrunner.xml
 .idea/vcs.xml
 .idea/workspace.xml
+
+# Dir created by Virtual Env
+data_mover/local
+
+# Dir created by Buildout
+data_mover/etc
