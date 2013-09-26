@@ -45,7 +45,7 @@ echo "Running unit tests"
 $NOSETESTS --with-xunit
 TEST_RESULT=$?
 
-$COVERAGE xml --omit=./lib/*/*.py,./tests/*/*.py
+$COVERAGE xml --omit=./lib/*/*.py,./tests/*/*.py,./eggs/*/*.py
 
 # So that Jenkins can see the source
 #sed "s#filename=\"#filename=\"$WORKSPACE/data_mover/#g" coverage.xml > coverage-fixed.xml
