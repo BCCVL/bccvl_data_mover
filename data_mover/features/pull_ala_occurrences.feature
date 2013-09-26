@@ -15,6 +15,7 @@ Scenario: Pull Red Kangaroo occurrences from ALA
 Scenario: Pull an occurrence from ALA that does not exist
     Given I am connected to the Data Mover server
     When I pull occurrences from ALA using the LSID "bad:lsid:here"
+    Then I wait 10 seconds
     When I check the status of the pull job
     Then I should see that the job status is "DOWNLOADING"
     And I wait 1 minutes
