@@ -21,7 +21,6 @@ def step_impl(context):
 
 @then('I should see that the job status is "{expected_status}"')
 def step(context, expected_status):
-    print context.job_status
     assert context.job_status == expected_status
 
 @then('I wait {minutes} minutes')
