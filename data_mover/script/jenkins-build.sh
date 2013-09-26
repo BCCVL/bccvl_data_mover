@@ -30,8 +30,10 @@ source bin/activate
 echo "Python version:"
 $PYTHON --version
 
-echo "Deleting all .pyc files"
-find . -name "*.pyc" | xargs rm -rf
+echo "Deleting .pyc files"
+find ./data_mover -name "*.pyc" | xargs rm -rfv
+find ./tests -name "*.pyc" | xargs rm -rfv
+find ./features -name "*.pyc" | xargs rm -rfv
 
 $PIP install distribute --upgrade
 $PIP install psycopg2
