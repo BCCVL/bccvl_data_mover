@@ -7,11 +7,37 @@ NOTE:   You will need psycopg2 installed in your virtualenv to run this script.
             pip install psycopg2
 """
 import os
+import psycopg2
 import shutil
 import subprocess
-from test_server import TestServer
-import psycopg2
+import sys
+import time
 
+
+class TestServer():
+    def __init__(self):
+        self.process = None
+
+    def start(self):
+        self.process = subprocess.Popen(['./bin/pserve', 'test.ini'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        print 'Sleeping for 10 seconds'
+        time.sleep(10)
+
+    def stop(self):
+        self.process.kill()
+
+    def print_stdout_stderr(self):
+        out, err = self.process.communicate()
+        if out:
+            print ""
+            print "stdout:"
+            print out
+            print ""
+        if err:
+            print ""
+            print "stderr:"
+            print >> sys.stderr, err
+            print ""
 
 # Setup Database
 # Drop all tables in data_mover_test
@@ -35,13 +61,18 @@ print "Test server has started."
 
 print "Running tests..."
 # Run tests
-subprocess.call(['./bin/behave', '--junit'])
+behave_process_return_code = subprocess.call(['./bin/behave', '--junit'])
 
 # Stop test server
 print "Shutting down test server..."
 test_server.stop()
 
+if behave_process_return_code != 0:
+    test_server.print_stdout_stderr()
+
 print "Cleaning test directory..."
 # Clean up the directory
 if os.path.isdir('behave_test'):
     shutil.rmtree('behave_test')
+
+sys.exit(behave_process_return_code)

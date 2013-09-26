@@ -35,7 +35,7 @@ class TestALAService(unittest.TestCase):
         self.assertEqual(0, len(os.listdir(temp_dir)))
 
         ala_service._file_manager.ala_file_manager = ALAFileManager(temp_dir)
-        result = ala_service.getOccurrenceByLSID(lsid)
+        result = ala_service.get_occurrence_by_lsid(lsid)
         self.assertTrue(result)
 
         # ALA directory exists
@@ -65,3 +65,19 @@ class TestALAService(unittest.TestCase):
 
         # Remove temp dir
         shutil.rmtree(temp_dir)
+
+    def test_get_bad_occurrence(self):
+        lsid = 'urn:lsid:bad'
+
+        file_manager = MagicMock()
+        ala_job_dao = MagicMock()
+        ala_occurrence_dao = MagicMock()
+        ala_dataset_factory = MagicMock()
+        dataset_provider_service = MagicMock()
+
+        ala_service = ALAService(file_manager, ala_job_dao, ala_occurrence_dao, ala_dataset_factory, dataset_provider_service)
+        ala_service._occurrence_url = "http://biocache.ala.org.au/ws/webportal/occurrences.gz?q=lsid:${lsid}&fq=geospatial_kosher:true&fl=raw_taxon_name,longitude,latitude&pageSize=999999999"
+        ala_service._metadata_url = "http://bie.ala.org.au/species/${lsid}.json"
+
+        result = ala_service.get_occurrence_by_lsid(lsid)
+        self.assertFalse(result)

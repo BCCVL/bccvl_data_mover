@@ -2,8 +2,7 @@ import datetime
 import io
 import logging
 import time
-import zlib
-from data_mover.endpoints.protocols import http_get
+from data_mover.endpoints.protocols import *
 
 
 class ALAService():
@@ -16,13 +15,16 @@ class ALAService():
         self._ala_occurrence_dao = ala_occurrence_dao
         self._ala_dataset_factory = ala_dataset_factory
         self._dataset_provider_service = dataset_provider_service
+        self._occurrence_url = ''
+        self._metadata_url = ''
+        self._sleep_time = 0
 
     def configure(self, settings, key):
         self._occurrence_url = settings[key + 'occurrence_url']
         self._metadata_url = settings[key + 'metadata_url']
-        self._sleep_time = settings[key + 'sleep_time']
+        self._sleep_time = float(settings[key + 'sleep_time'])
 
-    def getOccurrenceByLSID(self, lsid):
+    def get_occurrence_by_lsid(self, lsid):
         """
         Downloads Species Occurrence data from ALA (Atlas of Living Australia) based on an LSID (Life Science Identifier)
         :param lsid: the lsid of the species to download occurrence data for
@@ -30,20 +32,19 @@ class ALAService():
 
         # Get occurrence data
         occurrence_url = self._occurrence_url.replace("${lsid}", lsid)
-        content = http_get(occurrence_url)
-        if content is None:
+        content = http_get_gunzip(occurrence_url)
+        if content is None or len(content) == 0:
             self._logger.warning("Could not download occurrence data from ALA for LSID %s", lsid)
             return False
 
         self._logger.info("Completed download of raw occurrence data form ALA for LSID %s", lsid)
-        d = zlib.decompressobj(16 + zlib.MAX_WBITS)
-        occurrence_path = self._file_manager.ala_file_manager.add_new_file(lsid, d.decompress(content), '.csv')
-        self._normalizeOccurrence(occurrence_path)
+        occurrence_path = self._file_manager.ala_file_manager.add_new_file(lsid, content, '.csv')
+        self._normalize_occurrence(occurrence_path)
 
         # Get occurrence metadata
         metadata_url = self._metadata_url.replace("${lsid}", lsid)
         content = http_get(metadata_url)
-        if content is None:
+        if content is None or len(content) == 0:
             self._logger.warning("Could not download occurrence metadata from ALA for LSID %s", lsid)
             return False
         metadata_path = self._file_manager.ala_file_manager.add_new_file(lsid, content, '.json')
@@ -54,7 +55,7 @@ class ALAService():
         self._dataset_provider_service.deliver_dataset(ala_dataset)
         return True
 
-    def _normalizeOccurrence(self, file_path):
+    def _normalize_occurrence(self, file_path):
         """
          Normalizes an occurrence CSV file by replacing the first line of content from:
            raw_taxon_name,longitude,latitude
@@ -87,7 +88,7 @@ class ALAService():
             job = self._ala_job_dao.update(job, start_time=now, status='DOWNLOADING', attempts=attempt)
             if job.attempts > 1:
                 time.sleep(self._sleep_time)
-            download_success = self.getOccurrenceByLSID(job.lsid)
+            download_success = self.get_occurrence_by_lsid(job.lsid)
 
         if download_success:
             new_status = 'COMPLETE'
