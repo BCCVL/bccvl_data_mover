@@ -2,7 +2,7 @@ import datetime
 import io
 import logging
 import time
-from data_mover.endpoints.protocols import *
+from data_mover.protocols.http import *
 
 
 class ALAService():

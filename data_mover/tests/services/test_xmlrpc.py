@@ -44,7 +44,7 @@ class TestXMLRPC(unittest.TestCase):
 
         job = ALAJob(lsid)
         job.id = 1
-        service._ala_job_dao.findById = MagicMock(return_value=job)
+        service._ala_job_dao.find_by_id = MagicMock(return_value=job)
 
         response = service.checkALAJobStatus(1)
         self.assertEqual(1, response['id'])
@@ -58,7 +58,7 @@ class TestXMLRPC(unittest.TestCase):
 
         job = ALAJob(lsid)
         job.id = 1
-        service._ala_job_dao.findById = MagicMock(return_value=job)
+        service._ala_job_dao.find_by_id = MagicMock(return_value=job)
 
         response = service.checkALAJobStatus()
         self.assertEqual('REJECTED', response['status'])
@@ -72,7 +72,7 @@ class TestXMLRPC(unittest.TestCase):
 
         job = ALAJob(lsid)
         job.id = 1
-        service._ala_job_dao.findById = MagicMock(return_value=job)
+        service._ala_job_dao.find_by_id = MagicMock(return_value=job)
 
         response = service.checkALAJobStatus('one')
         self.assertEqual('REJECTED', response['status'])

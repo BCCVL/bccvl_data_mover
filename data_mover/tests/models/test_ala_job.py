@@ -1,6 +1,6 @@
 import unittest
 from data_mover.models.ala_job import ALAJob
-from data_mover.models.job import Job
+from data_mover.models.move_job import MoveJob
 
 class TestAlaJob(unittest.TestCase):
 
@@ -11,7 +11,7 @@ class TestAlaJob(unittest.TestCase):
         self.assertIsNotNone(ala_job.submitted_time)
         self.assertIsNone(ala_job.start_time)
         self.assertIsNone(ala_job.end_time)
-        self.assertEqual(Job.STATUS_PENDING, ala_job.status)
+        self.assertEqual(MoveJob.STATUS_PENDING, ala_job.status)
 
     def test_eq_ne(self):
         ala_job_1 = ALAJob(None)

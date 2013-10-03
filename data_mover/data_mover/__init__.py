@@ -16,6 +16,7 @@ DBSession = scoped_session(sessionmaker(extension=ZopeTransactionExtension()))
 from data_mover.dao.ala_job_dao import ALAJobDAO
 from data_mover.dao.ala_occurrence_dao import ALAOccurrenceDAO
 from data_mover.dao.session_maker import SessionMaker
+from data_mover.destinations.destination_manager import DestinationManager
 from data_mover.files.file_manager import FileManager
 from data_mover.factory.dataset_factory import DatasetFactory
 from data_mover.services.dataset_provider_service import DatasetProviderService
@@ -33,6 +34,7 @@ ALA_DATASET_FACTORY = DatasetFactory()
 FILE_MANAGER = FileManager()
 DATASET_PROVIDER_SERVICE = DatasetProviderService()
 ALA_SERVICE = ALAService(FILE_MANAGER, ALA_JOB_DAO, ALA_OCCURRENCE_DAO, ALA_DATASET_FACTORY, DATASET_PROVIDER_SERVICE)
+DESTINATION_MANAGER = DestinationManager()
 
 data_mover_service = None
 

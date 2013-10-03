@@ -9,7 +9,7 @@ class ALAJobDAO:
         self._session_maker = session_maker
         self._logger = logging.getLogger(__name__)
 
-    def findById(self, id):
+    def find_by_id(self, id):
         session = self._session_maker.generate_session()
         return session.query(ALAJob).get(id)
 
@@ -28,7 +28,6 @@ class ALAJobDAO:
         return new_ala_job
 
     def update(self, job, **kwargs):
-
         if 'lsid' in kwargs:
             job.lsid = kwargs['lsid']
         if 'dataset_id' in kwargs:

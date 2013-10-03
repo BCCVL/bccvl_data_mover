@@ -1,5 +1,5 @@
 import unittest
-from data_mover.models.job import Job
+from data_mover.models.move_job import MoveJob
 
 
 class TestJob(unittest.TestCase):
@@ -8,23 +8,23 @@ class TestJob(unittest.TestCase):
         theType = 'someType'
         data_id = 7
         destination = 'someDestination'
-        job = Job(theType, data_id, destination)
+        job = MoveJob(theType, data_id, destination)
         self.assertEqual(theType, job.type)
         self.assertEqual(data_id, job.data_id)
         self.assertEquals(destination, job.destination)
-        self.assertEquals(Job.STATUS_PENDING, job.status)
+        self.assertEquals(MoveJob.STATUS_PENDING, job.status)
         self.assertIsNone(job.start_timestamp)
         self.assertIsNone(job.end_timestamp)
         self.assertEqual('sample/sample_source', job.source)
 
     def test_eq_ne(self):
-        job_1 = Job(None, None, None)
+        job_1 = MoveJob(None, None, None)
         job_1.id = 1
 
-        job_2 = Job(None, None, None)
+        job_2 = MoveJob(None, None, None)
         job_2.id = 2
 
-        jib_3 = Job(None, None, None)
+        jib_3 = MoveJob(None, None, None)
         jib_3.id = 1
 
         self.assertFalse(job_1 == job_2)

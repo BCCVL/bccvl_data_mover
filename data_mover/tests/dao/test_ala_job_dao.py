@@ -33,7 +33,7 @@ class TestAlaJobDAO(unittest.TestCase):
         session_maker.generate_session.return_value = session
         session.query.return_value.get.return_value = ALAJob(lsid)
 
-        out_job = toTest.findById(1)
+        out_job = toTest.find_by_id(1)
 
         self.assertIsNotNone(out_job)
         self.assertEqual(lsid, out_job.lsid)
