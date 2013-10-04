@@ -15,9 +15,9 @@ class ALAOccurrenceDAO:
     def create_new(self, lsid, occurrence_path, metadata_path):
         """
          Persists a new ALA occurrence to the database
-        :param lsid: The LSID of the occurence.
-        :param occurrence_path: The absolute path to the occurrence file
-        :param metadata_path: The absolute path to the metadata file
+        @param lsid: The LSID of the occurence.
+        @param occurrence_path: The absolute path to the occurrence file
+        @param metadata_path: The absolute path to the metadata file
         """
         session = self._session_maker.generate_session()
         new_ala_file = ALAOccurrence(lsid, occurrence_path, metadata_path)

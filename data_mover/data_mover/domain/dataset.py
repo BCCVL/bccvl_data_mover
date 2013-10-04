@@ -9,11 +9,11 @@ class Dataset():
         """
         Constructor
 
-        :param title: The title of the dataset
-        :param description: The description of the dataset
-        :param num_occurrences: The number of occurrences in the dataset
-        :param files: A list of files that belong to the dataset
-        :param provenance: The provenance of the dataset
+        @param title: The title of the dataset
+        @param description: The description of the dataset
+        @param num_occurrences: The number of occurrences in the dataset
+        @param files: A list of files that belong to the dataset
+        @param provenance: The provenance of the dataset
         """
         self.title = title
         self.description = description
@@ -51,9 +51,9 @@ class DatasetFile():
         """
         Constructor
 
-        :param url: The fully-qualified URL to the file
-        :param dataset_type: The type of the dataset (TYPE_OCCURRENCES, TYPE_ATTRIBUTION etc...)
-        :param size: the size of the file in bytes
+        @param url: The fully-qualified URL to the file
+        @param dataset_type: The type of the dataset (TYPE_OCCURRENCES, TYPE_ATTRIBUTION etc...)
+        @param size: the size of the file in bytes
         """
         self.url = url
         self.dataset_type = dataset_type
@@ -84,9 +84,9 @@ class DatasetProvenance():
         """
         Constructor
 
-        :param source: The source of the dataset
-        :param url: The URL used to retrieve the dataset
-        :param source_date: The date the dataset was retrieved
+        @param source: The source of the dataset
+        @param url: The URL used to retrieve the dataset
+        @param source_date: The date the dataset was retrieved
         """
         self.source = source
         self.url = url

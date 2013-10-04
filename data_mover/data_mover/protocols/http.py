@@ -9,8 +9,8 @@ def http_get(url):
     """
     Performs a HTTP-GET on the provided url, returning the raw content or None if there was a problem connecting/downloading.
 
-    :param url: The URL to download
-    :return: The content of the response, or None if the HTTP GET did not succeed.
+    @param url: The URL to download
+    @return: The content of the response, or None if the HTTP GET did not succeed.
     """
 
     response = requests.get(url)
@@ -24,8 +24,8 @@ def http_get_gunzip(url):
     """
     Performs a HTTP-GET on the provided url and performs a gunzip on the content.
 
-    :param url: The URL to download and gunzip
-    :return: The gunzipped content of the response, or None if the HTTP GET did not succeed.
+    @param url: The URL to download and gunzip
+    @return: The gunzipped content of the response, or None if the HTTP GET did not succeed.
     """
     raw_content = http_get(url)
     if raw_content is None:

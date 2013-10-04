@@ -16,7 +16,7 @@ class ALAJobDAO:
     def create_new(self, lsid):
         """
          Creates a new ALA job given an LSID.
-         :return: the newly created job
+         @return: the newly created job
         """
         session = self._session_maker.generate_session()
         new_ala_job = ALAJob(lsid)

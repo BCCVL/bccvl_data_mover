@@ -16,8 +16,7 @@ class SessionMaker:
     def generate_session(self):
         """
         This function generates a new SQLAlchemy session, for multiprocessing.
-        :param url: The url of database
-        :return: A new session
+        @return: A new session
         """
         engine = create_engine(self._url)
         session = scoped_session(sessionmaker(extension=ZopeTransactionExtension()))

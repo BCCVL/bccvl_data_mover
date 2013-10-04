@@ -28,7 +28,7 @@ class ALAService():
     def download_occurrence_by_lsid(self, lsid):
         """
         Downloads Species Occurrence data from ALA (Atlas of Living Australia) based on an LSID (Life Science Identifier)
-        :param lsid: the lsid of the species to download occurrence data for
+        @param lsid: the lsid of the species to download occurrence data for
         """
 
         # Get occurrence data
@@ -62,7 +62,7 @@ class ALAService():
            raw_taxon_name,longitude,latitude
          to:
            SPPCODE,LNGDEC,LATDEC
-         :param file_path: the path to the occurrence CSV file to normalize
+         @param file_path: the path to the occurrence CSV file to normalize
         """
         with io.open(file_path, mode='r+') as f:
             lines = f.readlines()
@@ -77,11 +77,9 @@ class ALAService():
         """
         Downloads the occurrences file and metadata from ALA.
         If the get fails 3 times, then the job fails.
-        :param job: An ALAJob
+        @param job: An ALAJob
         """
-
         now = datetime.datetime.now()
-
         download_success = False
         while not download_success and job.attempts <= 2:
             attempt = job.attempts + 1
@@ -90,10 +88,8 @@ class ALAService():
             if job.attempts > 1:
                 time.sleep(self._sleep_time)
             download_success = self.download_occurrence_by_lsid(job.lsid)
-
         if download_success:
             new_status = 'COMPLETE'
         else:
             new_status = 'FAIL'
-
         self._ala_job_dao.update(job, status=new_status, end_time=datetime.datetime.now())

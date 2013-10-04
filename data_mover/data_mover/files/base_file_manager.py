@@ -12,8 +12,8 @@ class BaseFileManager:
     def add_existing_file(self, name, path):
         """
          Adds the provided file path to the file manager.
-         :param name: the 'internal' name of the file.
-         :param path: the path to the file to store. Note this will perform a MOVE and the original file will no longer exist.
+         @param name: the 'internal' name of the file.
+         @param path: the path to the file to store. Note this will perform a MOVE and the original file will no longer exist.
         """
         destination = os.path.join(self._directory, name + self._file_suffix)
         create_parent(destination)
@@ -22,10 +22,10 @@ class BaseFileManager:
     def add_new_file(self, name, content, fileSuffix):
         """
          Adds the provided file content to the file manager.
-         :param name: the 'internal' name of the file.
-         :param content the content of the file to store.
-         :param fileSuffix: the suffix of the file to store
-         :return : The absolute path to the file that was written
+         @param name: the 'internal' name of the file.
+         @param content the content of the file to store.
+         @param fileSuffix: the suffix of the file to store
+         @return: The absolute path to the file that was written
         """
         destination = os.path.join(self._directory, name + fileSuffix)
         create_parent(destination)
