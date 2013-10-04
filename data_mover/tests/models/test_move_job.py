@@ -15,7 +15,7 @@ class TestMoveJob(unittest.TestCase):
         self.assertEqual(dest_path, to_test.dest_path)
         self.assertEquals(src_type, to_test.src_type)
         self.assertEquals(src_id, to_test.src_id)
-        self.assertIsNone(to_test.status)
+        self.assertEquals(MoveJob.STATUS_PENDING, to_test.status)
         self.assertIsNone(to_test.start_timestamp)
         self.assertIsNone(to_test.end_timestamp)
 

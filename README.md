@@ -53,14 +53,27 @@ Then run:
     $ ./bin/buildout
     $ ./bin/initialize_data_mover_db development.ini
 
-**How to test XMLRPC (Python)**
+**Available XMLRPC functions**
+
+*Pull occurrence data from ALA:*
 
     from xmlrpclib import ServerProxy
     s = ServerProxy('http://0.0.0.0:6543/data_mover')
     lsid = 'urn:lsid:biodiversity.org.au:afd.taxon:31a9b8b8-4e8f-4343-a15f-2ed24e0bf1ae'
-    s.pullOccurrenceFromALA(lsid)
+    response = s.pullOccurrenceFromALA(lsid)
 
-**Available XMLRPC functions**
+*Request a move of some occurrence data:*
 
-* pullOccurrenceFromALA(String lsid)
-* checkALAJobStatus(int job_id)
+    from xmlrpclib import ServerProxy
+    s = ServerProxy('http://0.0.0.0:6543/data_mover')
+    # Build the destination dictionary
+    host = 'visualizer'
+    path = '/opt/bccvl/visualizer/some_file.txt'
+    destination_dict = {'host':dest_host, 'path':dest_path}
+    # Build the source dictionary
+    type = 'url'
+    id = 'http://www.intersect.org.au/'
+    source_dict = {'type':type, 'id':id}
+    # Make the move request
+    s.move(destination_dict, source_dict)
+

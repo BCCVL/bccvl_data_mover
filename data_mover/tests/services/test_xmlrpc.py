@@ -3,6 +3,7 @@ import logging
 from mock import MagicMock
 from data_mover.services.data_mover_services import DataMoverServices
 from data_mover.services.ala_service import ALAService
+from data_mover.services.response import *
 from data_mover.models.ala_job import ALAJob
 from sqlalchemy.orm import scoped_session
 
@@ -61,8 +62,8 @@ class TestXMLRPC(unittest.TestCase):
         service._ala_job_dao.find_by_id = MagicMock(return_value=job)
 
         response = service.checkALAJobStatus()
-        self.assertEqual('REJECTED', response['status'])
-        self.assertEqual('Missing parameters', response['reason'])
+        self.assertEqual(STATUS_REJECTED, response['status'])
+        self.assertEqual(REASON_MISSING_PARAMS, response['reason'])
 
     def testXMLCheckALAJobStatusIdNotInt(self):
         lsid = 'urn:lsid:biodiversity.org.au:afd.taxon:31a9b8b8-4e8f-4343-a15f-2ed24e0bf1ae'
@@ -75,5 +76,5 @@ class TestXMLRPC(unittest.TestCase):
         service._ala_job_dao.find_by_id = MagicMock(return_value=job)
 
         response = service.checkALAJobStatus('one')
-        self.assertEqual('REJECTED', response['status'])
-        self.assertEqual('Invalid parameters', response['reason'])
+        self.assertEqual(STATUS_REJECTED, response['status'])
+        self.assertEqual(REASON_INVALID_PARAMS, response['reason'])

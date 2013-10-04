@@ -7,4 +7,4 @@ class ALAFileManager(BaseFileManager):
     """
     def __init__(self, directory):
         BaseFileManager.__init__(self)
-        self.directory = directory
+        self._directory = directory

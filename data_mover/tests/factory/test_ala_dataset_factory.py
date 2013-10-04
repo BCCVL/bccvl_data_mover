@@ -36,7 +36,7 @@ class TestALADatasetFactory(unittest.TestCase):
         self.assertEqual(0, len(os.listdir(temp_dir)))
 
         ala_service._file_manager.ala_file_manager = ALAFileManager(temp_dir)
-        result = ala_service.get_occurrence_by_lsid(lsid)
+        result = ala_service.download_occurrence_by_lsid(lsid)
         self.assertTrue(result)
 
         # ALA directory exists

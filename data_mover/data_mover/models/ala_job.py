@@ -7,17 +7,19 @@ from sqlalchemy import (
     DateTime,
     )
 
-STATUS_PENDING = 'PENDING'
-STATUS_ACCEPTED = 'ACCEPTED'
-STATUS_COMPLETED = 'COMPLETED'
-STATUS_FAILED = 'FAILED'
-STATUS_DOWNLOAD = 'DOWNLOADING'
-
 
 class ALAJob(Base):
     """
      Represents a Job to fetch Occurrence data from ALA. Used to track the status of these jobs.
     """
+
+    STATUS_REJECTED = 'REJECTED'
+    STATUS_PENDING = 'PENDING'
+    STATUS_ACCEPTED = 'ACCEPTED'
+    STATUS_COMPLETED = 'COMPLETED'
+    STATUS_FAILED = 'FAILED'
+    STATUS_DOWNLOADING = 'DOWNLOADING'
+
     __tablename__ = 'ala_jobs'
 
     id = Column(Integer, primary_key=True)
@@ -32,7 +34,7 @@ class ALAJob(Base):
     def __init__(self, lsid):
         self.lsid = lsid
         self.dataset_id = None
-        self.status = STATUS_PENDING
+        self.status = ALAJob.STATUS_PENDING
         self.submitted_time = datetime.datetime.now()
         self.attempts = 0
 

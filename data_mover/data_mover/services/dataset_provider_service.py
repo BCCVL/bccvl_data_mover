@@ -10,12 +10,16 @@ class DatasetProviderService():
 
     _logger = logging.getLogger(__name__)
 
+    def __init__(self):
+        self.destination_dir = None
+
     def configure(self, settings, key):
         self.destination_dir = settings[key + 'dest_dir']
 
     def deliver_dataset(self, dataset):
         """
-        Delivers the provided dataset to the dataset manage by writing a filer
+        Delivers the provided dataset to the dataset manager by writing a file
+        @param dataset: The dataset to deliver
         """
         destination = os.path.join(self.destination_dir, dataset.title + ".json")
         create_parent(destination)

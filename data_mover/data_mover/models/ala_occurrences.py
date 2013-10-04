@@ -23,7 +23,6 @@ class ALAOccurrence(Base):
         :param lsid: The LSID of the ALA occurrence
         :param occurrence_path:  The absolute path to the ALA occurrence file
         :param metadata_path: The absolute path to the ALA metadata file
-         :
         """
         self.lsid = lsid
         self.occurrence_path = occurrence_path

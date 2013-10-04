@@ -25,7 +25,7 @@ class MoveJob(Base):
     start_timestamp = Column(DateTime)
     end_timestamp = Column(DateTime)
 
-    def __init__(self, dest_host, dest_path, src_type, src_id, status=None):
+    def __init__(self, dest_host, dest_path, src_type, src_id):
         """
         Constructor
         @param dest_host: the destination host
@@ -39,7 +39,7 @@ class MoveJob(Base):
         self.dest_path = dest_path
         self.src_type = src_type
         self.src_id = src_id
-        self.status = status
+        self.status = MoveJob.STATUS_PENDING
         self.start_timestamp = None
         self.end_timestamp = None
 

@@ -3,6 +3,7 @@ import io
 import logging
 import time
 from data_mover.protocols.http import *
+from data_mover.models.ala_job import ALAJob
 
 
 class ALAService():
@@ -24,7 +25,7 @@ class ALAService():
         self._metadata_url = settings[key + 'metadata_url']
         self._sleep_time = float(settings[key + 'sleep_time'])
 
-    def get_occurrence_by_lsid(self, lsid):
+    def download_occurrence_by_lsid(self, lsid):
         """
         Downloads Species Occurrence data from ALA (Atlas of Living Australia) based on an LSID (Life Science Identifier)
         :param lsid: the lsid of the species to download occurrence data for
@@ -85,10 +86,10 @@ class ALAService():
         while not download_success and job.attempts <= 2:
             attempt = job.attempts + 1
             self._logger.info('Attempt %s to download LSID %s from ALA', attempt, job.lsid)
-            job = self._ala_job_dao.update(job, start_time=now, status='DOWNLOADING', attempts=attempt)
+            job = self._ala_job_dao.update(job, start_time=now, status=ALAJob.DOWNLOADING, attempts=attempt)
             if job.attempts > 1:
                 time.sleep(self._sleep_time)
-            download_success = self.get_occurrence_by_lsid(job.lsid)
+            download_success = self.download_occurrence_by_lsid(job.lsid)
 
         if download_success:
             new_status = 'COMPLETE'
