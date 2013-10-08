@@ -71,3 +71,4 @@ data_mover/local
 data_mover/etc
 data_mover/behave_test
 data_mover/reports
+data_mover/epydoc

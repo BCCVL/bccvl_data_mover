@@ -23,6 +23,7 @@ requires = [
     'pyyaml',
     'requests',
     'behave',
+    'epydoc',
     ]
 
 setup(name='data_mover',

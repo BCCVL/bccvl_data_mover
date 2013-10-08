@@ -13,6 +13,7 @@ PYTHON="$BIN_DIR/python"
 BUILDOUT="$BIN_DIR/buildout"
 NOSETESTS="$BIN_DIR/nosetests"
 COVERAGE="$BIN_DIR/coverage"
+EPYDOC="$BIN_DIR/epydoc"
 BEHAVE_TEST="$DATA_MOVER_DIR/script/run_behave_tests.py"
 
 
@@ -30,15 +31,21 @@ source bin/activate
 echo "Python version:"
 $PYTHON --version
 
+# Clean
 echo "Deleting .pyc files"
 find ./data_mover -name "*.pyc" | xargs rm -rfv
 find ./tests -name "*.pyc" | xargs rm -rfv
 find ./features -name "*.pyc" | xargs rm -rfv
+rm -rf ./epydoc
 
 $PIP install distribute --upgrade
 $PIP install psycopg2
 $PYTHON bootstrap.py
 $BUILDOUT
+
+# Build documentation
+echo "Building epydoc documentation"
+$EPYDOC --html -v -o ./epydoc --name data_mover data_mover/
 
 # Run unit tests
 echo "Running unit tests"
