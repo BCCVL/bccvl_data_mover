@@ -35,6 +35,6 @@ class BaseFileManager:
         return os.path.abspath(destination)
 
     def delete(self, name):
-        destination = os.path.join(self._directory, name + self._file_suffix)
+        destination = os.path.join(self._directory, name)
         if os.path.isfile(destination):
             os.remove(destination)

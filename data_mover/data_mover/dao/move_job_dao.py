@@ -34,3 +34,27 @@ class MoveJobDAO():
         session.expunge(new_move_job)
         transaction.commit()
         return new_move_job
+
+    def update(self, job, **kwargs):
+        if 'dest_host' in kwargs:
+            job.dest_host = kwargs['dest_host']
+        if 'dest_path' in kwargs:
+            job.dest_path = kwargs['dest_path']
+        if 'src_type' in kwargs:
+            job.src_type = kwargs['src_type']
+        if 'src_id' in kwargs:
+            job.src_id = kwargs['src_id']
+        if 'status' in kwargs:
+            job.status = kwargs['status']
+        if 'start_timestamp' in kwargs:
+            job.start_timestamp = kwargs['start_timestamp']
+        if 'end_timestamp' in kwargs:
+            job.end_timestamp = kwargs['end_timestamp']
+
+        session = self._session_maker.generate_session()
+        session.add(job)
+        session.flush()
+        logging.info('Updated MoveJob with id %s', job.id)
+        session.expunge(job)
+        transaction.commit()
+        return job

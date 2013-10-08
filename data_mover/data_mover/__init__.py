@@ -1,4 +1,5 @@
 import logging
+import atexit
 
 from pyramid.config import Configurator
 from sqlalchemy import engine_from_config
@@ -35,10 +36,10 @@ ALA_DATASET_FACTORY = DatasetFactory()
 
 ### SERVICES AND MANAGERS ###
 FILE_MANAGER = FileManager()
+DESTINATION_MANAGER = DestinationManager()
 DATASET_PROVIDER_SERVICE = DatasetProviderService()
 ALA_SERVICE = ALAService(FILE_MANAGER, ALA_JOB_DAO, ALA_OCCURRENCE_DAO, ALA_DATASET_FACTORY, DATASET_PROVIDER_SERVICE)
-MOVE_SERVICE = MoveService(FILE_MANAGER, MOVE_JOB_DAO)
-DESTINATION_MANAGER = DestinationManager()
+MOVE_SERVICE = MoveService(FILE_MANAGER, MOVE_JOB_DAO, DESTINATION_MANAGER)
 
 data_mover_service = None
 
@@ -65,4 +66,8 @@ def main(global_config, **settings):
     config = Configurator(settings=settings)
     config.add_view(DataMoverServices, name='data_mover')
     config.scan()
+    atexit.register(shutdown_hook)
     return config.make_wsgi_app()
+
+def shutdown_hook():
+    FILE_MANAGER.temp_file_manager.delete_temp_directory()

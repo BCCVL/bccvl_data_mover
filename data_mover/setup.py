@@ -24,6 +24,8 @@ requires = [
     'requests',
     'behave',
     'epydoc',
+    'paramiko',
+    'scp',
     ]
 
 setup(name='data_mover',
