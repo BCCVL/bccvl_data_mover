@@ -33,7 +33,6 @@ class MoveJob(Base):
         @param dest_path: the destination path
         @param src_type: the source type
         @param src_id: the source id
-        @param status: the status
         """
         self.id = None
         self.dest_host = dest_host

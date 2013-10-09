@@ -10,10 +10,19 @@ class MoveJobDAO():
     """
 
     def __init__(self, session_maker):
+        """
+        Constructor
+        @param session_maker: The session maker
+        """
         self._session_maker = session_maker
         self._logger = logging.getLogger(__name__)
 
     def find_by_id(self, id):
+        """
+        Finds a MoveJob by its id.
+        @param id: The ID of the move job to find.
+        @return: The MoveJob, or None if it does not exist.
+        """
         session = self._session_maker.generate_session()
         return session.query(MoveJob).get(id)
 
@@ -36,6 +45,12 @@ class MoveJobDAO():
         return new_move_job
 
     def update(self, job, **kwargs):
+        """
+        Updates a provided MoveJob.
+        @param job: The job to update.
+        @param kwargs: The arguments and their values to update.
+        @return: The newly updated MoveJob.
+        """
         if 'dest_host' in kwargs:
             job.dest_host = kwargs['dest_host']
         if 'dest_path' in kwargs:

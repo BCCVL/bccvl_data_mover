@@ -6,5 +6,4 @@ class ALAFileManager(BaseFileManager):
      Manages ALA files on the file system.
     """
     def __init__(self, directory):
-        BaseFileManager.__init__(self)
-        self._directory = directory
+        BaseFileManager.__init__(self, directory)

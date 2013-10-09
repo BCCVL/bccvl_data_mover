@@ -41,8 +41,6 @@ DATASET_PROVIDER_SERVICE = DatasetProviderService()
 ALA_SERVICE = ALAService(FILE_MANAGER, ALA_JOB_DAO, ALA_OCCURRENCE_DAO, ALA_DATASET_FACTORY, DATASET_PROVIDER_SERVICE)
 MOVE_SERVICE = MoveService(FILE_MANAGER, MOVE_JOB_DAO, DESTINATION_MANAGER)
 
-data_mover_service = None
-
 from data_mover.services.data_mover_services import DataMoverServices
 
 def main(global_config, **settings):
@@ -68,6 +66,7 @@ def main(global_config, **settings):
     config.scan()
     atexit.register(shutdown_hook)
     return config.make_wsgi_app()
+
 
 def shutdown_hook():
     FILE_MANAGER.temp_file_manager.delete_temp_directory()
