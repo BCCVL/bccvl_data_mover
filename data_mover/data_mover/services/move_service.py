@@ -63,11 +63,11 @@ class MoveService():
 
         if send_complete is True:
             self._logger.info("Job with id %s has been completed", move_job.id)
-            self._file_manager.temp_file_manager.delete(file_path)
+            self._file_manager.temp_file_manager.delete_file(file_path)
             now = datetime.datetime.now()
             move_job = self._move_job_dao.update(move_job, status=MoveJob.STATUS_COMPLETE, end_timestamp=now)
         else:
             self._logger.warning("Move has failed for job with id %s", move_job.id)
-            self._file_manager.temp_file_manager.delete(file_path)
+            self._file_manager.temp_file_manager.delete_file(file_path)
             now = datetime.datetime.now()
             move_job = self._move_job_dao.update(move_job, status=MoveJob.STATUS_FAILED, end_timestamp=now)

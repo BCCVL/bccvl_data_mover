@@ -21,3 +21,8 @@ class BaseFileManager:
         f.write(content)
         f.close()
         return os.path.abspath(destination)
+
+    def delete_file(self, name):
+        destination = os.path.join(self._directory, name)
+        if os.path.isfile(destination):
+            os.remove(destination)
