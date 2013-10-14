@@ -25,7 +25,11 @@ class MoveService():
         @type return: String
         @return: The filepath of the downloaded file.
         """
-        content = http_get(url)
+        try:
+            content = http_get(url)
+        except:
+            self._logger.warning("Could not download file: %s", url)
+            return None
         if content is None or len(content) == 0:
             self._logger.warning("Could not download file: %s", url)
             return None
