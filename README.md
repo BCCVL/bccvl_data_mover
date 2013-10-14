@@ -78,4 +78,5 @@ Then run:
     response = s.move(destination_dict, source_dict)
 
 *Check the status of the move request:*
+
     s.checkMoveStatus(response.id)
