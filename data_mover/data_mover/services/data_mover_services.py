@@ -54,6 +54,7 @@ class DataMoverServices(XMLRPCView):
         else:
             return error_rejected(REASON_JOB_DOES_NOT_EXIST)
 
+
     def move(self, destination_dict, source_dict):
         """
         Performs a "move" of a file from a source to a destination
@@ -87,3 +88,21 @@ class DataMoverServices(XMLRPCView):
         thread = threading.Thread(target=self._move_service.worker, args=(move_job,))
         thread.start()
         return job_id_status(move_job)
+
+
+    def checkMoveStatus(self, id=None):
+        """
+        Checks the status of a "move" job that has been previously submitted
+        @param id: The ID of the "move" job to check
+        @return: The status of the job
+        """
+        if id is None:
+            return error_rejected(REASON_MISSING_PARAMS)
+        if not isinstance(id, int):
+            return error_rejected(REASON_INVALID_PARAMS)
+
+        job = self._move_job_dao.find_by_id(id)
+        if job is not None:
+            return job_id_status(job)
+        else:
+            return error_rejected(REASON_JOB_DOES_NOT_EXIST)

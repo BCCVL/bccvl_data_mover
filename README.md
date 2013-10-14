@@ -69,11 +69,13 @@ Then run:
     # Build the destination dictionary
     host = 'visualizer'
     path = '/opt/bccvl/visualizer/some_file.txt'
-    destination_dict = {'host':dest_host, 'path':dest_path}
+    destination_dict = {'host':host, 'path':path}
     # Build the source dictionary
     type = 'url'
     id = 'http://www.intersect.org.au/'
     source_dict = {'type':type, 'id':id}
     # Make the move request
-    s.move(destination_dict, source_dict)
+    response = s.move(destination_dict, source_dict)
 
+*Check the status of the move request:*
+    s.checkMoveStatus(response.id)
