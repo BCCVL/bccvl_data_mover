@@ -65,6 +65,8 @@ class MoveJobDAO():
             job.start_timestamp = kwargs['start_timestamp']
         if 'end_timestamp' in kwargs:
             job.end_timestamp = kwargs['end_timestamp']
+        if 'reason' in kwargs:
+            job.reason = kwargs['reason']
 
         session = self._session_maker.generate_session()
         session.add(job)

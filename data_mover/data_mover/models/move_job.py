@@ -25,6 +25,7 @@ class MoveJob(Base):
     status = Column(Text)
     start_timestamp = Column(DateTime)
     end_timestamp = Column(DateTime)
+    reason = Column(Text)
 
     def __init__(self, dest_host, dest_path, src_type, src_id):
         """
@@ -42,6 +43,7 @@ class MoveJob(Base):
         self.status = MoveJob.STATUS_PENDING
         self.start_timestamp = None
         self.end_timestamp = None
+        self.reason = None
 
     def __eq__(self, other):
         if isinstance(other, MoveJob):

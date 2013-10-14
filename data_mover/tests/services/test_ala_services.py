@@ -8,7 +8,7 @@ from data_mover.models.ala_job import ALAJob
 from sqlalchemy.orm import scoped_session
 
 
-class TestXMLRPC(unittest.TestCase):
+class TestALAServices(unittest.TestCase):
 
     def setUp(self):
         logging.basicConfig()

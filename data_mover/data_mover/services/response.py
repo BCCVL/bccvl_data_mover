@@ -13,3 +13,6 @@ def error_rejected(reason):
 
 def job_id_status(job):
     return {'id': job.id, 'status': job.status}
+
+def job_id_status_reason(job):
+    return {'id': job.id, 'status': job.status, 'reason': job.reason}
