@@ -87,10 +87,7 @@ class DataMoverServices(XMLRPCView):
 
         thread = threading.Thread(target=self._move_service.worker, args=(move_job,))
         thread.start()
-        if move_job.reason is None:
-            return job_id_status(move_job)
-        else:
-            return job_id_status_reason(move_job)
+        return job_id_status(move_job)
 
 
     def checkMoveStatus(self, id=None):
@@ -106,9 +103,6 @@ class DataMoverServices(XMLRPCView):
 
         job = self._move_job_dao.find_by_id(id)
         if job is not None:
-            if job.reason is None:
-                return job_id_status(job)
-            else:
-                return job_id_status_reason(job)
+            return job_id_status(job)
         else:
             return error_rejected(REASON_JOB_DOES_NOT_EXIST)
