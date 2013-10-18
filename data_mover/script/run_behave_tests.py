@@ -7,7 +7,6 @@ NOTE:   You will need psycopg2 installed in your virtualenv to run this script.
             pip install psycopg2
 """
 import os
-import psycopg2
 import shutil
 import subprocess
 import sys
@@ -42,13 +41,10 @@ class TestServer():
 # Setup Database
 # Drop all tables in data_mover_test
 print "Setting up test database"
-conn = psycopg2.connect("dbname='data_mover_test' user='data_mover' password='data_mover'")
-cur = conn.cursor()
-cur.execute('DROP SCHEMA public CASCADE;')
-cur.execute('CREATE SCHEMA public;')
-conn.commit()
-cur.close()
-conn.close()
+try:
+    os.remove('test.sqlite')
+except OSError:
+    pass
 
 # Re-initialize db
 subprocess.call(['./bin/initialize_data_mover_db', 'test.ini'])
