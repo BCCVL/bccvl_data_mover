@@ -15,7 +15,6 @@ requires = [
     'zope.sqlalchemy',
     'waitress',
     'pyramid_xmlrpc',
-    'psycopg2',
     'coverage',
     'nose',
     'test',
