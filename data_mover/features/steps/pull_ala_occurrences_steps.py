@@ -3,10 +3,6 @@ import time
 import os
 
 
-@given('I am connected to the Data Mover server')
-def step_impl(context):
-    context.server_proxy = ServerProxy('http://0.0.0.0:8888/data_mover')
-
 @when('I pull occurrences from ALA using the LSID "{lsid}"')
 def step_impl(context, lsid):
     response = context.server_proxy.pullOccurrenceFromALA(lsid)
@@ -23,19 +19,7 @@ def step_impl(context):
 def step(context, expected_status):
     assert context.job_status == expected_status
 
-@then('I wait {minutes} minutes')
-def step(context, minutes):
-    seconds = float(minutes) * 60;
-    time.sleep(seconds)
 
-@then('I wait {seconds} seconds')
-def step(context, seconds):
-    time.sleep(float(seconds))
-
-@then('I should see the file "{path}"')
-def step(context, path):
-    file_exists = os.path.exists(path)
-    assert file_exists is True
 
 # TODO: add environment.py before and after scenario, and make sure to shutdown the server after each test
 # TODO: clear the database after each scenario

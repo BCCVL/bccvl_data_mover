@@ -13,6 +13,6 @@ def error_rejected(reason):
 
 def job_id_status(job):
     to_return = {'id': job.id, 'status': job.status}
-    if hasattr(job, 'reason'):
+    if hasattr(job, 'reason') and job.reason is not None:
         to_return['reason'] = job.reason
     return to_return

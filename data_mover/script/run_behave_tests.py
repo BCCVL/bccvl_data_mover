@@ -53,6 +53,10 @@ conn.close()
 # Re-initialize db
 subprocess.call(['./bin/initialize_data_mover_db', 'test.ini'])
 
+# Create directory for move_test
+if not os.path.isdir('/tmp/behave_test/bccvl/visualizer'):
+    os.makedirs('/tmp/behave_test/bccvl/visualizer')
+
 # Start the test server
 print "Starting test server..."
 test_server = TestServer()
@@ -74,5 +78,8 @@ print "Cleaning test directory..."
 # Clean up the directory
 if os.path.isdir('behave_test'):
     shutil.rmtree('behave_test')
+
+if  os.path.isdir('/tmp/behave_test'):
+    shutil.rmtree('/tmp/behave_test')
 
 sys.exit(behave_process_return_code)
