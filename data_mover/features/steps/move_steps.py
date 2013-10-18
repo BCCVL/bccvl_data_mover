@@ -1,11 +1,18 @@
 from xmlrpclib import ServerProxy
 import time
+import tempfile
+import shutil
 import os
+import atexit
+from data_mover.util.file_utils import create_parent
 
 
 @given('I want to move a file to "{dest_host}" with file path "{dest_path}"')
 def step(context, dest_host, dest_path):
-    context.destination_dict = {'host':dest_host, 'path':dest_path}
+    context.temp_dir = tempfile.mkdtemp(suffix=__name__)
+    full_dest_path = os.path.join(context.temp_dir, dest_path)
+    create_parent(full_dest_path)
+    context.destination_dict = {'host':dest_host, 'path':full_dest_path}
 
 @given('my file type is "{type}" with id "{id}"')
 def step(context, type, id):
@@ -19,7 +26,6 @@ def step(context, dest_host, dest_path):
 def step(context, type, id):
     context.source_dict = {'protocol':type, 'url':id}
 
-
 @when('I request a move with the defined requirements')
 def step(context):
     response = context.server_proxy.move(context.destination_dict, context.source_dict)
@@ -30,6 +36,10 @@ def step(context):
     status = context.response['status']
     context.move_job_id = context.response['id']
     assert status == 'PENDING' or status == 'IN_PROGRESS'
+
+@then('I should not see my temp dir')
+def step(context):
+    shutil.rmtree(context.temp_dir)
 
 @then('I should see that the response status is REJECTED and the reason is "{expected_reason}"')
 def step(context, expected_reason):
