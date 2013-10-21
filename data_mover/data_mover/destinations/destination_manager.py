@@ -1,4 +1,5 @@
-from data_mover.destination_config import *
+import os
+import json
 
 
 class DestinationManager():
@@ -10,7 +11,12 @@ class DestinationManager():
         """
         Constructor
         """
-        pass
+        self.destinations = None
+
+    def configure(self, settings, key):
+        fp = os.path.abspath(settings[key + 'destinations'])
+        self.destinations = json.load(open(fp))
+
 
     def get_destination_by_name(self, name):
         """
@@ -18,7 +24,7 @@ class DestinationManager():
         @param name: The name of the destination to lookup
         @return: The details of the destination, or None if there is no such destination configured
         """
-        try:
-            return destinations[name]
-        except KeyError:
-            return None
+        for dest in self.destinations:
+            if name in dest:
+                return dest[name]
+        return None

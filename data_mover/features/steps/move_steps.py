@@ -1,9 +1,6 @@
-from xmlrpclib import ServerProxy
-import time
 import tempfile
 import shutil
 import os
-import atexit
 from data_mover.util.file_utils import create_parent
 
 

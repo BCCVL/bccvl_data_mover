@@ -60,6 +60,7 @@ def main(global_config, **settings):
     ALA_SERVICE.configure(settings, 'ala_service.')
     ALA_DATASET_FACTORY.configure(settings, 'ala_service.')
     DATASET_PROVIDER_SERVICE.configure(settings, 'dataset_provider.')
+    DESTINATION_MANAGER.configure(settings, 'destination_manager.')
 
     config = Configurator(settings=settings)
     config.add_view(DataMoverServices, name='data_mover')
