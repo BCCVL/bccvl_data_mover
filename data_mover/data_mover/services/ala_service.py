@@ -59,11 +59,11 @@ class ALAService():
 
     def _normalize_occurrence(self, file_path):
         """
-         Normalizes an occurrence CSV file by replacing the first line of content from:
-           raw_taxon_name,longitude,latitude
-         to:
-           SPPCODE,LNGDEC,LATDEC
-         @param file_path: the path to the occurrence CSV file to normalize
+        Normalizes an occurrence CSV file by replacing the first line of content from:
+         raw_taxon_name,longitude,latitude
+        to:
+         SPPCODE,LNGDEC,LATDEC
+        @param file_path: the path to the occurrence CSV file to normalize
         """
         with io.open(file_path, mode='r+') as f:
             lines = f.readlines()

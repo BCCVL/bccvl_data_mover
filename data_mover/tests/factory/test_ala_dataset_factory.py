@@ -61,12 +61,11 @@ class TestALADatasetFactory(unittest.TestCase):
 
         expected_title = "Red Kangaroo (Macropus rufus) occurrences"
         expected_description = "Observed occurrences for Red Kangaroo (Macropus rufus), imported from ALA on " + now.strftime('%d/%m/%Y')
-        expected_num_occurrences = 35136
         expected_provenance_url = "http://biocache.ala.org.au/ws/webportal/occurrences.gz?q=lsid:urn:lsid:biodiversity.org.au:afd.taxon:31a9b8b8-4e8f-4343-a15f-2ed24e0bf1ae&fq=geospatial_kosher:true&fl=raw_taxon_name,longitude,latitude&pageSize=999999999"
 
         self.assertEqual(expected_title, ala_dataset.title)
         self.assertEqual(expected_description, ala_dataset.description)
-        self.assertEqual(expected_num_occurrences, ala_dataset.num_occurrences)
+        self.assertTrue(ala_dataset.num_occurrences > 0)
         self.assertEqual(expected_provenance_url, ala_dataset.provenance.url)
         self.assertEqual(path_to_url(occurrence_file), ala_dataset.files[0].url)
         self.assertEqual(os.path.getsize(occurrence_file), ala_dataset.files[0].size)

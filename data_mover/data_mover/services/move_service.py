@@ -23,7 +23,6 @@ class MoveService():
         Downloads the source file from given url.
         @type move_job: MoveJob
         @param move_job: The Move Job to download the source URL for
-        @type return: String
         @return: The full path of the downloaded file.
         """
         url = move_job.src_id
