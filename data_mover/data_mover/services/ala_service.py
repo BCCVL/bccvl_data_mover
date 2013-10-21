@@ -90,7 +90,7 @@ class ALAService():
                 time.sleep(self._sleep_time)
             download_success = self.download_occurrence_by_lsid(job.lsid)
         if download_success:
-            new_status = 'COMPLETE'
+            new_status = ALAJob.STATUS_COMPLETED
         else:
-            new_status = 'FAIL'
+            new_status = ALAJob.STATUS_FAILED
         self._ala_job_dao.update(job, status=new_status, end_time=datetime.datetime.now())

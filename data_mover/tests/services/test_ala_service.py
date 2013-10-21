@@ -3,8 +3,11 @@ import logging
 import io
 import shutil
 import tempfile
+from data_mover.dao.ala_job_dao import ALAJobDAO
+import mock
 import os
 from mock import MagicMock
+from data_mover.models.ala_job import ALAJob
 from data_mover.services.ala_service import ALAService
 from data_mover.files.ala_file_manager import ALAFileManager
 
@@ -81,3 +84,48 @@ class TestALAService(unittest.TestCase):
 
         result = ala_service.download_occurrence_by_lsid(lsid)
         self.assertFalse(result)
+
+    def test_worker(self):
+        lsid = 'urn:lsid:bad'
+        file_manager = MagicMock()
+        ala_job_dao = MagicMock()
+        ala_occurrence_dao = MagicMock()
+        ala_dataset_factory = MagicMock()
+        dataset_provider_service = MagicMock()
+
+        to_test = ALAService(file_manager, ala_job_dao, ala_occurrence_dao, ala_dataset_factory, dataset_provider_service)
+        to_test.download_occurrence_by_lsid = MagicMock()
+
+        job = ALAJob(lsid)
+        ala_job_dao.update.return_value = job
+        to_test.download_occurrence_by_lsid.return_value = True
+
+        to_test.worker(job)
+
+        call_1 = mock.call(job, start_time=mock.ANY, status=ALAJob.STATUS_DOWNLOADING, attempts=1)
+        call_2 = mock.call(job, status=ALAJob.STATUS_COMPLETED, end_time=mock.ANY)
+
+        ala_job_dao.update.assert_has_calls([call_1, call_2])
+
+        to_test.download_occurrence_by_lsid.assert_called_with(lsid)
+
+
+    def test_worker_fails(self):
+        lsid = 'urn:lsid:bad'
+        file_manager = MagicMock()
+        session_maker = MagicMock()
+        ala_job_dao = ALAJobDAO(session_maker)
+        ala_occurrence_dao = MagicMock()
+        ala_dataset_factory = MagicMock()
+        dataset_provider_service = MagicMock()
+
+        to_test = ALAService(file_manager, ala_job_dao, ala_occurrence_dao, ala_dataset_factory, dataset_provider_service)
+        to_test.download_occurrence_by_lsid = MagicMock()
+        to_test._sleep_time = 0
+
+        job = ALAJob(lsid)
+        to_test.download_occurrence_by_lsid.return_value = False
+
+        to_test.worker(job)
+        self.assertEqual(ALAJob.STATUS_FAILED, job.status)
+        to_test.download_occurrence_by_lsid.assert_called_with(lsid)
