@@ -13,7 +13,7 @@ class MoveJob(Base):
     STATUS_PENDING = 'PENDING'
     STATUS_IN_PROGRESS = 'IN_PROGRESS'
     STATUS_FAILED = 'FAILED'
-    STATUS_COMPLETE = 'COMPLETE'
+    STATUS_COMPLETE = 'COMPLETED'
 
     __tablename__ = 'move_jobs'
 

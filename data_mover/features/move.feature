@@ -8,7 +8,7 @@ Scenario: Move http://www.intersect.org.au to test_machine
     Then I should see that the response is PENDING or IN_PROGRESS
     Then I wait 5 seconds
     When I check the status of the move job
-    Then I should see that the move job status is "COMPLETE"
+    Then I should see that the move job status is "COMPLETED"
     And I should see the file "behave_test/bccvl/visualizer/some_file.txt" in my temp directory
 
 Scenario: Move with invalid parameters
