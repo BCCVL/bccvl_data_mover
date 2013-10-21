@@ -171,3 +171,63 @@ class TestDataMoverServices(unittest.TestCase):
         self.assertEqual(STATUS_REJECTED, out['status'])
         self.assertEqual(REASON_UNKNOWN_DESTINATION, out['reason'])
         to_test._destination_manager.get_destination_by_name.assert_called_with('unknown_destination')
+
+    def testXMLMoveMissingParams(self):
+        to_test = DataMoverServices(None, None)
+        dest_dict = {}
+        source_dict = {}
+
+        out = to_test.move(dest_dict, source_dict)
+        self.assertIsNotNone(out)
+        self.assertEqual(STATUS_REJECTED, out['status'])
+        self.assertEqual(REASON_MISSING_PARAMS, out['reason'])
+
+    def testCheckMoveStatus(self):
+        to_test = DataMoverServices(None, None)
+        to_test._destination_manager = MagicMock()
+        to_test._move_job_dao = MagicMock()
+
+        id = 1
+        job = MoveJob('dest_host', 'dest_path', 'src_type', 'src_id')
+        job.id = id
+        job.status = MoveJob.STATUS_IN_PROGRESS
+        to_test._move_job_dao.find_by_id.return_value = job
+
+        out = to_test.checkMoveStatus(id)
+
+        self.assertIsNotNone(out)
+        self.assertEqual(MoveJob.STATUS_IN_PROGRESS, out['status'])
+        self.assertEqual(id, out['id'])
+        to_test._move_job_dao.find_by_id.assert_called_with(id)
+
+    def testCheckMoveStatusUnknownJob(self):
+        to_test = DataMoverServices(None, None)
+        to_test._destination_manager = MagicMock()
+        to_test._move_job_dao = MagicMock()
+
+        id = 1
+        to_test._move_job_dao.find_by_id.return_value = None
+
+        out = to_test.checkMoveStatus(id)
+
+        self.assertIsNotNone(out)
+        self.assertEqual(STATUS_REJECTED, out['status'])
+        self.assertEqual(REASON_JOB_DOES_NOT_EXIST, out['reason'])
+        to_test._move_job_dao.find_by_id.assert_called_with(id)
+
+
+    def testCheckMoveStatusNoId(self):
+        to_test = DataMoverServices(None, None)
+
+        out = to_test.checkMoveStatus()
+        self.assertIsNotNone(out)
+        self.assertEqual(STATUS_REJECTED, out['status'])
+        self.assertEqual(REASON_MISSING_PARAMS, out['reason'])
+
+    def testCheckMoveStatusInvalidId(self):
+        to_test = DataMoverServices(None, None)
+
+        out = to_test.checkMoveStatus('1')
+        self.assertIsNotNone(out)
+        self.assertEqual(STATUS_REJECTED, out['status'])
+        self.assertEqual(REASON_INVALID_PARAMS, out['reason'])
