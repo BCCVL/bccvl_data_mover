@@ -1,8 +1,8 @@
 import unittest
-import datetime
 from data_mover.dao.move_job_dao import MoveJobDAO
 from data_mover.dao.session_maker import SessionMaker
 from data_mover.models.move_job import MoveJob
+from datetime import datetime, timedelta
 from mock import ANY
 from mock import MagicMock
 from sqlalchemy.orm.scoping import scoped_session
@@ -15,7 +15,7 @@ class TestMoveJobDAO(unittest.TestCase):
         session = MagicMock(spec=scoped_session)
         to_test = MoveJobDAO(session_maker)
 
-        found_move_job = MoveJob("dest_host", "dest_path", "src_type", "src_id")
+        found_move_job = MoveJob({}, {})
         found_move_job.id = 1
 
         session_maker.generate_session.return_value = session
@@ -32,18 +32,14 @@ class TestMoveJobDAO(unittest.TestCase):
         session_maker = MagicMock(spec=SessionMaker)
         to_test = MoveJobDAO(session_maker)
 
-        dest_host = 'dest_host'
-        dest_path = 'dest_path'
-        src_type = 'src_type'
-        src_id = 'src_id'
-        out = to_test.create_new(dest_host, dest_path, src_type, src_id)
+        source = {}
+        dest = {}
+
+        out = to_test.create_new(source, dest)
 
         self.assertIsNotNone(out)
-        self.assertEqual(dest_host, out.dest_host)
-        self.assertEqual(dest_path, out.dest_path)
-        self.assertEqual(src_type, out.src_type)
-        self.assertEqual(src_id, out.src_id)
-
+        self.assertEqual(source, out.source)
+        self.assertEqual(dest, out.destination)
         session_maker.generate_session.return_value.add.assert_called_with(ANY)
 
 
@@ -52,27 +48,21 @@ class TestMoveJobDAO(unittest.TestCase):
         session_maker = MagicMock(spec=SessionMaker)
         to_test = MoveJobDAO(session_maker)
 
-        existing_move_job = MoveJob('dest_host', 'dest_path', 'src_type', 'src_id')
-        dest_host = 'new_dest_host'
-        dest_path = 'new_dest_path'
-        src_type = 'new_src_type'
-        src_id = 'new_src_id'
+        existing_move_job = MoveJob({}, {})
         status = MoveJob.STATUS_IN_PROGRESS
-        start_timestamp = datetime.datetime.now() + datetime.timedelta(seconds=5000)
-        end_timestamp = datetime.datetime.now() + datetime.timedelta(seconds=10000)
+        start_timestamp = datetime.now() + timedelta(seconds=5000)
+        end_timestamp = datetime.now() + timedelta(seconds=10000)
+        reason = 'some reason'
 
         session_maker.generate_session.return_value = session
 
-        out = to_test.update(existing_move_job, dest_host=dest_host, dest_path=dest_path, src_type=src_type, src_id=src_id, status=status, start_timestamp=start_timestamp, end_timestamp=end_timestamp)
+        out = to_test.update(existing_move_job, status=status, start_timestamp=start_timestamp, end_timestamp=end_timestamp, reason=reason)
 
         self.assertIsNotNone(out)
-        self.assertEqual(dest_host, out.dest_host)
-        self.assertEqual(dest_path, out.dest_path)
-        self.assertEqual(src_type, out.src_type)
-        self.assertEqual(src_id, out.src_id)
         self.assertEqual(status, out.status)
         self.assertEqual(start_timestamp, out.start_timestamp)
         self.assertEqual(end_timestamp, out.end_timestamp)
+        self.assertEqual(reason, out.reason)
 
         session.add.assert_called_with(existing_move_job)
         session.flush.assert_called()

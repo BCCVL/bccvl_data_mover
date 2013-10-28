@@ -1,8 +1,9 @@
 import threading
 
 from pyramid_xmlrpc import XMLRPCView
-from data_mover.services.response import *
-from data_mover import ALA_SERVICE, ALA_JOB_DAO, DESTINATION_MANAGER, MOVE_JOB_DAO, MOVE_SERVICE
+from data_mover.services.response import error_rejected, job_id_status, REASON_MISSING_PARAMS,\
+    REASON_UNKNOWN_SOURCE, REASON_UNKNOWN_DESTINATION, REASON_INVALID_PARAMS, REASON_JOB_DOES_NOT_EXIST
+from data_mover import ALA_SERVICE, DESTINATION_MANAGER, MOVE_JOB_DAO, MOVE_SERVICE
 
 
 class DataMoverServices(XMLRPCView):
@@ -14,86 +15,15 @@ class DataMoverServices(XMLRPCView):
     def __init__(self, context, request):
         XMLRPCView.__init__(self, context, request)
         self._ala_service = ALA_SERVICE
-        self._ala_job_dao = ALA_JOB_DAO
         self._move_job_dao = MOVE_JOB_DAO
         self._destination_manager = DESTINATION_MANAGER
         self._move_service = MOVE_SERVICE
 
-    def pullOccurrenceFromALA(self, lsid=None):
-        """
-         XML RPC endpoint for pulling occurrence data from ALA for a given LSID of a species.
-         @param lsid: the LSID of the species to pull occurrence data for.
-         @return: the status of job
-        """
-        if lsid is None:
-            return error_rejected(REASON_MISSING_PARAMS)
-        else:
-            job = self._ala_job_dao.create_new(lsid)
-
-            thread_name = 'ala-get-' + lsid
-            thread = threading.Thread(target=self._ala_service.worker, args=(job,), name=thread_name)
-            thread.start()
-            return job_id_status(job)
-
-    def checkALAJobStatus(self, id=None):
-        """
-        Checks the status of an job to pull ALA occurrence data, called from pullOccurrenceFromALA(lsid)
-        @param id: The ID of the ALA job to check
-        @return: The status of the job
-        """
-        if id is None:
-            return error_rejected(REASON_MISSING_PARAMS)
-
-        if not isinstance(id, int):
-            return error_rejected(REASON_INVALID_PARAMS)
-
-        job = self._ala_job_dao.find_by_id(id)
-
-        if job is not None:
-            return job_id_status(job)
-        else:
-            return error_rejected(REASON_JOB_DOES_NOT_EXIST)
-
-
-    def move(self, destination_dict, source_dict):
-        """
-        Performs a "move" of a file from a source to a destination
-        @param destination_dict: Dictionary describing the destination of the move. Must contain a host and a path.
-        @param source_dict: Dictionary describing the source of the move. Must contain a type and an id.
-        @return: The status of the move
-        """
-        if destination_dict is None or source_dict is None:
-            return error_rejected(REASON_MISSING_PARAMS)
-
-        # Unpack
-        try:
-            dest_host = destination_dict['host']
-            dest_path = destination_dict['path']
-            src_type = source_dict['type']
-            src_id = source_dict['id']
-        except KeyError:
-            return error_rejected(REASON_MISSING_PARAMS)
-
-        if not dest_host or not dest_path or not src_type or not src_id:
-            return error_rejected(REASON_MISSING_PARAMS)
-
-        # Determine if the destination is known
-        destination = self._destination_manager.get_destination_by_name(dest_host)
-
-        if destination is None:
-            return error_rejected(REASON_UNKNOWN_DESTINATION)
-
-        move_job = self._move_job_dao.create_new(dest_host, dest_path, src_type, src_id)
-
-        thread = threading.Thread(target=self._move_service.worker, args=(move_job,))
-        thread.start()
-        return job_id_status(move_job)
-
-
-    def checkMoveStatus(self, id=None):
+    def check_move_status(self, id=None):
         """
         Checks the status of a "move" job that has been previously submitted
         @param id: The ID of the "move" job to check
+        @type id: int
         @return: The status of the job
         """
         if id is None:
@@ -106,3 +36,48 @@ class DataMoverServices(XMLRPCView):
             return job_id_status(job)
         else:
             return error_rejected(REASON_JOB_DOES_NOT_EXIST)
+
+
+    def move(self, source, destination):
+        """
+        Performs a "move" of a file from a source to a destination
+        @param destination: Dictionary describing the destination of the move. Must contain a host and a path.
+        @type destination: dict
+        @param source: Dictionary describing the source of the move. Refer to the README.md file, or the wiki page for details.
+        @type source: dict
+        @return: The status of the move
+        @rtype: dict
+        """
+        if source is None or destination is None:
+            return error_rejected(REASON_MISSING_PARAMS)
+
+        # Unpack
+        try:
+            src_type = source['type']
+            dest_host = destination['host']
+            dest_path = destination['path']
+        except KeyError:
+            return error_rejected(REASON_MISSING_PARAMS)
+
+        if not dest_host or not dest_path or not src_type:
+            return error_rejected(REASON_MISSING_PARAMS)
+
+        # Validate source
+        if src_type not in ['ala', 'url']:
+            return error_rejected(REASON_UNKNOWN_SOURCE)
+
+        if src_type == 'ala' and not 'lsid' in source:
+            return error_rejected(REASON_MISSING_PARAMS)
+        if src_type == 'url' and not 'url' in source:
+            return error_rejected(REASON_MISSING_PARAMS)
+
+        # Validate Destination
+        destination_host = self._destination_manager.get_destination_by_name(dest_host)
+        if destination_host is None:
+            return error_rejected(REASON_UNKNOWN_DESTINATION)
+
+        move_job = self._move_job_dao.create_new(source, destination)
+
+        thread = threading.Thread(target=self._move_service.worker, args=(move_job,))
+        thread.start()
+        return job_id_status(move_job)

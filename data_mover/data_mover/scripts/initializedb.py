@@ -1,23 +1,11 @@
 import os
 import sys
-
 from sqlalchemy import engine_from_config
-
 from zope.sqlalchemy import ZopeTransactionExtension
+from pyramid.paster import get_appsettings, setup_logging
+from ..models import Base
+from sqlalchemy.orm import scoped_session, sessionmaker
 
-from pyramid.paster import (
-    get_appsettings,
-    setup_logging,
-    )
-
-from ..models import (
-    Base,
-    )
-
-from sqlalchemy.orm import (
-    scoped_session,
-    sessionmaker,
-    )
 
 def usage(argv):
     cmd = os.path.basename(argv[0])

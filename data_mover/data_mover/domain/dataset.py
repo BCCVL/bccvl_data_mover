@@ -1,5 +1,3 @@
-
-
 class Dataset():
     """
     A representation of a dataset, that can be serialized and sent to the dataset manager.
@@ -8,12 +6,16 @@ class Dataset():
     def __init__(self, title, description, num_occurrences, files, provenance):
         """
         Constructor
-
         @param title: The title of the dataset
+        @type title: str
         @param description: The description of the dataset
+        @type description: str
         @param num_occurrences: The number of occurrences in the dataset
-        @param files: A list of files that belong to the dataset
+        @type num_occurrences: int
+        @param files: A list of DatasetFiles that belong to the dataset
+        @type files: list
         @param provenance: The provenance of the dataset
+        @type provenance: DatasetProvenance
         """
         self.title = title
         self.description = description
@@ -50,10 +52,12 @@ class DatasetFile():
     def __init__(self, url, dataset_type, size):
         """
         Constructor
-
         @param url: The fully-qualified URL to the file
+        @type url: str
         @param dataset_type: The type of the dataset (TYPE_OCCURRENCES, TYPE_ATTRIBUTION etc...)
+        @type dataset_type: str
         @param size: the size of the file in bytes
+        @type size: int
         """
         self.url = url
         self.dataset_type = dataset_type
@@ -83,10 +87,12 @@ class DatasetProvenance():
     def __init__(self, source, url, source_date):
         """
         Constructor
-
         @param source: The source of the dataset
+        @type source: str
         @param url: The URL used to retrieve the dataset
+        @type url: str
         @param source_date: The date the dataset was retrieved
+        @type source_date: datetime.datetime
         """
         self.source = source
         self.url = url

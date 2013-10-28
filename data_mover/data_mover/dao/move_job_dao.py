@@ -13,6 +13,7 @@ class MoveJobDAO():
         """
         Constructor
         @param session_maker: The session maker
+        @type session_maker: SessionMaker
         """
         self._session_maker = session_maker
         self._logger = logging.getLogger(__name__)
@@ -21,25 +22,26 @@ class MoveJobDAO():
         """
         Finds a MoveJob by its id.
         @param id: The ID of the move job to find.
+        @type id: int
         @return: The MoveJob, or None if it does not exist.
         """
         session = self._session_maker.generate_session()
         return session.query(MoveJob).get(id)
 
-    def create_new(self, dest_host, dest_path, src_type, src_id):
+    def create_new(self, source, destination):
         """
         Persists a new MoveJob to the database
-        @param dest_host: The destination host
-        @param dest_path: The destination path
-        @param src_type: The source type
-        @param src_id: The source ID
+        @param source: The source dictionary
+        @type source: dict
+        @param destination: The destination dictionary
+        @type destination: dict
         @return: The newly persisted MoveJob
         """
         session = self._session_maker.generate_session()
-        new_move_job = MoveJob(dest_host, dest_path, src_type, src_id)
+        new_move_job = MoveJob(source, destination)
         session.add(new_move_job)
         session.flush()
-        logging.info('Added new Move Job to the database with id %s', new_move_job.id)
+        self._logger.info('Added new Move Job to the database with id %s', new_move_job.id)
         session.expunge(new_move_job)
         transaction.commit()
         return new_move_job
@@ -48,17 +50,11 @@ class MoveJobDAO():
         """
         Updates a provided MoveJob.
         @param job: The job to update.
+        @type job: MoveJob
         @param kwargs: The arguments and their values to update.
+        @type kwargs: dict
         @return: The newly updated MoveJob.
         """
-        if 'dest_host' in kwargs:
-            job.dest_host = kwargs['dest_host']
-        if 'dest_path' in kwargs:
-            job.dest_path = kwargs['dest_path']
-        if 'src_type' in kwargs:
-            job.src_type = kwargs['src_type']
-        if 'src_id' in kwargs:
-            job.src_id = kwargs['src_id']
         if 'status' in kwargs:
             job.status = kwargs['status']
         if 'start_timestamp' in kwargs:
@@ -71,7 +67,7 @@ class MoveJobDAO():
         session = self._session_maker.generate_session()
         session.add(job)
         session.flush()
-        logging.info('Updated MoveJob with id %s', job.id)
+        self._logger.info('Updated MoveJob with id %s', job.id)
         session.expunge(job)
         transaction.commit()
         return job

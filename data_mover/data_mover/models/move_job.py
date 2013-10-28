@@ -1,14 +1,13 @@
 from data_mover import Base
-
-from sqlalchemy import (
-    Column,
-    Integer,
-    Text,
-    DateTime,
-    )
+from data_mover.models.text_pickle_type import TextPickleType
+from sqlalchemy import Column, Integer, Text, DateTime
+import json
 
 
 class MoveJob(Base):
+    """
+    Move Job model to store details about move operations and its status to a database.
+    """
 
     STATUS_PENDING = 'PENDING'
     STATUS_IN_PROGRESS = 'IN_PROGRESS'
@@ -18,28 +17,24 @@ class MoveJob(Base):
     __tablename__ = 'move_jobs'
 
     id = Column(Integer, primary_key=True)
-    dest_host = Column(Text)
-    dest_path = Column(Text)
-    src_type = Column(Text)
-    src_id = Column(Text)
+    source = Column(TextPickleType(pickler=json))
+    destination = Column(TextPickleType(pickler=json))
     status = Column(Text)
     start_timestamp = Column(DateTime)
     end_timestamp = Column(DateTime)
     reason = Column(Text)
 
-    def __init__(self, dest_host, dest_path, src_type, src_id):
+    def __init__(self, source, destination):
         """
         Constructor
-        @param dest_host: the destination host
-        @param dest_path: the destination path
-        @param src_type: the source type
-        @param src_id: the source id
+        @param source: the source dictionary
+        @type source: dict
+        @param destination: the destination dictionary
+        @type destination: dict
         """
         self.id = None
-        self.dest_host = dest_host
-        self.dest_path = dest_path
-        self.src_type = src_type
-        self.src_id = src_id
+        self.source = source
+        self.destination = destination
         self.status = MoveJob.STATUS_PENDING
         self.start_timestamp = None
         self.end_timestamp = None

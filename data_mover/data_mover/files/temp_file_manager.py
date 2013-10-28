@@ -1,6 +1,6 @@
-from data_mover.files.base_file_manager import BaseFileManager
 import shutil
 import tempfile
+from data_mover.files.base_file_manager import BaseFileManager
 
 
 class TempFileManager(BaseFileManager):
