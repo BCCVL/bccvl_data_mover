@@ -27,11 +27,8 @@ The data mover shall be asynchronous. When a request to move a file is made via 
 You will need to configure the development.ini file.
 Make sure that you have the follow (or similar):
 
-    sqlalchemy.url = postgresql+psycopg2://data_mover:data_mover@localhost:5432/data_mover
-    file_manager.data_directory = sample
-    file_manager.ala_data_directory = sample/ALA
-    dataset_provider.dest_dir = sample/dataset_manager
-
+    sqlalchemy.url = sqlite:///production.sqlite
+    destination_manager.destinations = ./data_mover/destination_config.json
     ala_service.sleep_time = 10
 
 **Initializing the database**
@@ -64,31 +61,31 @@ destination dictionaries that are provided to it when it is called.
     response = s.move(source_dict, dest_dict)
 ```
 
-*Source Dictionary*
+**Source Dictionary**
 
-    Contains information about the source of the data to move, the following sources are supported
+Contains information about the source of the data to move, the following sources are supported
 
-**ALA**
+*ALA*
 
 ```python
     source_dict = {'type':'ala', 'lsid':'urn:lsid:biodiversity.org.au:afd.taxon:31a9b8b8-4e8f-4343-a15f-2ed24e0bf1ae'}
 ```
 
-**HTTP**
+*HTTP*
 
 ```python
     source_dict = {'type':'url', 'url':'http://www.intersect.org.au'}
 ```
 
-*Destination Dictionary*
+**Destination Dictionary**
 
-    Contains information about the destination of the data obtained from the source.
-    Destinations must be configured in data_mover/destination_config.json and are looked up by name.
+Contains information about the destination of the data obtained from the source.
+Destinations must be configured in data_mover/destination_config.json and are looked up by name.
 
 ```python
     dest_dict = {'host':'visualizer', 'path':'/usr/local/data/occurrence'}
 ```
 
-*Check the status of the move request:*
+**Check the status of the move request:**
 
-    s.checkMoveStatus(response.id)
+    s.check_move_status(response.id)
