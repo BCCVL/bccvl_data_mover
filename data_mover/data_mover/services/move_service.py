@@ -52,6 +52,8 @@ class MoveService():
         # This is a temporary file that is deleted once sent.
         file_name = 'move_job_' + str(move_job_id)
         file_suffix = mimetypes.guess_extension(content_type.split(';')[0], False)
+        if file_suffix is None:
+            file_suffix = ".raw"
         self._logger.info("content type: %s suffix: %s", content_type, file_suffix)
         file_path = self._file_manager.temp_file_manager.add_new_file(file_name, content, file_suffix)
         return [file_path]

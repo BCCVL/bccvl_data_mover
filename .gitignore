@@ -75,3 +75,5 @@ data_mover/epydoc
 data_mover/development.sqlite
 data_mover/production.sqlite
 data_mover/test.sqlite
+.idea/dataSources.ids
+.idea/dataSources.xml
