@@ -5,7 +5,7 @@ import shutil
 import tempfile
 import os
 from mock import MagicMock
-from data_mover.services.ala_service import ALAService
+from data_mover.services.ala_service import ALAService, SPECIES, LONGITUDE, LATITUDE
 from data_mover.files.file_manager import FileManager
 from data_mover.factory.dataset_factory import DatasetFactory
 
@@ -55,9 +55,9 @@ class TestALAService(unittest.TestCase):
             lines = f.readlines()
             self.assertTrue(len(lines) > 1)
             header = lines[0]
-            self.assertEqual(1, header.count('SPPCODE'))
-            self.assertEqual(1, header.count('LNGDEC'))
-            self.assertEqual(1, header.count('LATDEC'))
+            self.assertEqual(1, header.count(SPECIES))
+            self.assertEqual(1, header.count(LONGITUDE))
+            self.assertEqual(1, header.count(LATITUDE))
 
         # Remove temp dir
         shutil.rmtree(temp_dir)

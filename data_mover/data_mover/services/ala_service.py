@@ -3,6 +3,10 @@ import logging
 from data_mover.protocols.http import http_get_gunzip, http_get
 from data_mover.services.dataset_serializer import serialize_dataset
 
+SPECIES = 'species'
+LONGITUDE = 'lon'
+LATITUDE = 'lat'
+
 
 class ALAService():
     """
@@ -10,6 +14,7 @@ class ALAService():
     """
 
     _logger = logging.getLogger(__name__)
+
 
     def __init__(self, file_manager, dataset_factory):
         """
@@ -86,7 +91,7 @@ class ALAService():
             lines = f.readlines()
             f.seek(0)
             f.truncate()
-            newHeader = lines[0].replace("raw_taxon_name", "species").replace("longitude", "lon").replace("latitude", "lat")
+            newHeader = lines[0].replace("raw_taxon_name", SPECIES).replace("longitude", LONGITUDE).replace("latitude", LATITUDE)
             lines[0] = newHeader
             for line in lines:
                 f.write(line)
