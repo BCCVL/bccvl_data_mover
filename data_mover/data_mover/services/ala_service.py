@@ -78,7 +78,7 @@ class ALAService():
         Normalizes an occurrence CSV file by replacing the first line of content from:
         raw_taxon_name,longitude,latitude
         to:
-        SPPCODE,LNGDEC,LATDEC
+        species,lon,lat
         @param file_path: the path to the occurrence CSV file to normalize
         @type file_path: str
         """
@@ -86,7 +86,7 @@ class ALAService():
             lines = f.readlines()
             f.seek(0)
             f.truncate()
-            newHeader = lines[0].replace("raw_taxon_name", "SPPCODE").replace("longitude", "LNGDEC").replace("latitude", "LATDEC")
+            newHeader = lines[0].replace("raw_taxon_name", "species").replace("longitude", "lon").replace("latitude", "lat")
             lines[0] = newHeader
             for line in lines:
                 f.write(line)
