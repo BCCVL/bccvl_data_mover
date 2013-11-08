@@ -40,7 +40,6 @@ rm -rf ./epydoc
 
 echo "Building data_mover"
 "$PIP" install distribute --upgrade
-"$PIP" install psycopg2
 "$PYTHON" bootstrap.py
 "$BUILDOUT"
 
