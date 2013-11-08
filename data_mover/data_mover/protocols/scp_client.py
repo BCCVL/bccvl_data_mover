@@ -2,6 +2,7 @@ import logging
 import os
 import pwd
 from paramiko import SSHClient
+from paramiko.client import AutoAddPolicy
 from scp import SCPClient
 
 _logger = logging.getLogger(__name__)
@@ -23,6 +24,7 @@ def scp_put(host, username, source_file, destination_path):
     try:
         ssh = SSHClient()
         ssh.load_system_host_keys()
+        ssh.set_missing_host_key_policy(AutoAddPolicy)
 
         # Use the current user if one was not specified
         if not username:
