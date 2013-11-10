@@ -9,6 +9,16 @@
                     "username": ""
                 }
             }
+        },
+        "plone": {
+            "description": "The dataset manager",
+            "ip-address": "127.0.0.1",
+            "protocol": "scp",
+            "authentication": {
+                "key-based": {
+                    "username": "plone"
+                }
+            }
         }
     }
 ]
