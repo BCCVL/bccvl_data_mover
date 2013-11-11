@@ -1,5 +1,6 @@
 import io
 import logging
+import os
 from data_mover.protocols.http import http_get_gunzip, http_get
 from data_mover.services.dataset_serializer import serialize_dataset
 
@@ -39,11 +40,13 @@ class ALAService():
         self._occurrence_url = settings[key + 'occurrence_url']
         self._metadata_url = settings[key + 'metadata_url']
 
-    def download_occurrence_by_lsid(self, lsid, move_job_id):
+    def download_occurrence_by_lsid(self, lsid, destination_directory, move_job_id):
         """
         Downloads Species Occurrence data from ALA (Atlas of Living Australia) based on an LSID (Life Science Identifier)
         @param lsid: the lsid of the species to download occurrence data for
         @type lsid: str
+        @param destination_directory: the destination directory that the ALA files are going to end up inside of. Used to form the metadata .json file.
+        @type destination_directory: str
         @param move_job_id: the ID of the move job
         @type move_job_id: int
         @return A list of files that it has returned, or None if it could not download the data
@@ -57,8 +60,8 @@ class ALAService():
             return None
 
         self._logger.info("Completed download of raw occurrence data form ALA for LSID %s", lsid)
-        occurrence_file_name = 'move_job_' + str(move_job_id) + '_ala_occurrence'
-        occurrence_path = self._file_manager.temp_file_manager.add_new_file(occurrence_file_name, content, '.csv')
+        occurrence_file_name = 'move_job_' + str(move_job_id) + '_ala_occurrence.csv'
+        occurrence_path = self._file_manager.temp_file_manager.add_new_file(occurrence_file_name, content)
         self._normalize_occurrence(occurrence_path)
 
         # Get occurrence metadata
@@ -67,13 +70,17 @@ class ALAService():
         if content is None or len(content) == 0:
             self._logger.warning("Could not download occurrence metadata from ALA for LSID %s", lsid)
             return None
-        metadata_file_name = 'move_job_' + str(move_job_id) + '_ala_metadata'
-        metadata_path = self._file_manager.temp_file_manager.add_new_file(metadata_file_name, content, '.json')
-        ala_dataset = self._dataset_factory.generate_dataset(lsid, occurrence_path, metadata_path)
+        metadata_file_name = 'move_job_' + str(move_job_id) + '_ala_metadata.json'
+        metadata_path = self._file_manager.temp_file_manager.add_new_file(metadata_file_name, content)
+
+        # Generate dataset .json
+        destination_occurrence_path = os.path.join(destination_directory, occurrence_file_name)
+        destination_metadata_path = os.path.join(destination_directory, metadata_file_name)
+        ala_dataset = self._dataset_factory.generate_dataset(lsid, destination_occurrence_path, destination_metadata_path, occurrence_path, metadata_path)
 
         # Write the dataset to a file
-        dataset_file_name = 'move_job_' + str(move_job_id) + '_ala_dataset'
-        dataset_path = self._file_manager.temp_file_manager.add_new_file(dataset_file_name, serialize_dataset(ala_dataset), '.json')
+        dataset_file_name = 'move_job_' + str(move_job_id) + '_ala_dataset.json'
+        dataset_path = self._file_manager.temp_file_manager.add_new_file(dataset_file_name, serialize_dataset(ala_dataset))
 
         return [occurrence_path, metadata_path, dataset_path]
 

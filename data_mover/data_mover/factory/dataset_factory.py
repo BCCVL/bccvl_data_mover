@@ -28,11 +28,15 @@ class DatasetFactory():
         """
         self._occurrence_url = settings[key + 'occurrence_url']
 
-    def generate_dataset(self, lsid, ala_occurrence_path, ala_metadata_path):
+    def generate_dataset(self, lsid, destination_ala_occurrence_path, destination_ala_metadata_path, ala_occurrence_path, ala_metadata_path):
         """
         Generates a dataset for an ALA occurrence.
         @param lsid: The LSID of the ala occurrence
         @type lsid: str
+        @param destination_ala_occurrence_path
+        @type destination_ala_occurrence_path: str
+        @param destination_ala_metadata_path
+        @type destination_ala_metadata_path: str
         @param ala_occurrence_path: The path to the ALA occurrence file
         @type ala_occurrence_path: str
         @param ala_metadata_path: The path to the ALA metadata file
@@ -42,8 +46,8 @@ class DatasetFactory():
         imported_date = datetime.datetime.now().strftime('%d/%m/%Y')
         url = self._occurrence_url.replace("${lsid}", lsid)
 
-        occurrence_file = DatasetFile(path_to_url(ala_occurrence_path), DatasetFile.TYPE_OCCURRENCES, os.path.getsize(ala_occurrence_path))
-        metadata_file = DatasetFile(path_to_url(ala_metadata_path), DatasetFile.TYPE_ATTRIBUTION, os.path.getsize(ala_metadata_path))
+        occurrence_file = DatasetFile(destination_ala_occurrence_path, DatasetFile.TYPE_OCCURRENCES, os.path.getsize(ala_occurrence_path))
+        metadata_file = DatasetFile(destination_ala_metadata_path, DatasetFile.TYPE_ATTRIBUTION, os.path.getsize(ala_metadata_path))
         files = [occurrence_file, metadata_file]
 
         provenance = DatasetProvenance(DatasetProvenance.SOURCE_ALA, url, imported_date)

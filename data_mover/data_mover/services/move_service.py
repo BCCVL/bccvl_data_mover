@@ -54,7 +54,7 @@ class MoveService():
         file_suffix = mimetypes.guess_extension(content_type.split(';')[0], False)
         if file_suffix is None:
             file_suffix = ".raw"
-        file_path = self._file_manager.temp_file_manager.add_new_file(file_name, content, file_suffix)
+        file_path = self._file_manager.temp_file_manager.add_new_file(file_name + file_suffix, content)
         return [file_path]
 
     def worker(self, move_job):
@@ -66,11 +66,13 @@ class MoveService():
         self._logger.info("Starting move for job with id %s", move_job.id)
         move_job = self._move_job_dao.update(move_job, status=MoveJob.STATUS_IN_PROGRESS, start_timestamp=datetime.datetime.now())
 
+        dest_dir = move_job.destination['path']
+
         # Get the file(s) from the source
         # TODO: support retries
 
         if move_job.source['type'].lower() == 'ala':
-            file_paths = self._ala_service.download_occurrence_by_lsid(move_job.source['lsid'], move_job.id)
+            file_paths = self._ala_service.download_occurrence_by_lsid(move_job.source['lsid'], dest_dir, move_job.id)
         elif move_job.source['type'].lower() == 'url':
             file_paths = self.download_from_url(move_job.source['url'], move_job.id)
         else:
@@ -98,8 +100,6 @@ class MoveService():
         if protocol != 'scp' and protocol != 'local':
             self._logger.error('Protocol %s is not a supported protocol.', protocol)
             return
-
-        dest_dir = move_job.destination['path']
 
         for file_path in file_paths:
 

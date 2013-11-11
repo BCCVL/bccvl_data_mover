@@ -1,8 +1,6 @@
 import unittest
 import logging
 import io
-import shutil
-import tempfile
 import os
 from mock import MagicMock
 from data_mover.services.ala_service import ALAService, SPECIES, LONGITUDE, LATITUDE
@@ -26,17 +24,10 @@ class TestALAService(unittest.TestCase):
         dataset_factory._occurrence_url = ala_service._occurrence_url
         ala_service._metadata_url = "http://bie.ala.org.au/species/${lsid}.json"
 
-        temp_dir = tempfile.mkdtemp(suffix=__name__)
+        dest_dir = '/tmp/'
 
-        # Directory is empty
-        self.assertEqual(0, len(os.listdir(temp_dir)))
-
-        out_files = ala_service.download_occurrence_by_lsid(lsid, 33212)
+        out_files = ala_service.download_occurrence_by_lsid(lsid, dest_dir, 33212)
         self.assertEqual(3, len(out_files))
-
-        # ALA directory exists
-        out_dir = os.path.join(temp_dir)
-        self.assertTrue(os.path.isdir(out_dir))
 
         # The occurrence file exists
         occurrence_file = out_files[0]
@@ -59,18 +50,17 @@ class TestALAService(unittest.TestCase):
             self.assertEqual(1, header.count(LONGITUDE))
             self.assertEqual(1, header.count(LATITUDE))
 
-        # Remove temp dir
-        shutil.rmtree(temp_dir)
-
     def test_get_bad_occurrence(self):
         lsid = 'urn:lsid:bad'
 
-        file_manager = MagicMock()
-        dataset_factory = MagicMock()
+        file_manager = MagicMock(spec=FileManager)
+        dataset_factory = MagicMock(spec=DatasetFactory)
 
         ala_service = ALAService(file_manager, dataset_factory)
         ala_service._occurrence_url = "http://biocache.ala.org.au/ws/webportal/occurrences.gz?q=lsid:${lsid}&fq=geospatial_kosher:true&fl=raw_taxon_name,longitude,latitude&pageSize=999999999"
         ala_service._metadata_url = "http://bie.ala.org.au/species/${lsid}.json"
 
-        result = ala_service.download_occurrence_by_lsid(lsid, 44321)
+        dest_dir = '/tmp/'
+
+        result = ala_service.download_occurrence_by_lsid(lsid, dest_dir, 44321)
         self.assertIsNone(result)

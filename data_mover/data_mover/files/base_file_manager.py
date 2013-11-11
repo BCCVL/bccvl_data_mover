@@ -16,18 +16,16 @@ class BaseFileManager:
         """
         self._directory = directory
 
-    def add_new_file(self, name, content, file_suffix):
+    def add_new_file(self, name, content):
         """
         Adds the provided file content to the file manager.
-        @param name: the 'internal' name of the file.
+        @param name: the name of the file.
         @type name: str
         @param content the content of the file to store.
         @type content:
-        @param file_suffix: the suffix of the file to store
-        @type file_suffix: str
         @return: The absolute path to the file that was written
         """
-        destination = os.path.join(self._directory, name + file_suffix)
+        destination = os.path.join(self._directory, name)
         create_parent(destination)
         f = io.open(destination, mode='wb')
         f.write(content)
