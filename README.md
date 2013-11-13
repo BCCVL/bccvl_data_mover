@@ -1,4 +1,4 @@
-[![Build Status](http://118.138.242.30/buildStatus/icon?job=data_mover)](http://118.138.242.30/job/data_mover/)
+[![Build Status](http://118.138.242.168/buildStatus/icon?job=data_mover)](http://118.138.242.168/job/data_mover/)
 
 Data Mover API for BCCVL
 ================
