@@ -52,7 +52,6 @@ class TestMoveService(unittest.TestCase):
             self.assertEqual('raw', out_paths[0].split(".")[-1])
             mock_mimetypes.guess_extension.assert_called_with('text/html', False)
 
-
     def test_worker_bad_source_type(self):
         file_manager = mock.MagicMock()
         move_job_dao = mock.MagicMock()
@@ -202,3 +201,108 @@ class TestMoveService(unittest.TestCase):
 
         move_job_dao.update.assert_has_calls([call1, call2])
         destination_manger.get_destination_by_name.assert_called_with('local')
+
+    def test_worker_source_scp(self):
+        file_manager = mock.MagicMock(spec=FileManager)
+        file_manager.temp_file_manager = mock.MagicMock(spec=TempFileManager)
+        move_job_dao = mock.MagicMock(spec=MoveJobDAO)
+        destination_manger = mock.MagicMock(spec=DestinationManager)
+        ala_service = mock.MagicMock(spec=ALAService)
+
+        src_dict = {'type':'scp', 'host':'the_source', 'path':'/url/to/download.txt'}
+        dest_dict = {'host':'local','path':'/usr/local/destdir/'}
+
+        move_job = MoveJob(src_dict, dest_dict)
+        to_test = MoveService(file_manager, move_job_dao, destination_manger, ala_service)
+
+        destination = {
+            'description': 'The local machine',
+            'protocol': 'local'
+        }
+
+        source = {
+            'description': 'the_source machine',
+            'ip-address': '127.0.0.1',
+            'protocol': 'scp',
+            'authentication': {
+                'key-based': {
+                    'username': 'root'
+                }
+            }
+        }
+
+        def side_effect(*args, **kwargs):
+            if args[0] == 'the_source':
+                return source
+            if args[0] == 'local':
+                return destination
+
+        move_job_dao.update.return_value = move_job
+        destination_manger.get_destination_by_name.side_effect = side_effect
+
+        with mock.patch('data_mover.services.move_service.scp_get') as mock_scp_get:
+            mock_scp_get.return_value = True
+            with mock.patch('data_mover.services.move_service.listdir_fullpath') as mock_list_dir:
+                mock_list_dir.return_value = {'file1', 'file2'}
+                with mock.patch('data_mover.services.move_service.shutil.copy') as mock_copy_to_local:
+                    to_test.worker(move_job)
+                    copy_call_1 = mock.call('file1', '/usr/local/destdir/')
+                    copy_call_2 = mock.call('file2', '/usr/local/destdir/')
+                    mock_copy_to_local.assert_has_calls([copy_call_2, copy_call_1])
+                    mock_scp_get.assert_called_with('127.0.0.1', 'root', '/url/to/download.txt', mock.ANY)
+                    mock_list_dir.assert_called_with(mock.ANY)
+
+        call1 = mock.call(move_job, status=MoveJob.STATUS_IN_PROGRESS, start_timestamp=mock.ANY)
+        call2 = mock.call(move_job, status=MoveJob.STATUS_COMPLETE, end_timestamp=mock.ANY)
+
+        move_job_dao.update.assert_has_calls([call1, call2])
+        destination_manger.get_destination_by_name.assert_has_calls([mock.call('the_source'), mock.call('local')])
+
+    def test_worker_source_scp_fails(self):
+        file_manager = mock.MagicMock(spec=FileManager)
+        file_manager.temp_file_manager = mock.MagicMock(spec=TempFileManager)
+        move_job_dao = mock.MagicMock(spec=MoveJobDAO)
+        destination_manger = mock.MagicMock(spec=DestinationManager)
+        ala_service = mock.MagicMock(spec=ALAService)
+
+        src_dict = {'type':'scp', 'host':'the_source', 'path':'/url/to/download.txt'}
+        dest_dict = {'host':'local','path':'/usr/local/destdir/'}
+
+        move_job = MoveJob(src_dict, dest_dict)
+        to_test = MoveService(file_manager, move_job_dao, destination_manger, ala_service)
+
+        destination = {
+            'description': 'The local machine',
+            'protocol': 'local'
+        }
+
+        source = {
+            'description': 'the_source machine',
+            'ip-address': '127.0.0.1',
+            'protocol': 'scp',
+            'authentication': {
+                'key-based': {
+                    'username': 'root'
+                }
+            }
+        }
+
+        def side_effect(*args, **kwargs):
+            if args[0] == 'the_source':
+                return source
+            if args[0] == 'local':
+                return destination
+
+        move_job_dao.update.return_value = move_job
+        destination_manger.get_destination_by_name.side_effect = side_effect
+
+        with mock.patch('data_mover.services.move_service.scp_get') as mock_scp_get:
+            mock_scp_get.return_value = False
+            to_test.worker(move_job)
+            mock_scp_get.assert_called_with('127.0.0.1', 'root', '/url/to/download.txt', mock.ANY)
+
+        call1 = mock.call(move_job, status=MoveJob.STATUS_IN_PROGRESS, start_timestamp=mock.ANY)
+        call2 = mock.call(move_job, status=MoveJob.STATUS_FAILED, end_timestamp=mock.ANY, reason=mock.ANY)
+
+        move_job_dao.update.assert_has_calls([call1, call2])
+        destination_manger.get_destination_by_name.assert_has_calls([mock.call('the_source')])

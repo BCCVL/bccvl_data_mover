@@ -11,6 +11,17 @@ Scenario: Move http://www.intersect.org.au to test_machine
     Then I should see that the job status is "COMPLETED"
     And I should see a file with suffix "html" in my temp directory
 
+Scenario: Using SCP as a source and destination protocol
+    Given I am connected to the Data Mover server
+    And I want to move a file to "test_machine" in some temp directory
+    And my source is of type "scp" with host of "test_machine" and path of some temporary file named "temp_file.txt" with content "this is the content of my temp file"
+    When I request a move with the defined requirements
+    Then I should see that the job status is either "PENDING" or "IN_PROGRESS"
+    Then I wait 5 seconds
+    When I check the status of the move job
+    Then I should see that the job status is "COMPLETED"
+    And I should see a file in my temp directory named "temp_file.txt" with content "this is the content of my temp file"
+
 Scenario: Move http://www.intersect.org.au to an unknown destination
     Given I am connected to the Data Mover server
     And I want to move a file to "unknown_destination" in some temp directory

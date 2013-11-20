@@ -2,7 +2,8 @@ import threading
 
 from pyramid_xmlrpc import XMLRPCView
 from data_mover.services.response import error_rejected, job_id_status, REASON_MISSING_PARAMS,\
-    REASON_UNKNOWN_SOURCE, REASON_UNKNOWN_DESTINATION, REASON_INVALID_PARAMS, REASON_JOB_DOES_NOT_EXIST
+    REASON_UNKNOWN_SOURCE_TYPE, REASON_UNKNOWN_DESTINATION, REASON_INVALID_PARAMS, REASON_JOB_DOES_NOT_EXIST,\
+    REASON_UNKNOWN_SOURCE
 from data_mover import ALA_SERVICE, DESTINATION_MANAGER, MOVE_JOB_DAO, MOVE_SERVICE
 
 
@@ -37,7 +38,6 @@ class DataMoverServices(XMLRPCView):
         else:
             return error_rejected(REASON_JOB_DOES_NOT_EXIST)
 
-
     def move(self, source, destination):
         """
         Performs a "move" of a file from a source to a destination
@@ -63,13 +63,21 @@ class DataMoverServices(XMLRPCView):
             return error_rejected(REASON_MISSING_PARAMS)
 
         # Validate source
-        if src_type not in ['ala', 'url']:
-            return error_rejected(REASON_UNKNOWN_SOURCE)
+        if src_type not in ['ala', 'url', 'scp']:
+            return error_rejected(REASON_UNKNOWN_SOURCE_TYPE)
 
         if src_type == 'ala' and not 'lsid' in source:
             return error_rejected(REASON_MISSING_PARAMS)
         if src_type == 'url' and not 'url' in source:
             return error_rejected(REASON_MISSING_PARAMS)
+        if src_type == 'scp' and (not 'host' in source or not 'path' in source):
+            return error_rejected(REASON_MISSING_PARAMS)
+
+        # Validate Source
+        if src_type == 'scp':
+            source_host = self._destination_manager.get_destination_by_name(source['host'])
+            if source_host is None:
+                return error_rejected(REASON_UNKNOWN_SOURCE)
 
         # Validate Destination
         destination_host = self._destination_manager.get_destination_by_name(dest_host)

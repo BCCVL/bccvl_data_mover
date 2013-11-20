@@ -2,7 +2,8 @@ import unittest
 import logging
 import mock
 from data_mover.services.data_mover_services import DataMoverServices
-from data_mover.services.response import (STATUS_REJECTED, REASON_MISSING_PARAMS, REASON_UNKNOWN_DESTINATION, REASON_JOB_DOES_NOT_EXIST, REASON_INVALID_PARAMS)
+from data_mover.services.response import (STATUS_REJECTED, REASON_MISSING_PARAMS, REASON_UNKNOWN_DESTINATION,
+                                          REASON_JOB_DOES_NOT_EXIST, REASON_INVALID_PARAMS, REASON_UNKNOWN_SOURCE)
 from data_mover.models.move_job import MoveJob
 
 
@@ -60,6 +61,21 @@ class TestDataMoverServices(unittest.TestCase):
         self.assertEqual(STATUS_REJECTED, out_3['status'])
         self.assertEqual(REASON_MISSING_PARAMS, out_3['reason'])
 
+        out_4 = to_test.move(source={'type': 'scp'}, destination=dest_dict)
+        self.assertIsNotNone(out_4)
+        self.assertEqual(STATUS_REJECTED, out_4['status'])
+        self.assertEqual(REASON_MISSING_PARAMS, out_4['reason'])
+
+        out_5 = to_test.move(source={'type': 'scp', 'host': 'some_host'}, destination=dest_dict)
+        self.assertIsNotNone(out_5)
+        self.assertEqual(STATUS_REJECTED, out_5['status'])
+        self.assertEqual(REASON_MISSING_PARAMS, out_5['reason'])
+
+        out_6 = to_test.move(source={'type': 'scp', 'path': '/path/to/dest'}, destination=dest_dict)
+        self.assertIsNotNone(out_6)
+        self.assertEqual(STATUS_REJECTED, out_6['status'])
+        self.assertEqual(REASON_MISSING_PARAMS, out_6['reason'])
+
     def testXMLMoveEmptyParams(self):
         to_test = DataMoverServices(None, None)
 
@@ -104,6 +120,20 @@ class TestDataMoverServices(unittest.TestCase):
         self.assertEqual(STATUS_REJECTED, out['status'])
         self.assertEqual(REASON_UNKNOWN_DESTINATION, out['reason'])
         to_test._destination_manager.get_destination_by_name.assert_called_with('unknown_destination')
+
+    def testXMLMoveUnknownSource(self):
+        to_test = DataMoverServices(None, None)
+        to_test._destination_manager = mock.MagicMock()
+        to_test._destination_manager.get_destination_by_name.return_value = None
+
+        dest_dict = {'host': 'unknown_destination', 'path': '/some/path'}
+        source_dict = {'type': 'scp', 'host': 'unknown_source', 'path': '/some/path.txt'}
+
+        out= to_test.move(source_dict, dest_dict)
+        self.assertIsNotNone(out)
+        self.assertEqual(STATUS_REJECTED, out['status'])
+        self.assertEqual(REASON_UNKNOWN_SOURCE, out['reason'])
+        to_test._destination_manager.get_destination_by_name.assert_called_with('unknown_source')
 
     def testXMLMoveMissingParams(self):
         to_test = DataMoverServices(None, None)

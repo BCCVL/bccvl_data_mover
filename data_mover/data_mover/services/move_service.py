@@ -2,9 +2,11 @@ import datetime
 import logging
 import mimetypes
 import shutil
+from data_mover.files.temp_file_manager import TempFileManager
 from data_mover.models.move_job import MoveJob
 from data_mover.protocols.http import http_get
-from data_mover.protocols.scp_client import scp_put
+from data_mover.protocols.scp_client import scp_put, scp_get
+from data_mover.util.file_utils import listdir_fullpath
 
 
 class MoveService():
@@ -57,6 +59,29 @@ class MoveService():
         file_path = self._file_manager.temp_file_manager.add_new_file(file_name + file_suffix, content)
         return [file_path]
 
+    def download_from_scp(self, host_name, path):
+        """
+        Downloads files from a remote SCP source
+        @param host_name: The remote host to download from.
+        @type host_name: str
+        @param path: The path to retrieve from the remote host.
+        @type path: str
+        @return: A list of the downloaded file paths.
+        """
+        source = self._destination_manager.get_destination_by_name(host_name)
+
+        if source['protocol'] != 'scp':
+            self._logger.error('Protocol %s is not a supported source protocol.', source['protocol'])
+            return None
+
+        # Create a temporary directory to store the items in
+        temp_file_manager = TempFileManager()
+        host = source['ip-address']
+        username = source['authentication']['key-based']['username']
+        if scp_get(host, username, path, temp_file_manager._directory):
+            return listdir_fullpath(temp_file_manager._directory)
+        return None
+
     def worker(self, move_job):
         """
         Thread worker used to perform a move of data between endpoints
@@ -71,10 +96,12 @@ class MoveService():
         # Get the file(s) from the source
         # TODO: support retries
 
-        if move_job.source['type'].lower() == 'ala':
+        if move_job.source['type'] == 'ala':
             file_paths = self._ala_service.download_occurrence_by_lsid(move_job.source['lsid'], dest_dir, move_job.id)
-        elif move_job.source['type'].lower() == 'url':
+        elif move_job.source['type'] == 'url':
             file_paths = self.download_from_url(move_job.source['url'], move_job.id)
+        elif move_job.source['type'] == 'scp':
+            file_paths = self.download_from_scp(move_job.source['host'], move_job.source['path'])
         else:
             self._logger.warning("Move has failed for job with id %s. Unknown source type %s", move_job.id, move_job.source['type'])
             self._move_job_dao.update(move_job, status=MoveJob.STATUS_FAILED, end_timestamp=datetime.datetime.now(), reason='Unknown source type ' + move_job.source['type'])
@@ -85,6 +112,8 @@ class MoveService():
                 reason = 'Could not download LSID %s from ALA' % (move_job.source['lsid'])
             elif move_job.source['type'].lower() == 'url':
                 reason = 'Could not download from URL %s' % (move_job.source['url'])
+            elif move_job.source['type'].lower() == 'scp':
+                reason = 'Could not download from remote SCP source %s' % (move_job.source['host'])
             self._logger.warning('Could not fetch source file(s) for move job %s. Reason: %s', move_job.id, reason)
             self._move_job_dao.update(move_job, status=MoveJob.STATUS_FAILED, end_timestamp=datetime.datetime.now(), reason=reason)
             return

@@ -3,7 +3,8 @@ REASON_DB_ERROR = "Database Error"
 REASON_JOB_DOES_NOT_EXIST = "Job does not exist"
 REASON_INVALID_PARAMS = "Invalid parameters"
 REASON_UNKNOWN_DESTINATION = "Unknown destination"
-REASON_UNKNOWN_SOURCE = "Unknown source type"
+REASON_UNKNOWN_SOURCE = "Unknown source"
+REASON_UNKNOWN_SOURCE_TYPE = "Unknown source type"
 
 STATUS_REJECTED = 'REJECTED'
 

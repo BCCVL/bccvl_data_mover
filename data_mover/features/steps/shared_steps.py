@@ -24,6 +24,15 @@ def step(context, suffix):
     file_exists = os.path.exists(file)
     assert file_exists
 
+@then('I should see a file in my temp directory named "{filename}" with content "{content}"')
+def step(context, filename, content):
+    expected_file = os.path.join(context.temp_dir, filename)
+    assert os.path.exists(expected_file)
+    with open(expected_file, "r") as f:
+        out_content = f.read().replace('\n', '')
+        print "content: " + out_content
+        assert content == out_content
+
 @then('I should see that the job status is "{expected_status}"')
 def step(context, expected_status):
     print 'expected: ' + expected_status + ' actual: ' + context.response['status']
