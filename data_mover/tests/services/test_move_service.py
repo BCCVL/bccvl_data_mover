@@ -59,7 +59,7 @@ class TestMoveService(unittest.TestCase):
         ala_service = mock.MagicMock()
 
         source = {'type':'bad'}
-        destination = {'host':'visualizer','path':'/usr/local/dataset/'}
+        destination = {'host':'visualiser','path':'/usr/local/dataset/'}
         move_job = MoveJob(source, destination)
 
         to_test = MoveService(file_manager, move_job_dao, destination_manger, ala_service)
@@ -80,7 +80,7 @@ class TestMoveService(unittest.TestCase):
         ala_service = mock.MagicMock()
 
         source = {'type':'url', 'url':'http://www.intersect.org.au'}
-        destination = {'host':'visualizer','path':'/usr/local/dataset/'}
+        destination = {'host':'visualiser','path':'/usr/local/dataset/'}
         move_job = MoveJob(source, destination)
 
         to_test = MoveService(file_manager, move_job_dao, destination_manger, ala_service)
@@ -102,12 +102,12 @@ class TestMoveService(unittest.TestCase):
         ala_service = mock.MagicMock(spec=ALAService)
 
         source = {'type':'url', 'url':'http://www.intersect.org.au'}
-        destination = {'host':'visualizer','path':'/usr/local/dataset/'}
+        destination = {'host':'visualiser','path':'/usr/local/dataset/'}
         move_job = MoveJob(source, destination)
         to_test = MoveService(file_manager, move_job_dao, destination_manger, ala_service)
 
         destination = {
-            'description': 'The visualizer component of the UI',
+            'description': 'The visualiser component of the UI',
             'ip-address': '127.0.0.1',
             'protocol': 'scp',
             'authentication': {
@@ -130,7 +130,7 @@ class TestMoveService(unittest.TestCase):
         call2 = mock.call(move_job, status=MoveJob.STATUS_COMPLETE, end_timestamp=mock.ANY)
 
         move_job_dao.update.assert_has_calls([call1, call2])
-        destination_manger.get_destination_by_name.assert_called_with('visualizer')
+        destination_manger.get_destination_by_name.assert_called_with('visualiser')
 
     def test_worker_scp_failed(self):
         file_manager = mock.MagicMock(spec=FileManager)
@@ -140,13 +140,13 @@ class TestMoveService(unittest.TestCase):
         ala_service = mock.MagicMock(spec=ALAService)
 
         source = {'type':'url', 'url':'http://www.intersect.org.au'}
-        destination = {'host':'visualizer','path':'/usr/local/dataset/'}
+        destination = {'host':'visualiser','path':'/usr/local/dataset/'}
         move_job = MoveJob(source, destination)
 
         to_test = MoveService(file_manager, move_job_dao, destination_manger, ala_service)
 
         destination = {
-            'description': 'The visualizer component of the UI',
+            'description': 'The visualiser component of the UI',
             'ip-address': '127.0.0.1',
             'protocol': 'scp',
             'authentication': {
@@ -169,7 +169,7 @@ class TestMoveService(unittest.TestCase):
         call2 = mock.call(move_job, status=MoveJob.STATUS_FAILED, end_timestamp=mock.ANY, reason='Unable to send to destination')
 
         move_job_dao.update.assert_has_calls([call1, call2])
-        destination_manger.get_destination_by_name.assert_called_with('visualizer')
+        destination_manger.get_destination_by_name.assert_called_with('visualiser')
 
     def test_worker_local_ok(self):
         file_manager = mock.MagicMock(spec=FileManager)
@@ -184,7 +184,7 @@ class TestMoveService(unittest.TestCase):
         to_test = MoveService(file_manager, move_job_dao, destination_manger, ala_service)
 
         destination = {
-            'description': 'The visualizer component of the UI',
+            'description': 'The visualiser component of the UI',
             'protocol': 'local'
         }
 

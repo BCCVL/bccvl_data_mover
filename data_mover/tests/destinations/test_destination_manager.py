@@ -13,10 +13,10 @@ class TestDestinationManager(unittest.TestCase):
         settings = {'key.destinations': file_to_load}
         to_test.configure(settings, 'key.')
 
-        visualizer = to_test.get_destination_by_name('visualizer')
-        self.assertIsNotNone(visualizer)
-        self.assertIsNotNone(visualizer['description'])
-        self.assertIsNotNone(visualizer['ip-address'])
-        self.assertIsNotNone(visualizer['protocol'])
-        self.assertIsNotNone(visualizer['authentication'])
+        visualiser = to_test.get_destination_by_name('visualiser')
+        self.assertIsNotNone(visualiser)
+        self.assertIsNotNone(visualiser['description'])
+        self.assertIsNotNone(visualiser['ip-address'])
+        self.assertIsNotNone(visualiser['protocol'])
+        self.assertIsNotNone(visualiser['authentication'])
         self.assertIsNone(to_test.get_destination_by_name('some_bad_destination'))

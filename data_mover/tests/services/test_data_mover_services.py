@@ -18,7 +18,7 @@ class TestDataMoverServices(unittest.TestCase):
         to_test._move_job_dao = mock.MagicMock()
         to_test._destination_manager.get_destination_by_name.return_value = {}
 
-        dest_dict = {'host': 'visualizer', 'path': '/some/path'}
+        dest_dict = {'host': 'visualiser', 'path': '/some/path'}
         source_dict = {'type': 'ala', 'lsid': 'some:lsid'}
 
         move_job = MoveJob(source_dict, dest_dict)
@@ -31,7 +31,7 @@ class TestDataMoverServices(unittest.TestCase):
             mock_thread.assert_called_with(target=to_test._move_service.worker, args=(move_job,))
             mock_thread.start.assert_called()
 
-        to_test._destination_manager.get_destination_by_name.assert_called_with('visualizer')
+        to_test._destination_manager.get_destination_by_name.assert_called_with('visualiser')
         to_test._move_job_dao.create_new.assert_called_with(source_dict, dest_dict)
 
 
