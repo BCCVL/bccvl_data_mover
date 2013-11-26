@@ -13,7 +13,7 @@ def http_get(url):
     @return: The content of the response, and its content type, or None if the HTTP GET did not succeed.
     """
     _logger.info('Performing HTTP GET to URL %s', url)
-    response = requests.get(url)
+    response = requests.get(url, verify=False)
     if response.status_code is not 200:
         _logger.warning('Obtained status code %s from URL %s', response.status_code, url)
         return None
