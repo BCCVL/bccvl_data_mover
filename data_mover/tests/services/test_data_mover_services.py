@@ -1,9 +1,10 @@
 import unittest
 import logging
+from data_mover import DestinationManager
 import mock
 from data_mover.services.data_mover_services import DataMoverServices
-from data_mover.services.response import (STATUS_REJECTED, REASON_MISSING_PARAMS, REASON_UNKNOWN_DESTINATION,
-                                          REASON_JOB_DOES_NOT_EXIST, REASON_INVALID_PARAMS, REASON_UNKNOWN_SOURCE)
+from data_mover.services.response import (STATUS_REJECTED, REASON_MISSING_PARAMS_1S, REASON_UNKNOWN_DESTINATION_1S,
+                                          REASON_JOB_DOES_NOT_EXIST, REASON_INVALID_PARAMS_1S, REASON_UNKNOWN_SOURCE_1S)
 from data_mover.models.move_job import MoveJob
 
 
@@ -49,32 +50,32 @@ class TestDataMoverServices(unittest.TestCase):
         out_1 = to_test.move(None, source_dict)
         self.assertIsNotNone(out_1)
         self.assertEqual(STATUS_REJECTED, out_1['status'])
-        self.assertEqual(REASON_MISSING_PARAMS, out_1['reason'])
+        self.assertEqual(REASON_MISSING_PARAMS_1S % 'source and destination must not be None', out_1['reason'])
 
         out_2 = to_test.move(dest_dict, None)
         self.assertIsNotNone(out_2)
         self.assertEqual(STATUS_REJECTED, out_2['status'])
-        self.assertEqual(REASON_MISSING_PARAMS, out_2['reason'])
+        self.assertEqual(REASON_MISSING_PARAMS_1S % 'source and destination must not be None', out_2['reason'])
 
         out_3 = to_test.move(None, None)
         self.assertIsNotNone(out_3)
         self.assertEqual(STATUS_REJECTED, out_3['status'])
-        self.assertEqual(REASON_MISSING_PARAMS, out_3['reason'])
+        self.assertEqual(REASON_MISSING_PARAMS_1S % 'source and destination must not be None', out_3['reason'])
 
         out_4 = to_test.move(source={'type': 'scp'}, destination=dest_dict)
         self.assertIsNotNone(out_4)
         self.assertEqual(STATUS_REJECTED, out_4['status'])
-        self.assertEqual(REASON_MISSING_PARAMS, out_4['reason'])
+        self.assertEqual(REASON_MISSING_PARAMS_1S % 'host and path must be provided with scp source', out_4['reason'])
 
         out_5 = to_test.move(source={'type': 'scp', 'host': 'some_host'}, destination=dest_dict)
         self.assertIsNotNone(out_5)
         self.assertEqual(STATUS_REJECTED, out_5['status'])
-        self.assertEqual(REASON_MISSING_PARAMS, out_5['reason'])
+        self.assertEqual(REASON_MISSING_PARAMS_1S % 'host and path must be provided with scp source', out_5['reason'])
 
         out_6 = to_test.move(source={'type': 'scp', 'path': '/path/to/dest'}, destination=dest_dict)
         self.assertIsNotNone(out_6)
         self.assertEqual(STATUS_REJECTED, out_6['status'])
-        self.assertEqual(REASON_MISSING_PARAMS, out_6['reason'])
+        self.assertEqual(REASON_MISSING_PARAMS_1S % 'host and path must be provided with scp source', out_6['reason'])
 
     def testXMLMoveEmptyParams(self):
         to_test = DataMoverServices(None, None)
@@ -84,28 +85,28 @@ class TestDataMoverServices(unittest.TestCase):
         out_1 = to_test.move(dest_dict, source_dict)
         self.assertIsNotNone(out_1)
         self.assertEqual(STATUS_REJECTED, out_1['status'])
-        self.assertEqual(REASON_MISSING_PARAMS, out_1['reason'])
+        self.assertEqual(REASON_MISSING_PARAMS_1S % 'source must specify a type', out_1['reason'])
 
         dest_dict = {'host': 'some_host', 'path': ''}
         source_dict = {'type': 'type', 'id': 'id'}
         out_2 = to_test.move(dest_dict, source_dict)
         self.assertIsNotNone(out_2)
         self.assertEqual(STATUS_REJECTED, out_2['status'])
-        self.assertEqual(REASON_MISSING_PARAMS, out_2['reason'])
+        self.assertEqual(REASON_MISSING_PARAMS_1S % 'source must specify a type', out_2['reason'])
 
         dest_dict = {'host': 'some_host', 'path': '/some/path'}
         source_dict = {'type': '', 'id': 'id'}
         out_3 = to_test.move(dest_dict, source_dict)
         self.assertIsNotNone(out_3)
         self.assertEqual(STATUS_REJECTED, out_3['status'])
-        self.assertEqual(REASON_MISSING_PARAMS, out_3['reason'])
+        self.assertEqual(REASON_MISSING_PARAMS_1S % 'source must specify a type', out_3['reason'])
 
         dest_dict = {'host': 'some_host', 'path': '/some/path'}
         source_dict = {'type': 'some_type', 'id': ''}
         out_4 = to_test.move(dest_dict, source_dict)
         self.assertIsNotNone(out_4)
         self.assertEqual(STATUS_REJECTED, out_4['status'])
-        self.assertEqual(REASON_MISSING_PARAMS, out_4['reason'])
+        self.assertEqual(REASON_MISSING_PARAMS_1S % 'source must specify a type', out_4['reason'])
 
     def testXMLMoveUnknownDestination(self):
         to_test = DataMoverServices(None, None)
@@ -118,7 +119,7 @@ class TestDataMoverServices(unittest.TestCase):
         out= to_test.move(source_dict, dest_dict)
         self.assertIsNotNone(out)
         self.assertEqual(STATUS_REJECTED, out['status'])
-        self.assertEqual(REASON_UNKNOWN_DESTINATION, out['reason'])
+        self.assertEqual(REASON_UNKNOWN_DESTINATION_1S % 'unknown_destination', out['reason'])
         to_test._destination_manager.get_destination_by_name.assert_called_with('unknown_destination')
 
     def testXMLMoveUnknownSource(self):
@@ -132,7 +133,7 @@ class TestDataMoverServices(unittest.TestCase):
         out= to_test.move(source_dict, dest_dict)
         self.assertIsNotNone(out)
         self.assertEqual(STATUS_REJECTED, out['status'])
-        self.assertEqual(REASON_UNKNOWN_SOURCE, out['reason'])
+        self.assertEqual(REASON_UNKNOWN_SOURCE_1S % 'unknown_source', out['reason'])
         to_test._destination_manager.get_destination_by_name.assert_called_with('unknown_source')
 
     def testXMLMoveMissingParams(self):
@@ -143,7 +144,7 @@ class TestDataMoverServices(unittest.TestCase):
         out = to_test.move(dest_dict, source_dict)
         self.assertIsNotNone(out)
         self.assertEqual(STATUS_REJECTED, out['status'])
-        self.assertEqual(REASON_MISSING_PARAMS, out['reason'])
+        self.assertEqual(REASON_MISSING_PARAMS_1S % 'source must specify a type', out['reason'])
 
     def testCheckMoveStatus(self):
         to_test = DataMoverServices(None, None)
@@ -188,7 +189,7 @@ class TestDataMoverServices(unittest.TestCase):
         out = to_test.check_move_status()
         self.assertIsNotNone(out)
         self.assertEqual(STATUS_REJECTED, out['status'])
-        self.assertEqual(REASON_MISSING_PARAMS, out['reason'])
+        self.assertEqual(REASON_MISSING_PARAMS_1S % 'id', out['reason'])
 
     def testCheckMoveStatusInvalidId(self):
         to_test = DataMoverServices(None, None)
@@ -196,4 +197,61 @@ class TestDataMoverServices(unittest.TestCase):
         out = to_test.check_move_status('1')
         self.assertIsNotNone(out)
         self.assertEqual(STATUS_REJECTED, out['status'])
-        self.assertEqual(REASON_INVALID_PARAMS, out['reason'])
+        self.assertEqual(REASON_INVALID_PARAMS_1S % 'id must be an int', out['reason'])
+
+    def testValidateSourceDictMixed(self):
+        to_test = DataMoverServices(None, None)
+
+        dest_manager = mock.MagicMock(spec=DestinationManager())
+        to_test._destination_manager = dest_manager
+        to_test._destination_manager.get_destination_by_name.return_value = {}
+
+        file_1 = {'type':'scp', 'host':'visualiser', 'path':'/usr/local/data/occurrence/koalas.csv'}
+        file_2 = {'type':'scp', 'host':'visualiser', 'path':'/usr/local/data/occurrence/koalas.png'}
+        file_3 = {'type':'url', 'url':'http://www.intersect.org.au/dingos.csv'}
+        file_4 = {'type':'scp', 'host':'host_blah', 'path':'/usr/local/data/occurrence/dingos.png'}
+        source_dict = {'type':'mixed', 'sources':[file_1, file_2, file_3, file_4]}
+
+        valid, reason = to_test._validate_source_dict(source_dict)
+
+        call1 = mock.call('visualiser')
+        call2 = mock.call('visualiser')
+        call3 = mock.call('host_blah')
+
+        dest_manager.get_destination_by_name.assert_has_calls([call1, call2, call3])
+
+        self.assertTrue(valid)
+        self.assertEqual('', reason)
+
+    def testValidateSourceDictMixedInvalid1(self):
+        to_test = DataMoverServices(None, None)
+
+        file_1 = {'type':'scp', 'host':'visualiser', 'path':'/usr/local/data/occurrence/koalas.csv'}
+        source_dict = {'type':'mixed', 'sources':file_1}
+
+        valid, reason = to_test._validate_source_dict(source_dict)
+
+        self.assertFalse(valid)
+        self.assertEqual(REASON_MISSING_PARAMS_1S % 'sources must be of list type', reason)
+
+    def testValidateSourceDictMixedInvalid2(self):
+        to_test = DataMoverServices(None, None)
+
+        source_dict = {'type':'mixed'}
+
+        valid, reason = to_test._validate_source_dict(source_dict)
+
+        self.assertFalse(valid)
+        self.assertEqual(REASON_MISSING_PARAMS_1S % 'sources must be provided with mixed source', reason)
+
+    def testValidateSourceDictMixedInvalid1(self):
+        to_test = DataMoverServices(None, None)
+
+        file_1 = {'type':'scp', 'host':'visualiser', 'path':'/usr/local/data/occurrence/koalas.png'}
+        file_2 = {'type':'mixed', 'sources':[file_1]}
+        source_dict = {'type':'mixed', 'sources':[file_2]}
+
+        valid, reason = to_test._validate_source_dict(source_dict)
+
+        self.assertFalse(valid)
+        self.assertEqual(REASON_INVALID_PARAMS_1S % 'mixed sources may not be nested', reason)

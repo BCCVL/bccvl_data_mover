@@ -1,10 +1,10 @@
-REASON_MISSING_PARAMS = "Missing or incorrect parameters"
+REASON_MISSING_PARAMS_1S = "Missing or incorrect parameter '%s'"
 REASON_DB_ERROR = "Database Error"
 REASON_JOB_DOES_NOT_EXIST = "Job does not exist"
-REASON_INVALID_PARAMS = "Invalid parameters"
-REASON_UNKNOWN_DESTINATION = "Unknown destination"
-REASON_UNKNOWN_SOURCE = "Unknown source"
-REASON_UNKNOWN_SOURCE_TYPE = "Unknown source type"
+REASON_INVALID_PARAMS_1S = "Invalid parameter '%s'"
+REASON_UNKNOWN_DESTINATION_1S = "Unknown destination '%s'"
+REASON_UNKNOWN_SOURCE_1S = "Unknown source '%s'"
+REASON_UNKNOWN_SOURCE_TYPE_1S = "Unknown source type '%s'"
 
 STATUS_REJECTED = 'REJECTED'
 

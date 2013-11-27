@@ -28,7 +28,7 @@ Scenario: Move http://www.intersect.org.au to an unknown destination
     And my source is of type "url" with "url" of "http://www.intersect.org.au"
     When I request a move with the defined requirements
     Then I should see that the job status is "REJECTED"
-    And I should see that the job reason is "Unknown destination"
+    And I should see that the job reason is "Unknown destination 'unknown_destination'"
 
 Scenario: Move http://www.intersect.org.au to test_machine - Unknown source type
     Given I am connected to the Data Mover server
@@ -36,7 +36,7 @@ Scenario: Move http://www.intersect.org.au to test_machine - Unknown source type
     And my source is of type "ftp" with "url" of "http://www.intersect.org.au"
     When I request a move with the defined requirements
     Then I should see that the job status is "REJECTED"
-    And I should see that the job reason is "Unknown source type"
+    And I should see that the job reason is "Unknown source type 'ftp'"
 
 Scenario: Move http://www.intersect.org.a to test_machine - Could not download from URL
     Given I am connected to the Data Mover server
