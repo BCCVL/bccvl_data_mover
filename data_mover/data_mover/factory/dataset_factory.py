@@ -2,7 +2,6 @@ import json
 import datetime
 import os
 import io
-from data_mover.util.url_utils import path_to_url
 
 from data_mover.domain.dataset import (Dataset, DatasetFile, DatasetProvenance)
 

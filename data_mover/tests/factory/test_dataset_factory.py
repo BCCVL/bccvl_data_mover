@@ -1,10 +1,11 @@
 import datetime
 import unittest
 import os
+import tempfile
 from mock import MagicMock
 from data_mover.factory.dataset_factory import DatasetFactory
 from data_mover.services.ala_service import ALAService
-from data_mover.files.file_manager import FileManager
+from data_mover.util.file_utils import listdir_fullpath
 
 
 class TestDatasetFactory(unittest.TestCase):
@@ -13,39 +14,41 @@ class TestDatasetFactory(unittest.TestCase):
 
         lsid = 'urn:lsid:biodiversity.org.au:afd.taxon:31a9b8b8-4e8f-4343-a15f-2ed24e0bf1ae'
 
-        file_manager = FileManager()
         ala_occurrence_dao = MagicMock()
         dataset_factory = DatasetFactory()
 
-        ala_service = ALAService(file_manager, dataset_factory)
+        ala_service = ALAService(dataset_factory)
         ala_service._occurrence_url = "http://biocache.ala.org.au/ws/webportal/occurrences.gz?q=lsid:${lsid}&fq=geospatial_kosher:true&fl=raw_taxon_name,longitude,latitude&pageSize=999999999"
         ala_service._metadata_url = "http://bie.ala.org.au/species/${lsid}.json"
         dataset_factory._occurrence_url = ala_service._occurrence_url
 
         ala_occurrence_dao.create_new = MagicMock()
 
-        dest_dir = '/usr/local/bccvl/data'
+        remote_dest_dir = '/usr/local/bccvl/data'
+        local_dest_dir = tempfile.mkdtemp()
 
-        out_files = ala_service.download_occurrence_by_lsid(lsid, dest_dir, 1234)
+        result = ala_service.download_occurrence_by_lsid(lsid, remote_dest_dir, 1234, 1, local_dest_dir)
+        self.assertTrue(result)
+        out_files = listdir_fullpath(local_dest_dir)
         self.assertEqual(3, len(out_files))
 
         # The occurrence file exists
-        occurrence_file = out_files[0]
+        occurrence_file = os.path.join(local_dest_dir, 'move_job_1234_1_ala_occurrence.csv')
         self.assertTrue(os.path.isfile(occurrence_file))
 
         # The metadata file exists
-        metadata_file = out_files[1]
+        metadata_file = os.path.join(local_dest_dir, 'move_job_1234_1_ala_metadata.json')
         self.assertTrue(os.path.isfile(metadata_file))
 
         # The dataset file exists
-        dataset_file = out_files[2]
+        dataset_file = os.path.join(local_dest_dir, 'move_job_1234_1_ala_dataset.json')
         self.assertTrue(os.path.isfile(dataset_file))
 
         dataset_factory = DatasetFactory()
         dataset_factory._occurrence_url = "http://biocache.ala.org.au/ws/webportal/occurrences.gz?q=lsid:${lsid}&fq=geospatial_kosher:true&fl=raw_taxon_name,longitude,latitude&pageSize=999999999"
 
-        dest_occurrence_file = dest_dir + '/occurrence.csv'
-        dest_metadata_file = dest_dir + '/metadata.json'
+        dest_occurrence_file = remote_dest_dir + '/occurrence.csv'
+        dest_metadata_file = remote_dest_dir + '/metadata.json'
         ala_dataset = dataset_factory.generate_dataset(lsid, dest_occurrence_file, dest_metadata_file, occurrence_file, metadata_file)
         now = datetime.datetime.now()
 

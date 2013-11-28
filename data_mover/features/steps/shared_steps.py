@@ -1,6 +1,7 @@
 from xmlrpclib import ServerProxy
 import time
 import os
+from data_mover.util.file_utils import listdir_fullpath
 
 
 @given('I am connected to the Data Mover server')
@@ -18,11 +19,10 @@ def step(context, seconds):
 
 @then('I should see a file with suffix "{suffix}" in my temp directory')
 def step(context, suffix):
-    move_job_id = str(context.response['id'])
     print 'temp dir: ' + context.temp_dir
-    file = os.path.join(context.temp_dir, 'move_job_' + move_job_id + '.' + suffix)
-    file_exists = os.path.exists(file)
-    assert file_exists
+    files = listdir_fullpath(context.temp_dir)
+    assert 1 == len(files)
+    assert files[0].endswith('.' + suffix)
 
 @then('I should see a file in my temp directory named "{filename}" with content "{content}"')
 def step(context, filename, content):

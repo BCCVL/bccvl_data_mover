@@ -16,15 +16,11 @@ class ALAService():
 
     _logger = logging.getLogger(__name__)
 
-
-    def __init__(self, file_manager, dataset_factory):
+    def __init__(self, dataset_factory):
         """
-        @param file_manager: The file manager to store files with
-        @type file_manager: FileManager
         @param dataset_factory: The ala dataset factory
         @type dataset_factory: DatasetFactory
         """
-        self._file_manager = file_manager
         self._dataset_factory = dataset_factory
         self._occurrence_url = ''
         self._metadata_url = ''
@@ -40,49 +36,54 @@ class ALAService():
         self._occurrence_url = settings[key + 'occurrence_url']
         self._metadata_url = settings[key + 'metadata_url']
 
-    def download_occurrence_by_lsid(self, lsid, destination_directory, move_job_id):
+    def download_occurrence_by_lsid(self, lsid, remote_destination_directory, move_job_id, file_id_in_set, local_dest_dir):
         """
         Downloads Species Occurrence data from ALA (Atlas of Living Australia) based on an LSID (Life Science Identifier)
         @param lsid: the lsid of the species to download occurrence data for
         @type lsid: str
-        @param destination_directory: the destination directory that the ALA files are going to end up inside of. Used to form the metadata .json file.
-        @type destination_directory: str
+        @param remote_destination_directory: the destination directory that the ALA files are going to end up inside of on the remote machine. Used to form the metadata .json file.
+        @type remote_destination_directory: str
         @param move_job_id: the ID of the move job
         @type move_job_id: int
-        @return A list of files that it has returned, or None if it could not download the data
+        @param file_id_in_set: The id of the file in the set of files to download. Used to uniquely identify the obtained file in a set of files.
+        @type file_id_in_set: int
+        @param local_dest_dir: The local directory to temporarily store the ALA files in.
+        @type local_dest_dir: str
+        @return True if the dataset was obtained. False otherwise
         """
 
         # Get occurrence data
         occurrence_url = self._occurrence_url.replace("${lsid}", lsid)
-        content, content_type = http_get_gunzip(occurrence_url)
-        if content is None or len(content) == 0:
+        occurrence_file_name = 'move_job_' + str(move_job_id) + '_' + str(file_id_in_set) + '_ala_occurrence'
+        success = http_get_gunzip(occurrence_url, local_dest_dir, occurrence_file_name, 'csv')
+        if not success:
             self._logger.warning("Could not download occurrence data from ALA for LSID %s", lsid)
-            return None
-
+            return False
         self._logger.info("Completed download of raw occurrence data form ALA for LSID %s", lsid)
-        occurrence_file_name = 'move_job_' + str(move_job_id) + '_ala_occurrence.csv'
-        occurrence_path = self._file_manager.temp_file_manager.add_new_file(occurrence_file_name, content)
+
+        occurrence_path = os.path.join(local_dest_dir, occurrence_file_name + '.csv')
         self._normalize_occurrence(occurrence_path)
 
         # Get occurrence metadata
         metadata_url = self._metadata_url.replace("${lsid}", lsid)
-        content, content_type = http_get(metadata_url)
-        if content is None or len(content) == 0:
+        metadata_file_name = 'move_job_' + str(move_job_id) + '_' + str(file_id_in_set) + '_ala_metadata'
+        success = http_get(metadata_url, local_dest_dir, metadata_file_name, 'json')
+        if not success:
             self._logger.warning("Could not download occurrence metadata from ALA for LSID %s", lsid)
-            return None
-        metadata_file_name = 'move_job_' + str(move_job_id) + '_ala_metadata.json'
-        metadata_path = self._file_manager.temp_file_manager.add_new_file(metadata_file_name, content)
+            return False
+        metadata_path = os.path.join(local_dest_dir, metadata_file_name + '.json')
 
         # Generate dataset .json
-        destination_occurrence_path = os.path.join(destination_directory, occurrence_file_name)
-        destination_metadata_path = os.path.join(destination_directory, metadata_file_name)
+        destination_occurrence_path = os.path.join(remote_destination_directory, occurrence_file_name + '.csv')
+        destination_metadata_path = os.path.join(remote_destination_directory, metadata_file_name + '.json')
         ala_dataset = self._dataset_factory.generate_dataset(lsid, destination_occurrence_path, destination_metadata_path, occurrence_path, metadata_path)
 
         # Write the dataset to a file
-        dataset_file_name = 'move_job_' + str(move_job_id) + '_ala_dataset.json'
-        dataset_path = self._file_manager.temp_file_manager.add_new_file(dataset_file_name, serialize_dataset(ala_dataset))
-
-        return [occurrence_path, metadata_path, dataset_path]
+        dataset_path = os.path.join(local_dest_dir, 'move_job_' + str(move_job_id) + '_' + str(file_id_in_set) + '_ala_dataset.json')
+        f = io.open(dataset_path, mode='wb')
+        f.write(serialize_dataset(ala_dataset))
+        f.close()
+        return True
 
     @staticmethod
     def _normalize_occurrence(file_path):

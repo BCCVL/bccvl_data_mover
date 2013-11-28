@@ -1,5 +1,6 @@
 import os
 import tempfile
+from data_mover.util.file_utils import listdir_fullpath
 
 
 @when('I pull occurrences from ALA using the LSID "{lsid}"')
@@ -15,14 +16,11 @@ def step_impl(context, lsid):
 
 @then('I should see the ALA files in my local directory')
 def step_impl(context):
-    move_job_id = str(context.response['id'])
-    occurrences_file = os.path.join(context.temp_dir, 'move_job_' + move_job_id + '_ala_occurrence.csv')
-    metadata_file = os.path.join(context.temp_dir, 'move_job_' + move_job_id + '_ala_metadata.json')
-    dataset_file = os.path.join(context.temp_dir, 'move_job_' + move_job_id + '_ala_dataset.json')
-    assert os.path.isfile(occurrences_file)
-    assert os.path.isfile(metadata_file)
-    assert os.path.isfile(dataset_file)
-
-
-# TODO: add environment.py before and after scenario, and make sure to shutdown the server after each test
-# TODO: clear the database after each scenario
+    out_files = listdir_fullpath(context.temp_dir)
+    assert 3 == len(out_files)
+    occurrences_exist = 1 == len([i for i in out_files if i.endswith('_ala_occurrence.csv')])
+    metadata_exist = 1 == len([i for i in out_files if i.endswith('_ala_metadata.json')])
+    dataset_exist = 1 == len([i for i in out_files if i.endswith('_ala_dataset.json')])
+    assert occurrences_exist
+    assert metadata_exist
+    assert dataset_exist

@@ -14,7 +14,6 @@ DBSession = scoped_session(sessionmaker(extension=ZopeTransactionExtension()))
 from data_mover.dao.move_job_dao import MoveJobDAO
 from data_mover.dao.session_maker import SessionMaker
 from data_mover.destinations.destination_manager import DestinationManager
-from data_mover.files.file_manager import FileManager
 from data_mover.factory.dataset_factory import DatasetFactory
 from data_mover.services.ala_service import ALAService
 from data_mover.services.move_service import MoveService
@@ -27,12 +26,12 @@ MOVE_JOB_DAO = MoveJobDAO(SESSION_MAKER)
 ALA_DATASET_FACTORY = DatasetFactory()
 
 ### SERVICES AND MANAGERS ###
-FILE_MANAGER = FileManager()
 DESTINATION_MANAGER = DestinationManager()
-ALA_SERVICE = ALAService(FILE_MANAGER, ALA_DATASET_FACTORY)
-MOVE_SERVICE = MoveService(FILE_MANAGER, MOVE_JOB_DAO, DESTINATION_MANAGER, ALA_SERVICE)
+ALA_SERVICE = ALAService(ALA_DATASET_FACTORY)
+MOVE_SERVICE = MoveService(MOVE_JOB_DAO, DESTINATION_MANAGER, ALA_SERVICE)
 
 from data_mover.services.data_mover_services import DataMoverServices
+
 
 def main(global_config, **settings):
     """ This function returns a Pyramid WSGI application.
@@ -54,9 +53,4 @@ def main(global_config, **settings):
     config = Configurator(settings=settings)
     config.add_view(DataMoverServices, name='data_mover')
     config.scan()
-    atexit.register(shutdown_hook)
     return config.make_wsgi_app()
-
-
-def shutdown_hook():
-    FILE_MANAGER.temp_file_manager.delete_temp_directory()
