@@ -2,7 +2,7 @@ import tempfile
 import shutil
 import os
 
-@given('I want to move a file to "{dest_host}" in some temp directory')
+@given('I want to use the destination host "{dest_host}" and some temp directory')
 def step(context, dest_host):
     context.temp_dir = tempfile.mkdtemp(suffix=__name__)
     assert len(os.listdir(context.temp_dir)) == 0
@@ -12,6 +12,10 @@ def step(context, dest_host):
 def step(context, type, arg, value):
     context.source_dict = {'type':type, arg:value}
 
+@given('one of my sources is of type "{type}" with "{arg}" of "{value}"' )
+def step(context, type, arg, value):
+    context.source_dict['sources'].append({'type':type, arg:value})
+
 @given('my source is of type "{type}" with host of "{host}" and path of some temporary file named "{filename}" with content "{content}"')
 def step(context, type, host, filename, content):
     temp_dir = tempfile.mkdtemp(suffix=__name__)
@@ -20,6 +24,15 @@ def step(context, type, host, filename, content):
     temp_file.write(content)
     temp_file.close()
     context.source_dict = {'type':type, 'host':host, 'path':os.path.abspath(temp_file_name)}
+
+@given('one of my sources is of type "{type}" with host of "{host}" and path of some temporary file named "{filename}" with content "{content}"')
+def step(context, type, host, filename, content):
+    temp_dir = tempfile.mkdtemp(suffix=__name__)
+    temp_file_name = os.path.join(temp_dir, filename)
+    temp_file = open(temp_file_name, 'w')
+    temp_file.write(content)
+    temp_file.close()
+    context.source_dict['sources'].append({'type':type, 'host':host, 'path':os.path.abspath(temp_file_name)})
 
 @given('I want to move a file to "{dest_host}" at path "{dest_path}"')
 def step(context, dest_host, dest_path):
@@ -33,3 +46,7 @@ def step(context):
 @then('I should not see my temp dir')
 def step(context):
     shutil.rmtree(context.temp_dir)
+
+@given('my source is of type mixed')
+def step(context):
+    context.source_dict = {'type':'mixed', 'sources':[]}

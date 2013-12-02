@@ -17,12 +17,17 @@ def step(context, minutes):
 def step(context, seconds):
     time.sleep(float(seconds))
 
+@then('I should see "{num}" files in my temp directory')
+def step(context, num):
+    files = listdir_fullpath(context.temp_dir)
+    assert int(num) == len(files)
+
 @then('I should see a file with suffix "{suffix}" in my temp directory')
 def step(context, suffix):
     print 'temp dir: ' + context.temp_dir
     files = listdir_fullpath(context.temp_dir)
-    assert 1 == len(files)
-    assert files[0].endswith('.' + suffix)
+    file_exist = len([i for i in files if i.endswith('.' + suffix)]) >= 1
+    assert file_exist
 
 @then('I should see a file in my temp directory named "{filename}" with content "{content}"')
 def step(context, filename, content):
