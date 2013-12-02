@@ -50,6 +50,7 @@ class MoveService():
         if not success:
             self._logger.warning('Could not fetch source file(s) for move job %s. Reason: %s', move_job.id, reason)
             self._move_job_dao.update(move_job, status=MoveJob.STATUS_FAILED, end_timestamp=datetime.datetime.now(), reason=reason)
+            return
 
         # Send the file(s) to the destination
         # TODO: support retries
