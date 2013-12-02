@@ -52,40 +52,4 @@ Then run:
 
 ### Available XMLRPC functions
 
-The data_mover component has one 'move' method designed to take action based on source and
-destination dictionaries that are provided to it when it is called.
-
-```python
-    from xmlrpclib import ServerProxy
-    s = ServerProxy('http://0.0.0.0:6543/data_mover')
-    response = s.move(source_dict, dest_dict)
-```
-
-**Source Dictionary**
-
-Contains information about the source of the data to move, the following sources are supported
-
-*ALA*
-
-```python
-    source_dict = {'type':'ala', 'lsid':'urn:lsid:biodiversity.org.au:afd.taxon:31a9b8b8-4e8f-4343-a15f-2ed24e0bf1ae'}
-```
-
-*HTTP*
-
-```python
-    source_dict = {'type':'url', 'url':'http://www.intersect.org.au'}
-```
-
-**Destination Dictionary**
-
-Contains information about the destination of the data obtained from the source.
-Destinations must be configured in data_mover/destination_config.json and are looked up by name.
-
-```python
-    dest_dict = {'host':'visualizer', 'path':'/usr/local/data/occurrence'}
-```
-
-**Check the status of the move request:**
-
-    s.check_move_status(response.id)
+See https://wiki.intersect.org.au/display/BCCVL/Data+Mover+and+Data+Movement+API

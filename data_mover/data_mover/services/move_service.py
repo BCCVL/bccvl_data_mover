@@ -46,27 +46,10 @@ class MoveService():
         # Get the file(s) from the source
         # TODO: support retries
 
-        if move_job.source['type'] == 'ala':
-            success = self._download_from_ala(move_job.source['lsid'], move_job.destination['path'], move_job.id, 1, temp_dir)
-            if not success:
-                reason = 'Could not download LSID %s from ALA' % (move_job.source['lsid'])
-        elif move_job.source['type'] == 'url':
-            success = self._download_from_url(move_job.source['url'], move_job.id, 1, temp_dir)
-            if not success:
-                reason = 'Could not download from URL %s' % (move_job.source['url'])
-        elif move_job.source['type'] == 'scp':
-            success = self._download_from_scp(move_job.source['host'], move_job.source['path'], temp_dir)
-            if not success:
-                reason = 'Could not download from remote SCP source %s' % (move_job.source['host'])
-        else:
-            self._logger.warning("Move has failed for job with id %s. Unknown source type %s", move_job.id, move_job.source['type'])
-            self._move_job_dao.update(move_job, status=MoveJob.STATUS_FAILED, end_timestamp=datetime.datetime.now(), reason='Unknown source type ' + move_job.source['type'])
-            return
-
+        success, reason = self._select_source(move_job.source, move_job.destination, move_job.id, temp_dir, 1)
         if not success:
             self._logger.warning('Could not fetch source file(s) for move job %s. Reason: %s', move_job.id, reason)
             self._move_job_dao.update(move_job, status=MoveJob.STATUS_FAILED, end_timestamp=datetime.datetime.now(), reason=reason)
-            return
 
         # Send the file(s) to the destination
         # TODO: support retries
@@ -103,6 +86,46 @@ class MoveService():
             self._logger.warning('Move job with id %s has failed', move_job.id)
             self._move_job_dao.update(move_job, status=MoveJob.STATUS_FAILED, end_timestamp=datetime.datetime.now(), reason='Unable to send to destination')
 
+    def _select_source(self, source_dict, dest_dict, move_job_id, local_dest_dir, file_id_in_set):
+        """
+        Parses the source dictionary provided and performs the correct action.
+        @param source_dict: The source dictionary
+        @type source_dict: dict
+        @param dest_dict:
+        @param move_job_id: The id of the move job
+        @type move_job_id: int
+        @param local_dest_dir: The local destination on disk to store files downloaded
+        @type local_dest_dir: str
+        @param file_id_in_set: The 'file id' in the set to download. Used so files are not overwritten when downloading multiples
+        @type file_id_in_set: int
+        @return: True If the download was successful, False and a reason otherwise.
+        """
+        if source_dict['type'] == 'ala':
+            if not self._download_from_ala(source_dict['lsid'], dest_dict['path'], move_job_id, file_id_in_set, local_dest_dir):
+                return False, 'Could not download LSID %s from ALA' % source_dict['lsid']
+
+        elif source_dict['type'] == 'url':
+            if not self._download_from_url(source_dict['url'], move_job_id, file_id_in_set, local_dest_dir):
+                return False, 'Could not download from URL %s' % source_dict['url']
+
+        elif source_dict['type'] == 'scp':
+            if not self._download_from_scp(source_dict['host'], source_dict['path'], local_dest_dir):
+                return False, 'Could not download from remote SCP source %s' % source_dict['host']
+
+        elif source_dict['type'] == 'mixed':
+            sources_list = source_dict['sources']
+            i = 0
+            for source in sources_list:
+                success, reason = self._select_source(source, dest_dict, move_job_id, local_dest_dir, file_id_in_set + i)
+                i += 1
+                if not success:
+                    return False, reason
+
+        else:
+            self._logger.warning("Move has failed for job with id %s. Unknown source type %s", move_job_id, source_dict['type'])
+            return False, 'Unknown source type %s' % source_dict['type']
+
+        return True, ''
 
     def _download_from_ala(self, lsid, remote_dest_dir, move_job_id, file_id_in_set, local_dest_dir):
         """

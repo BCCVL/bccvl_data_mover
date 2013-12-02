@@ -309,3 +309,40 @@ class TestMoveService(unittest.TestCase):
         call2 = mock.call(move_job, status=MoveJob.STATUS_COMPLETE, end_timestamp=mock.ANY)
         move_job_dao.update.assert_has_calls([call1, call2])
         ala_service.download_occurrence_by_lsid.assert_called_with(lsid, '/usr/local/destdir/', None, 1, mock.ANY)
+
+    def test_worker_mixed_source(self):
+        move_job_dao = mock.MagicMock(spec=MoveJobDAO)
+        destination_manger = mock.MagicMock(spec=DestinationManager)
+        ala_service = mock.MagicMock(spec=ALAService)
+
+        file_1 = {'type':'scp', 'host':'the_source', 'path':'/url/to/download_1.txt'}
+        file_2 = {'type':'url', 'url':'http://www.someurl.com'}
+        file_3 = {'type':'ala', 'lsid':'some_lsid'}
+        src_dict = {'type':'mixed', 'sources':[file_1, file_2, file_3]}
+        dest_dict = {'host':'local','path':'/usr/local/destdir/'}
+
+        destination = {
+            'description': 'The local machine',
+            'protocol': 'local'
+        }
+
+        destination_manger.get_destination_by_name.return_value = destination
+
+        move_job = MoveJob(src_dict, dest_dict)
+        move_job.id = 1234
+        to_test = MoveService(move_job_dao, destination_manger, ala_service)
+        to_test._download_from_scp = mock.MagicMock(return_value=True)
+        to_test._download_from_url = mock.MagicMock(return_value=True)
+        to_test._download_from_ala = mock.MagicMock(return_value=True)
+
+        move_job_dao.update.return_value = move_job
+
+        to_test.worker(move_job)
+
+        to_test._download_from_scp.assert_called_with('the_source', '/url/to/download_1.txt', mock.ANY)
+        to_test._download_from_url.assert_called_with('http://www.someurl.com', 1234, 2, mock.ANY)
+        to_test._download_from_ala.assert_called_with('some_lsid', '/usr/local/destdir/', 1234, 3, mock.ANY)
+
+        call1 = mock.call(move_job, status=MoveJob.STATUS_IN_PROGRESS, start_timestamp=mock.ANY)
+        call2 = mock.call(move_job, status=MoveJob.STATUS_COMPLETE, end_timestamp=mock.ANY)
+        move_job_dao.update.assert_has_calls([call1, call2])
