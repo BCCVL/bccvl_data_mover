@@ -141,6 +141,10 @@ class DataMoverServices(XMLRPCView):
         if not dest_host or not dest_path:
             return False, REASON_MISSING_PARAMS_1S % 'destination must specify a host and path'
 
+        if 'zip' in destination:
+            if not isinstance(destination['zip'], bool):
+                return False, REASON_INVALID_PARAMS_1S % 'zip must be of type bool'
+
         destination_host = self._destination_manager.get_destination_by_name(dest_host)
         if destination_host is None:
             return False, REASON_UNKNOWN_DESTINATION_1S % dest_host

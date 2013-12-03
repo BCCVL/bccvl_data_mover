@@ -20,6 +20,7 @@ def step(context, seconds):
 @then('I should see "{num}" files in my temp directory')
 def step(context, num):
     files = listdir_fullpath(context.temp_dir)
+    print "Number of files: " + str(len(files))
     assert int(num) == len(files)
 
 @then('I should see a file with suffix "{suffix}" in my temp directory')

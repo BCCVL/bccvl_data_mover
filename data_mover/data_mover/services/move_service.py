@@ -1,11 +1,13 @@
 import datetime
 import logging
+import os
 import shutil
 import tempfile
 from data_mover.models.move_job import MoveJob
 from data_mover.protocols.http import http_get
 from data_mover.protocols.scp_client import scp_put, scp_get
 from data_mover.util.file_utils import listdir_fullpath
+from zipfile import ZipFile
 
 
 class MoveService():
@@ -58,26 +60,27 @@ class MoveService():
         destination = self._destination_manager.get_destination_by_name(move_job.destination['host'])
         protocol = destination['protocol']
 
-        success_sent = 0
-
         if protocol != 'scp' and protocol != 'local':
             self._logger.error('Protocol %s is not a supported protocol.', protocol)
             return
 
-        dest_dir = move_job.destination['path']
+        if 'zip' in move_job.destination and move_job.destination['zip'] is True:
+            file_paths = [self._build_zip_file(move_job.id, temp_dir)]
+        else:
+            file_paths = listdir_fullpath(temp_dir)
 
-        file_paths = listdir_fullpath(temp_dir)
+        success_sent = 0
         for file_path in file_paths:
 
             if protocol == 'scp':
                 host = destination['ip-address']
                 username = destination['authentication']['key-based']['username']
-                send_complete = scp_put(host, username, file_path, dest_dir)
+                send_complete = scp_put(host, username, file_path, move_job.destination['path'])
                 if send_complete:
                     success_sent += 1
 
             elif protocol == 'local':
-                shutil.copy(file_path, dest_dir)
+                shutil.copy(file_path, move_job.destination['path'])
                 success_sent += 1
 
         if success_sent == len(file_paths):
@@ -187,3 +190,18 @@ class MoveService():
         host = source['ip-address']
         username = source['authentication']['key-based']['username']
         return scp_get(host, username, path, local_dest_dir)
+
+    def _build_zip_file(self, move_job_id, local_dest_dir):
+        """
+        Builds a zip file from all files in the provided directory.
+        @param move_job_id: The id of the move job that this zip file is for.
+        @param local_dest_dir: The directory of all files to include in the zip file. The zip file will be created in this directory.
+        @return: The full path of the created zip file.
+        """
+        zip_file_name = 'move_job_' + str(move_job_id) + ".zip"
+        zip_file_path = os.path.join(local_dest_dir, zip_file_name)
+        file_paths = listdir_fullpath(local_dest_dir)
+        with ZipFile(zip_file_path, 'w') as zip_file:
+            for file_path in file_paths:
+                zip_file.write(file_path)
+        return zip_file_path

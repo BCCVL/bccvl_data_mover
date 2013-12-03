@@ -50,3 +50,7 @@ def step(context):
 @given('my source is of type mixed')
 def step(context):
     context.source_dict = {'type':'mixed', 'sources':[]}
+
+@given('I want to zip the files sent to the destination')
+def step(context):
+    context.destination_dict['zip'] = True

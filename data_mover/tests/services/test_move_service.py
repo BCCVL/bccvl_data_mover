@@ -116,6 +116,42 @@ class TestMoveService(unittest.TestCase):
         move_job_dao.update.assert_has_calls([call1, call2])
         destination_manger.get_destination_by_name.assert_called_with('visualiser')
 
+    def test_worker_creates_zip(self):
+        move_job_dao = mock.MagicMock(spec=MoveJobDAO)
+        destination_manger = mock.MagicMock(spec=DestinationManager)
+        ala_service = mock.MagicMock(spec=ALAService)
+
+        source = {'type':'url', 'url':'http://www.intersect.org.au'}
+        destination = {'host':'visualiser','path':'/usr/local/dataset/', 'zip':True}
+        move_job = MoveJob(source, destination)
+        move_job.id = 1
+        to_test = MoveService(move_job_dao, destination_manger, ala_service)
+
+        destination = {
+            'description': 'The visualiser component of the UI',
+            'ip-address': '127.0.0.1',
+            'protocol': 'scp',
+            'authentication': {
+                'key-based': {
+                    'username': 'root'
+                }
+            }
+        }
+
+        move_job_dao.update.return_value = move_job
+        destination_manger.get_destination_by_name.return_value = destination
+
+        with mock.patch('data_mover.services.move_service.scp_put') as mock_scp_put:
+            mock_scp_put.return_value = True
+            to_test.worker(move_job)
+            mock_scp_put.assert_called_with('127.0.0.1', 'root', mock.ANY, '/usr/local/dataset/')
+
+        call1 = mock.call(move_job, status=MoveJob.STATUS_IN_PROGRESS, start_timestamp=mock.ANY)
+        call2 = mock.call(move_job, status=MoveJob.STATUS_COMPLETE, end_timestamp=mock.ANY)
+
+        move_job_dao.update.assert_has_calls([call1, call2])
+        destination_manger.get_destination_by_name.assert_called_with('visualiser')
+
     def test_worker_scp_failed(self):
         move_job_dao = mock.MagicMock(spec=MoveJobDAO)
         destination_manger = mock.MagicMock(spec=DestinationManager)

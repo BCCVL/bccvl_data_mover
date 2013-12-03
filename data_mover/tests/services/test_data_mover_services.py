@@ -255,3 +255,43 @@ class TestDataMoverServices(unittest.TestCase):
 
         self.assertFalse(valid)
         self.assertEqual(REASON_INVALID_PARAMS_1S % 'mixed sources may not be nested', reason)
+
+    def testValidateDestDictValid1(self):
+        to_test = DataMoverServices(None, None)
+        to_test._destination_manager = mock.MagicMock(spec=DestinationManager)
+
+        dest_dict = {'host':'the_host', 'path':'the_path', 'zip':True}
+        valid, reason = to_test._validate_destination_dict(dest_dict)
+
+        self.assertTrue(valid)
+        self.assertEqual('', reason)
+
+    def testValidateDestDictInvalid1(self):
+        to_test = DataMoverServices(None, None)
+        to_test._destination_manager = mock.MagicMock(spec=DestinationManager)
+
+        dest_dict = {'path':'the_path', 'zip':True}
+        valid, reason = to_test._validate_destination_dict(dest_dict)
+
+        self.assertFalse(valid)
+        self.assertEqual(REASON_MISSING_PARAMS_1S % 'destination must specify a host and path', reason)
+
+    def testValidateDestDictInvalid2(self):
+        to_test = DataMoverServices(None, None)
+        to_test._destination_manager = mock.MagicMock(spec=DestinationManager)
+
+        dest_dict = {'host':'the_host', 'zip':True}
+        valid, reason = to_test._validate_destination_dict(dest_dict)
+
+        self.assertFalse(valid)
+        self.assertEqual(REASON_MISSING_PARAMS_1S % 'destination must specify a host and path', reason)
+
+    def testValidateDestDictInvalid2(self):
+        to_test = DataMoverServices(None, None)
+        to_test._destination_manager = mock.MagicMock(spec=DestinationManager)
+
+        dest_dict = {'host':'the_host', 'path':'the_path', 'zip':'True'}
+        valid, reason = to_test._validate_destination_dict(dest_dict)
+
+        self.assertFalse(valid)
+        self.assertEqual(REASON_INVALID_PARAMS_1S % 'zip must be of type bool', reason)
