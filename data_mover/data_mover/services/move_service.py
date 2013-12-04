@@ -1,13 +1,12 @@
 import datetime
 import logging
-import os
 import shutil
 import tempfile
 from data_mover.models.move_job import MoveJob
 from data_mover.protocols.http import http_get
 from data_mover.protocols.scp_client import scp_put, scp_get
+from data_mover.util.bagit_creator import BagitCreator
 from data_mover.util.file_utils import listdir_fullpath
-from zipfile import ZipFile
 
 
 class MoveService():
@@ -198,10 +197,7 @@ class MoveService():
         @param local_dest_dir: The directory of all files to include in the zip file. The zip file will be created in this directory.
         @return: The full path of the created zip file.
         """
-        zip_file_name = 'move_job_' + str(move_job_id) + ".zip"
-        zip_file_path = os.path.join(local_dest_dir, zip_file_name)
-        file_paths = listdir_fullpath(local_dest_dir)
-        with ZipFile(zip_file_path, 'w') as zip_file:
-            for file_path in file_paths:
-                zip_file.write(file_path)
-        return zip_file_path
+
+        filename = 'move-job-' + str(move_job_id) + '.zip'
+        bagit_creator = BagitCreator(local_dest_dir, filename)
+        return bagit_creator.build()
