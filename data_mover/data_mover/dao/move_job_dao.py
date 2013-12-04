@@ -1,4 +1,5 @@
 import logging
+import threading
 import transaction
 
 from data_mover.models.move_job import MoveJob
@@ -6,7 +7,8 @@ from data_mover.models.move_job import MoveJob
 
 class MoveJobDAO():
     """
-    Data Access Object to gain access and manipulate MoveJob database entities
+    Data Access Object to gain access and manipulate MoveJob database entities.
+    Locks are used internally since sqlite does not support multiple threads.
     """
 
     def __init__(self, session_maker):
@@ -17,6 +19,7 @@ class MoveJobDAO():
         """
         self._session_maker = session_maker
         self._logger = logging.getLogger(__name__)
+        self._lock = threading.RLock()
 
     def find_by_id(self, id):
         """
@@ -25,8 +28,13 @@ class MoveJobDAO():
         @type id: int
         @return: The MoveJob, or None if it does not exist.
         """
-        session = self._session_maker.generate_session()
-        return session.query(MoveJob).get(id)
+        self._lock.acquire()
+        try:
+            session = self._session_maker.generate_session()
+            return session.query(MoveJob).get(id)
+        finally:
+            self._lock.release()
+
 
     def create_new(self, source, destination):
         """
@@ -37,14 +45,18 @@ class MoveJobDAO():
         @type destination: dict
         @return: The newly persisted MoveJob
         """
-        session = self._session_maker.generate_session()
-        new_move_job = MoveJob(source, destination)
-        session.add(new_move_job)
-        session.flush()
-        self._logger.info('Added new Move Job to the database with id %s', new_move_job.id)
-        session.expunge(new_move_job)
-        transaction.commit()
-        return new_move_job
+        self._lock.acquire()
+        try:
+            session = self._session_maker.generate_session()
+            new_move_job = MoveJob(source, destination)
+            session.add(new_move_job)
+            session.flush()
+            self._logger.info('Added new Move Job to the database with id %s', new_move_job.id)
+            session.expunge(new_move_job)
+            transaction.commit()
+            return new_move_job
+        finally:
+            self._lock.release()
 
     def update(self, job, **kwargs):
         """
@@ -64,10 +76,14 @@ class MoveJobDAO():
         if 'reason' in kwargs:
             job.reason = kwargs['reason']
 
-        session = self._session_maker.generate_session()
-        session.add(job)
-        session.flush()
-        self._logger.info('Updated MoveJob with id %s', job.id)
-        session.expunge(job)
-        transaction.commit()
-        return job
+        self._lock.acquire()
+        try:
+            session = self._session_maker.generate_session()
+            session.add(job)
+            session.flush()
+            self._logger.info('Updated MoveJob with id %s', job.id)
+            session.expunge(job)
+            transaction.commit()
+            return job
+        finally:
+            self._lock.release()
