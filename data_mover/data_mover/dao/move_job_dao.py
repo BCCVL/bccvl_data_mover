@@ -28,12 +28,9 @@ class MoveJobDAO():
         @type id: int
         @return: The MoveJob, or None if it does not exist.
         """
-        self._lock.acquire()
-        try:
+        with self._lock:
             session = self._session_maker.generate_session()
             return session.query(MoveJob).get(id)
-        finally:
-            self._lock.release()
 
 
     def create_new(self, source, destination):
@@ -45,8 +42,7 @@ class MoveJobDAO():
         @type destination: dict
         @return: The newly persisted MoveJob
         """
-        self._lock.acquire()
-        try:
+        with self._lock:
             session = self._session_maker.generate_session()
             new_move_job = MoveJob(source, destination)
             session.add(new_move_job)
@@ -55,8 +51,6 @@ class MoveJobDAO():
             session.expunge(new_move_job)
             transaction.commit()
             return new_move_job
-        finally:
-            self._lock.release()
 
     def update(self, job, **kwargs):
         """
@@ -76,8 +70,7 @@ class MoveJobDAO():
         if 'reason' in kwargs:
             job.reason = kwargs['reason']
 
-        self._lock.acquire()
-        try:
+        with self._lock:
             session = self._session_maker.generate_session()
             session.add(job)
             session.flush()
@@ -85,5 +78,3 @@ class MoveJobDAO():
             session.expunge(job)
             transaction.commit()
             return job
-        finally:
-            self._lock.release()
