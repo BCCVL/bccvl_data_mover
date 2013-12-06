@@ -21,6 +21,10 @@ The data mover shall be asynchronous. When a request to move a file is made via 
     $ python bootstrap.py
     $ ./bin/buildout
 
+    (on development machies)
+    easy_install paste
+    python setup.py develop
+
 
 **Configuration File**
 
