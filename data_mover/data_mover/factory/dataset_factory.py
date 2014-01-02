@@ -92,7 +92,11 @@ class DatasetFactory():
         metadata = json.load(json_data)
         json_data.close()
 
-        scientific_name = metadata['taxonConcept']['nameString']
+        scientific_name = None
+        common_name = None
+
+        if metadata['taxonConcept']['nameString'] is not None:
+            scientific_name = metadata['taxonConcept']['nameString']
 
         for record in metadata['commonNames']:
             if record['nameString'] is not None:
