@@ -54,6 +54,18 @@ Then run:
     $ ./bin/buildout
     $ ./bin/initialize_data_mover_db development.ini
 
+### Running Tests
+
+**Unit Tests**
+
+    $ ./bin nosetests
+
+**Functional Tests**
+
+    $ python script/run_behave_tests.py
+
 ### Available XMLRPC functions
 
 See https://wiki.intersect.org.au/display/BCCVL/Data+Mover+and+Data+Movement+API
+
+
