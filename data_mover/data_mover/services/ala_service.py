@@ -99,7 +99,7 @@ class ALAService():
             lines = f.readlines()
             f.seek(0)
             f.truncate()
-            newHeader = lines[0].replace("raw_taxon_name", SPECIES).replace("longitude", LONGITUDE).replace("latitude", LATITUDE)
+            newHeader = lines[0].replace("taxon_name", SPECIES).replace("longitude", LONGITUDE).replace("latitude", LATITUDE)
             lines[0] = newHeader
             for line in lines:
                 f.write(line)
