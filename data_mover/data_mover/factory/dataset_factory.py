@@ -58,14 +58,14 @@ class DatasetFactory():
         details = self._get_details_from_json(ala_metadata_path)
 
         if details['common_name'] is not None:
-            title = "%s (%s) occurrences" % (details['common_name'], details['scientific_name'])
-            description = "Observed occurrences for %s (%s), imported from ALA on %s" % (details['common_name'], details['scientific_name'], imported_date)
+            title = "%s (%s) occurrences" % (details['common_name'], details['taxon_name'])
+            description = "Observed occurrences for %s (%s), imported from ALA on %s" % (details['common_name'], details['taxon_name'], imported_date)
         else:
-            title = "%s occurrences" % (details['scientific_name'])
-            description = "Observed occurrences for %s, imported from ALA on %s" % (details['scientific_name'], imported_date)
+            title = "%s occurrences" % (details['taxon_name'])
+            description = "Observed occurrences for %s, imported from ALA on %s" % (details['taxon_name'], imported_date)
 
         ala_dataset = Dataset(title, description, num_occurrences, files, provenance)
-        return ala_dataset
+        return ala_dataset, details['taxon_name']
 
     @staticmethod
     def _count_num_of_occurrences(path):
@@ -92,16 +92,16 @@ class DatasetFactory():
         metadata = json.load(json_data)
         json_data.close()
 
-        scientific_name = None
+        taxon_name = None
         common_name = None
 
-        if metadata['taxonConcept']['nameString'] is not None:
-            scientific_name = metadata['taxonConcept']['nameString']
+        if metadata['taxonName']['nameComplete'] is not None:
+            taxon_name = metadata['taxonName']['nameComplete']
 
         for record in metadata['commonNames']:
             if record['nameString'] is not None:
                 common_name = record['nameString']
                 break
 
-        details = {'scientific_name': scientific_name, 'common_name': common_name}
+        details = {'taxon_name': taxon_name, 'common_name': common_name}
         return details

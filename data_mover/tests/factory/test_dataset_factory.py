@@ -49,7 +49,7 @@ class TestDatasetFactory(unittest.TestCase):
 
         dest_occurrence_file = remote_dest_dir + '/occurrence.csv'
         dest_metadata_file = remote_dest_dir + '/metadata.json'
-        ala_dataset = dataset_factory.generate_dataset(lsid, dest_occurrence_file, dest_metadata_file, occurrence_file, metadata_file)
+        ala_dataset, taxon_name = dataset_factory.generate_dataset(lsid, dest_occurrence_file, dest_metadata_file, occurrence_file, metadata_file)
         now = datetime.datetime.now()
 
         expected_title = "Red Kangaroo (Macropus rufus) occurrences"

@@ -1,6 +1,7 @@
 import io
 import logging
 import os
+import json
 from data_mover.protocols.http import http_get_gunzip, http_get
 from data_mover.services.dataset_serializer import serialize_dataset
 
@@ -62,7 +63,6 @@ class ALAService():
         self._logger.info("Completed download of raw occurrence data form ALA for LSID %s", lsid)
 
         occurrence_path = os.path.join(local_dest_dir, occurrence_file_name + '.csv')
-        self._normalize_occurrence(occurrence_path)
 
         # Get occurrence metadata
         metadata_url = self._metadata_url.replace("${lsid}", lsid)
@@ -76,7 +76,10 @@ class ALAService():
         # Generate dataset .json
         destination_occurrence_path = os.path.join(remote_destination_directory, occurrence_file_name + '.csv')
         destination_metadata_path = os.path.join(remote_destination_directory, metadata_file_name + '.json')
-        ala_dataset = self._dataset_factory.generate_dataset(lsid, destination_occurrence_path, destination_metadata_path, occurrence_path, metadata_path)
+        ala_dataset, taxon_name = self._dataset_factory.generate_dataset(lsid, destination_occurrence_path, destination_metadata_path, occurrence_path, metadata_path)
+
+        # Normalize the occurrences csv file
+        self._normalize_occurrence(occurrence_path, taxon_name)
 
         # Write the dataset to a file
         dataset_path = os.path.join(local_dest_dir, 'move_job_' + str(move_job_id) + '_' + str(file_id_in_set) + '_ala_dataset.json')
@@ -86,7 +89,7 @@ class ALAService():
         return True
 
     @staticmethod
-    def _normalize_occurrence(file_path):
+    def _normalize_occurrence(file_path, taxon_name):
         """
         Normalizes an occurrence CSV file by replacing the first line of content from:
         raw_taxon_name,longitude,latitude
@@ -102,4 +105,7 @@ class ALAService():
             newHeader = lines[0].replace("taxon_name", SPECIES).replace("longitude", LONGITUDE).replace("latitude", LATITUDE)
             lines[0] = newHeader
             for line in lines:
+                values = line.split(',')
+                if values[0] != 'species':
+                    line = "%s, %s, %s" % (taxon_name, values[1], values[2])
                 f.write(line)
