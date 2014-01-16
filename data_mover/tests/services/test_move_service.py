@@ -18,6 +18,7 @@ class TestMoveService(unittest.TestCase):
 
     def test_download_source_url(self):
         service = MoveService(None, None, None)
+        service._tmp_dir = None
         temp_dir = tempfile.mkdtemp()
         result = service._download_from_url('http://www.example.com', 1234, 1, temp_dir)
         self.assertTrue(result)
@@ -27,12 +28,14 @@ class TestMoveService(unittest.TestCase):
 
     def test_download_source_url_fail(self):
         service = MoveService(None, None, None)
+        service._tmp_dir = None
         temp_dir = tempfile.mkdtemp()
         result = service._download_from_url('http://www.example.co', 1234, 1, temp_dir)
         self.assertFalse(result)
 
     def test_download_source_url_empty_response(self):
         service = MoveService(None, None, None)
+        service._tmp_dir = None
         # NOTE: We do not patch data_mover.protocols.http.http_get because it is imported in the move_service, so it is defined there (weird, i know)
         temp_dir = tempfile.mkdtemp()
         with mock.patch('data_mover.services.move_service.http_get') as mock_http_get:
@@ -51,6 +54,7 @@ class TestMoveService(unittest.TestCase):
         move_job = MoveJob(source, destination)
 
         to_test = MoveService(move_job_dao, destination_manger, ala_service)
+        to_test._tmp_dir = None
 
         move_job_dao.update.return_value = move_job
 
@@ -71,6 +75,7 @@ class TestMoveService(unittest.TestCase):
         move_job = MoveJob(source, destination)
 
         to_test = MoveService(move_job_dao, destination_manger, ala_service)
+        to_test._tmp_dir = None
 
         to_test._download_from_url = mock.MagicMock(return_value=None)
         move_job_dao.update.return_value = move_job
@@ -90,6 +95,7 @@ class TestMoveService(unittest.TestCase):
         destination = {'host':'visualiser','path':'/usr/local/dataset/'}
         move_job = MoveJob(source, destination)
         to_test = MoveService(move_job_dao, destination_manger, ala_service)
+        to_test._tmp_dir = None
 
         destination = {
             'description': 'The visualiser component of the UI',
@@ -126,6 +132,7 @@ class TestMoveService(unittest.TestCase):
         move_job = MoveJob(source, destination)
         move_job.id = 1
         to_test = MoveService(move_job_dao, destination_manger, ala_service)
+        to_test._tmp_dir = None
 
         destination = {
             'description': 'The visualiser component of the UI',
@@ -162,6 +169,7 @@ class TestMoveService(unittest.TestCase):
         move_job = MoveJob(source, destination)
 
         to_test = MoveService(move_job_dao, destination_manger, ala_service)
+        to_test._tmp_dir = None
 
         destination = {
             'description': 'The visualiser component of the UI',
@@ -197,6 +205,7 @@ class TestMoveService(unittest.TestCase):
         destination = {'host':'local','path':'/usr/local/dataset/'}
         move_job = MoveJob(source, destination)
         to_test = MoveService(move_job_dao, destination_manger, ala_service)
+        to_test._tmp_dir = None
 
         destination = {
             'description': 'The visualiser component of the UI',
@@ -226,6 +235,7 @@ class TestMoveService(unittest.TestCase):
 
         move_job = MoveJob(src_dict, dest_dict)
         to_test = MoveService(move_job_dao, destination_manger, ala_service)
+        to_test._tmp_dir = None
 
         destination = {
             'description': 'The local machine',
@@ -280,6 +290,7 @@ class TestMoveService(unittest.TestCase):
 
         move_job = MoveJob(src_dict, dest_dict)
         to_test = MoveService(move_job_dao, destination_manger, ala_service)
+        to_test._tmp_dir = None
 
         destination = {
             'description': 'The local machine',
@@ -334,6 +345,7 @@ class TestMoveService(unittest.TestCase):
 
         move_job = MoveJob(src_dict, dest_dict)
         to_test = MoveService(move_job_dao, destination_manger, ala_service)
+        to_test._tmp_dir = None
 
         move_job_dao.update.return_value = move_job
         ala_service.download_occurrence_by_lsid.return_value = True
@@ -367,6 +379,7 @@ class TestMoveService(unittest.TestCase):
         move_job = MoveJob(src_dict, dest_dict)
         move_job.id = 1234
         to_test = MoveService(move_job_dao, destination_manger, ala_service)
+        to_test._tmp_dir = None
         to_test._download_from_scp = mock.MagicMock(return_value=True)
         to_test._download_from_url = mock.MagicMock(return_value=True)
         to_test._download_from_ala = mock.MagicMock(return_value=True)

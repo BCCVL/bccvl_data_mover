@@ -1,3 +1,4 @@
+import os
 import datetime
 import logging
 import shutil
@@ -30,6 +31,14 @@ class MoveService():
         self._ala_service = ala_service
         self._sleep_time = 0
 
+    def configure(self, settings, key):
+        if key + 'dir' in settings and os.path.exists(settings[key + 'dir']):
+            self._tmp_dir = settings[key + 'dir']
+            self._logger.info("MoveService tmp directory has been set to: %s", self._tmp_dir)
+        else:
+            self._tmp_dir = None
+            self._logger.warning("MoveService tmp directory was not specified or specified directory does not exist. Using default local tmp directory.")
+
     def worker(self, move_job):
         """
         Thread worker used to perform a move of data between endpoints
@@ -38,7 +47,7 @@ class MoveService():
         """
 
         # Store all the source files for this job in a temporary local directory
-        temp_dir = tempfile.mkdtemp(suffix='move_job_' + str(move_job.id))
+        temp_dir = tempfile.mkdtemp(suffix='move_job_' + str(move_job.id), dir=self._tmp_dir)
 
         self._logger.info("Starting move for job with id %s", move_job.id)
         self._logger.info("Storing temporary files for job in %s", temp_dir)
