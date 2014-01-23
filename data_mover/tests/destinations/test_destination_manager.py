@@ -9,7 +9,7 @@ class TestDestinationManager(unittest.TestCase):
     def test_get_destination_by_name(self):
         to_test = DestinationManager()
 
-        file_to_load = os.path.join(dirname(dirname(dirname(__file__))), 'data_mover', 'destination_config.json')
+        file_to_load = os.path.join(dirname(dirname(dirname(__file__))), 'data_mover', 'destination_config_test.json')
         settings = {'key.destinations': file_to_load}
         to_test.configure(settings, 'key.')
 

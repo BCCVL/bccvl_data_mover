@@ -19,6 +19,12 @@
                     "username": "plone"
                 }
             }
+        },
+        
+        "local": {
+            "description": "Local file system",
+            "protocol": "local"
         }
+
     }
 ]

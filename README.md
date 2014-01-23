@@ -32,7 +32,7 @@ You will need to configure the development.ini file.
 Make sure that you have the follow (or similar):
 
     sqlalchemy.url = sqlite:///production.sqlite
-    destination_manager.destinations = ./data_mover/destination_config.json
+    destination_manager.destinations = ./data_mover/destination_config_test.json
     ala_service.sleep_time = 10
 
 **Initializing the database**
