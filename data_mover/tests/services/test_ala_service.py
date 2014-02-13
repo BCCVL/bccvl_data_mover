@@ -27,20 +27,20 @@ class TestALAService(unittest.TestCase):
         dest_dir = '/tmp/'
         local_dest_dir = tempfile.mkdtemp()
 
-        out_files = ala_service.download_occurrence_by_lsid(lsid, dest_dir, 1234, 1, local_dest_dir)
+        out_files = ala_service.download_occurrence_by_lsid(lsid, dest_dir, local_dest_dir)
         out_files = listdir_fullpath(local_dest_dir)
         self.assertEqual(3, len(out_files))
 
         # The occurrence file exists
-        occurrence_file = os.path.join(local_dest_dir, 'move_job_1234_1_ala_occurrence.csv')
+        occurrence_file = os.path.join(local_dest_dir, 'ala_occurrence.csv')
         self.assertTrue(os.path.isfile(occurrence_file))
 
         # The metadata file exists
-        metadata_file = os.path.join(local_dest_dir, 'move_job_1234_1_ala_metadata.json')
+        metadata_file = os.path.join(local_dest_dir, 'ala_metadata.json')
         self.assertTrue(os.path.isfile(metadata_file))
 
         # The dataset file exists
-        dataset_file = os.path.join(local_dest_dir, 'move_job_1234_1_ala_dataset.json')
+        dataset_file = os.path.join(local_dest_dir, 'ala_dataset.json')
         self.assertTrue(os.path.isfile(dataset_file))
 
         # The occurrence file has been normalized
@@ -64,7 +64,7 @@ class TestALAService(unittest.TestCase):
         dest_dir = '/tmp/'
         local_dest_dir = tempfile.mkdtemp()
 
-        result = ala_service.download_occurrence_by_lsid(lsid, dest_dir, 44321, 1, local_dest_dir)
+        result = ala_service.download_occurrence_by_lsid(lsid, dest_dir, local_dest_dir)
         self.assertFalse(result)
 
     def test_get_no_common_name_occurrence(self):
@@ -80,20 +80,20 @@ class TestALAService(unittest.TestCase):
         dest_dir = '/tmp/'
         local_dest_dir = tempfile.mkdtemp()
 
-        out_files = ala_service.download_occurrence_by_lsid(lsid, dest_dir, 1234, 1, local_dest_dir)
+        out_files = ala_service.download_occurrence_by_lsid(lsid, dest_dir, local_dest_dir)
         out_files = listdir_fullpath(local_dest_dir)
         self.assertEqual(3, len(out_files))
 
         # The occurrence file exists
-        occurrence_file = os.path.join(local_dest_dir, 'move_job_1234_1_ala_occurrence.csv')
+        occurrence_file = os.path.join(local_dest_dir, 'ala_occurrence.csv')
         self.assertTrue(os.path.isfile(occurrence_file))
 
         # The metadata file exists
-        metadata_file = os.path.join(local_dest_dir, 'move_job_1234_1_ala_metadata.json')
+        metadata_file = os.path.join(local_dest_dir, 'ala_metadata.json')
         self.assertTrue(os.path.isfile(metadata_file))
 
         # The dataset file exists
-        dataset_file = os.path.join(local_dest_dir, 'move_job_1234_1_ala_dataset.json')
+        dataset_file = os.path.join(local_dest_dir, 'ala_dataset.json')
         self.assertTrue(os.path.isfile(dataset_file))
 
         # The occurrence file has been normalized
@@ -120,20 +120,20 @@ class TestALAService(unittest.TestCase):
         dest_dir = '/tmp/'
         local_dest_dir = tempfile.mkdtemp()
 
-        out_files = ala_service.download_occurrence_by_lsid(lsid, dest_dir, 1234, 1, local_dest_dir)
+        out_files = ala_service.download_occurrence_by_lsid(lsid, dest_dir, local_dest_dir)
         out_files = listdir_fullpath(local_dest_dir)
         self.assertEqual(3, len(out_files))
 
         # The occurrence file exists
-        occurrence_file = os.path.join(local_dest_dir, 'move_job_1234_1_ala_occurrence.csv')
+        occurrence_file = os.path.join(local_dest_dir, 'ala_occurrence.csv')
         self.assertTrue(os.path.isfile(occurrence_file))
 
         # The metadata file exists
-        metadata_file = os.path.join(local_dest_dir, 'move_job_1234_1_ala_metadata.json')
+        metadata_file = os.path.join(local_dest_dir, 'ala_metadata.json')
         self.assertTrue(os.path.isfile(metadata_file))
 
         # The dataset file exists
-        dataset_file = os.path.join(local_dest_dir, 'move_job_1234_1_ala_dataset.json')
+        dataset_file = os.path.join(local_dest_dir, 'ala_dataset.json')
         self.assertTrue(os.path.isfile(dataset_file))
 
         # The occurrence file has been normalized

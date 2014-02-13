@@ -295,3 +295,21 @@ class TestDataMoverServices(unittest.TestCase):
 
         self.assertFalse(valid)
         self.assertEqual(REASON_INVALID_PARAMS_1S % 'zip must be of type bool', reason)
+
+    def testMultipleALAinMixedSource(self):
+        to_test = DataMoverServices(None, None)
+
+        dest_manager = mock.MagicMock(spec=DestinationManager())
+        to_test._destination_manager = dest_manager
+        to_test._destination_manager.get_destination_by_name.return_value = {}
+
+        file_1 = {'type':'ala', 'lsid':'urn:lsid:biodiversity.org.au:afd.taxon:31a9b8b8-4e8f-4343-a15f-2ed24e0bf1ae'}
+        file_2 = {'type':'scp', 'host':'visualiser', 'path':'/usr/local/data/occurrence/koalas.png'}
+        file_3 = {'type':'url', 'url':'http://www.intersect.org.au/dingos.csv'}
+        file_4 = {'type':'ala', 'lsid':'urn:lsid:biodiversity.org.au:afd.taxon:31a9b8b8-4e8f-4343-a15f-2ed24e0bf1ae'}
+        source_dict = {'type':'mixed', 'sources':[file_1, file_2, file_3, file_4]}
+
+        valid, reason = to_test._validate_source_dict(source_dict)
+
+        self.assertFalse(valid)
+        self.assertEqual('Too many ALA jobs. Mixed sources can only contain a maximum of one ALA job.', reason)

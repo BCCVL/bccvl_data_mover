@@ -1,5 +1,6 @@
 import threading
 
+
 from pyramid_xmlrpc import XMLRPCView
 from data_mover.services.response import error_rejected, job_id_status, REASON_MISSING_PARAMS_1S,\
     REASON_UNKNOWN_SOURCE_TYPE_1S, REASON_UNKNOWN_DESTINATION_1S, REASON_INVALID_PARAMS_1S, REASON_JOB_DOES_NOT_EXIST,\
@@ -113,6 +114,9 @@ class DataMoverServices(XMLRPCView):
             sources = source['sources']
             if not isinstance(sources, list):
                 return False, REASON_MISSING_PARAMS_1S % 'sources must be of list type'
+
+            if len(filter(lambda x: x['type'] == 'ala', source['sources'])) > 1:
+                return False, 'Too many ALA jobs. Mixed sources can only contain a maximum of one ALA job.'
 
             for s in sources:
                 source_valid, reason = self._validate_source_dict(s, True)

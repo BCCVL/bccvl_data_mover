@@ -17,9 +17,9 @@ def step_impl(context, lsid):
 @then('I should see the ALA files in my temp directory')
 def step_impl(context):
     out_files = listdir_fullpath(context.temp_dir)
-    occurrences_exist = 1 == len([i for i in out_files if i.endswith('_ala_occurrence.csv')])
-    metadata_exist = 1 == len([i for i in out_files if i.endswith('_ala_metadata.json')])
-    dataset_exist = 1 == len([i for i in out_files if i.endswith('_ala_dataset.json')])
+    occurrences_exist = 1 == len([i for i in out_files if i.endswith('ala_occurrence.csv')])
+    metadata_exist = 1 == len([i for i in out_files if i.endswith('ala_metadata.json')])
+    dataset_exist = 1 == len([i for i in out_files if i.endswith('ala_dataset.json')])
     assert occurrences_exist
     assert metadata_exist
     assert dataset_exist

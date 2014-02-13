@@ -356,7 +356,7 @@ class TestMoveService(unittest.TestCase):
         call1 = mock.call(move_job, status=MoveJob.STATUS_IN_PROGRESS, start_timestamp=mock.ANY)
         call2 = mock.call(move_job, status=MoveJob.STATUS_COMPLETE, end_timestamp=mock.ANY)
         move_job_dao.update.assert_has_calls([call1, call2])
-        ala_service.download_occurrence_by_lsid.assert_called_with(lsid, '/usr/local/destdir/', None, 1, mock.ANY)
+        ala_service.download_occurrence_by_lsid.assert_called_with(lsid, '/usr/local/destdir/', mock.ANY)
 
     def test_worker_mixed_source(self):
         move_job_dao = mock.MagicMock(spec=MoveJobDAO)
@@ -390,7 +390,7 @@ class TestMoveService(unittest.TestCase):
 
         to_test._download_from_scp.assert_called_with('the_source', '/url/to/download_1.txt', mock.ANY)
         to_test._download_from_url.assert_called_with('http://www.someurl.com', 1234, 2, mock.ANY)
-        to_test._download_from_ala.assert_called_with('some_lsid', '/usr/local/destdir/', 1234, 3, mock.ANY)
+        to_test._download_from_ala.assert_called_with('some_lsid', '/usr/local/destdir/', mock.ANY)
 
         call1 = mock.call(move_job, status=MoveJob.STATUS_IN_PROGRESS, start_timestamp=mock.ANY)
         call2 = mock.call(move_job, status=MoveJob.STATUS_COMPLETE, end_timestamp=mock.ANY)

@@ -113,7 +113,7 @@ class MoveService():
         @return: True If the download was successful, False and a reason otherwise.
         """
         if source_dict['type'] == 'ala':
-            if not self._download_from_ala(source_dict['lsid'], dest_dict['path'], move_job_id, file_id_in_set, local_dest_dir):
+            if not self._download_from_ala(source_dict['lsid'], dest_dict['path'], local_dest_dir):
                 return False, 'Could not download LSID %s from ALA' % source_dict['lsid']
 
         elif source_dict['type'] == 'url':
@@ -139,20 +139,18 @@ class MoveService():
 
         return True, ''
 
-    def _download_from_ala(self, lsid, remote_dest_dir, move_job_id, file_id_in_set, local_dest_dir):
+    def _download_from_ala(self, lsid, remote_dest_dir, local_dest_dir):
         """
         Downloads Species Occurrence data from ALA (Atlas of Living Australia) based on an LSID (Life Science Identifier)
         @param lsid: the lsid of the species to download occurrence data for
         @type lsid: str
         @param remote_dest_dir: the destination directory that the ALA files are going to end up inside of. Used to form the metadata .json file.
         @type remote_dest_dir: str
-        @param move_job_id: the ID of the move job
-        @type move_job_id: int
         @param local_dest_dir: The local directory to store the files in (before they are sent to the destination)
         @type local_dest_dir: str
         @return A list of files that it has returned, or None if it could not download the data
         """
-        return self._ala_service.download_occurrence_by_lsid(lsid, remote_dest_dir, move_job_id, file_id_in_set, local_dest_dir)
+        return self._ala_service.download_occurrence_by_lsid(lsid, remote_dest_dir, local_dest_dir)
 
     def _download_from_url(self, url, move_job_id, file_id_in_set, local_dest_dir):
         """
