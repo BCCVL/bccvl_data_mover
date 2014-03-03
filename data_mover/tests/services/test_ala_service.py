@@ -108,7 +108,7 @@ class TestALAService(unittest.TestCase):
     def test_get_rainbow_lorikeet_occurrence(self):
         # This dataset is known to have different taxon_names appearing in the csv file.
         # It takes the occurrences of the subspecies as well.
-        lsid = 'urn:lsid:biodiversity.org.au:afd.taxon:f3664294-203f-4d44-970c-06dd2a6c45cd'
+        lsid = 'urn:lsid:biodiversity.org.au:afd.taxon:99a0bf26-7c70-4744-99f4-2afddf64d47e'
 
         dataset_factory = DatasetFactory()
 
