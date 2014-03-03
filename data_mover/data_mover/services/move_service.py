@@ -91,6 +91,8 @@ class MoveService():
                 shutil.copy(file_path, move_job.destination['path'])
                 success_sent += 1
 
+        shutil.rmtree(temp_dir)
+
         if success_sent == len(file_paths):
             self._logger.info('Move job with id %s has been completed', move_job.id)
             self._move_job_dao.update(move_job, status=MoveJob.STATUS_COMPLETE, end_timestamp=datetime.datetime.now())
