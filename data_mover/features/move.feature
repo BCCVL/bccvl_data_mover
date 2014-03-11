@@ -6,7 +6,7 @@ Scenario: Move http://www.intersect.org.au to test_machine
     And my source is of type "url" with "url" of "http://www.intersect.org.au"
     When I request a move with the defined requirements
     Then I should see that the job status is either "PENDING" or "IN_PROGRESS"
-    Then I wait 5 seconds
+    Then I wait 10 seconds
     When I check the status of the move job
     Then I should see that the job status is "COMPLETED"
     And I should see "1" files in my temp directory
