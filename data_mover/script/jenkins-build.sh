@@ -1,8 +1,8 @@
 #!/bin/bash
 
 if [ -z "$WORKSPACE" ]; then
-    echo "Guessing WORKSPACE is .."
-    WORKSPACE='..'
+	WORKSPACE=`pwd`
+    echo "Guessing WORKSPACE is $WORKSPACE"
 fi
 
 DATA_MOVER_DIR="$WORKSPACE/data_mover"
