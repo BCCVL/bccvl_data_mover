@@ -26,6 +26,7 @@ requires = [
     'epydoc',
     'paramiko',
     'scp',
+    'futures',
     ]
 
 setup(name='data_mover',

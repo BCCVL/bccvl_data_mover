@@ -17,6 +17,7 @@ class TestDataMoverServices(unittest.TestCase):
         to_test = DataMoverServices(None, None)
         to_test._destination_manager = mock.MagicMock()
         to_test._move_job_dao = mock.MagicMock()
+        to_test._executor = mock.MagicMock()
         to_test._destination_manager.get_destination_by_name.return_value = {}
 
         dest_dict = {'host': 'visualiser', 'path': '/some/path'}
@@ -25,13 +26,11 @@ class TestDataMoverServices(unittest.TestCase):
         move_job = MoveJob(source_dict, dest_dict)
         to_test._move_job_dao.create_new.return_value = move_job
 
-        with mock.patch('threading.Thread') as mock_thread:
-            out = to_test.move(source_dict, dest_dict)
-            self.assertIsNotNone(out)
-            self.assertEqual(MoveJob.STATUS_PENDING, out['status'])
-            mock_thread.assert_called_with(target=to_test._move_service.worker, args=(move_job,))
-            mock_thread.start.assert_called()
+        out = to_test.move(source_dict, dest_dict)
+        self.assertIsNotNone(out)
+        self.assertEqual(MoveJob.STATUS_PENDING, out['status'])
 
+        to_test._executor.submit.assert_called_with(fn=to_test._move_service.worker, move_job=move_job)
         to_test._destination_manager.get_destination_by_name.assert_called_with('visualiser')
         to_test._move_job_dao.create_new.assert_called_with(source_dict, dest_dict)
 

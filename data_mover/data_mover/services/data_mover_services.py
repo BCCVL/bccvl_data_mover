@@ -1,5 +1,4 @@
-import threading
-
+from concurrent.futures import ThreadPoolExecutor
 
 from pyramid_xmlrpc import XMLRPCView
 from data_mover.services.response import error_rejected, job_id_status, REASON_MISSING_PARAMS_1S,\
@@ -20,6 +19,7 @@ class DataMoverServices(XMLRPCView):
         self._move_job_dao = MOVE_JOB_DAO
         self._destination_manager = DESTINATION_MANAGER
         self._move_service = MOVE_SERVICE
+        self._executor = ThreadPoolExecutor(max_workers=3)
 
     def check_move_status(self, id=None):
         """
@@ -62,8 +62,7 @@ class DataMoverServices(XMLRPCView):
 
         move_job = self._move_job_dao.create_new(source, destination)
 
-        thread = threading.Thread(target=self._move_service.worker, args=(move_job,))
-        thread.start()
+        self._executor.submit(fn=self._move_service.worker, move_job=move_job)
         return job_id_status(move_job)
 
     def _validate_source_dict(self, source, inner_source=False):
