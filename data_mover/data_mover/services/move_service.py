@@ -2,6 +2,7 @@ import os
 import datetime
 import logging
 import shutil
+import sys
 import tempfile
 from data_mover.models.move_job import MoveJob
 from data_mover.protocols.http import http_get
@@ -41,7 +42,19 @@ class MoveService():
 
     def worker(self, move_job):
         """
-        Thread worker used to perform a move of data between endpoints
+        Thread worker used to perform a move of data between endpoints.
+        @param move_job: The move job to execute
+        @type move_job: MoveJob
+        """
+        try:
+            # Yes, we need to manually log exceptions since this is executed inside a
+            self._inner_worker(move_job)
+        except:
+            self._logger.exception(sys.exc_info()[0])
+
+    def _inner_worker(self, move_job):
+        """
+        Thread worker used to perform a move of data between endpoints.
         @param move_job: The move job to execute
         @type move_job: MoveJob
         """
