@@ -19,7 +19,7 @@ class TestDatasetFactory(unittest.TestCase):
 
         ala_service = ALAService(dataset_factory)
         ala_service._occurrence_url = "http://biocache.ala.org.au/ws/occurrences/index/download?q=lsid:${lsid}&fq=geospatial_kosher:true&fields=scientificName,decimalLongitude,decimalLatitude&qa=none&reasonTypeId=4"
-        ala_service._metadata_url = "http://bie.ala.org.au/species/${lsid}.json"
+        ala_service._metadata_url = "http://bie.ala.org.au/ws/species/${lsid}.json"
         dataset_factory._occurrence_url = ala_service._occurrence_url
 
         ala_occurrence_dao.create_new = MagicMock()
