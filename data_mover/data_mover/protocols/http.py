@@ -68,7 +68,7 @@ def _inner_http_get(url):
     @return: Content and Content Type or None if unsuccessful
     """
     _logger.info('Performing HTTP GET to URL %s', url)
-    response = requests.get(url, verify=False)
+    response = requests.get(url, verify=False, timeout=30)
     if response.status_code is not 200:
         _logger.warning('Obtained status code %s from URL %s', response.status_code, url)
         return None, None
