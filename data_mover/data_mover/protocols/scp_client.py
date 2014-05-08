@@ -2,7 +2,7 @@ import logging
 import os
 import pwd
 from paramiko import SSHClient, AutoAddPolicy
-from scp import SCPClient
+from scp import SCPClient, SCPException
 
 _logger = logging.getLogger(__name__)
 
@@ -66,8 +66,8 @@ def scp_get(host, username, source_path, destination_path):
         scp = SCPClient(ssh.get_transport())
         scp.get(source_path, destination_path)
         ssh.close()
-    except:
-        _logger.exception("Could not SCP file %s:%s to local destination %s", host, source_path, destination_path)
+    except SCPException:
+        _logger.warning("Could not SCP file %s:%s to local destination %s", host, source_path, destination_path)
         return False
     return True
 
