@@ -70,7 +70,7 @@ def _inner_http_get(url):
     _logger.info('Performing HTTP GET to URL %s', url)
     try:
         response = requests.get(url, verify=False, timeout=180)
-    except:
+    except requests.Timeout:
         _logger.warning('URL %s timed out', url)
         return None, None
 
