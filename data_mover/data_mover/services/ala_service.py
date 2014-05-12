@@ -91,7 +91,8 @@ class ALAService():
         Scientific Name,Longitude - original,Latitude - original
         to:
         species,lon,lat
-        Also ensures the first column contains the same taxon name for each row
+        Also ensures the first column contains the same taxon name for each row.
+        Sometimes ALA sends occurrences with empty lon/lat values. These are removed.
         @param file_path: the path to the occurrence CSV file to normalize
         @type file_path: str
         """
@@ -108,6 +109,12 @@ class ALAService():
                     col2 = match.group(2)
                     col3 = match.group(3)
                     if col1.encode('UTF-8') != SPECIES:
+                        try:
+                            float(col2.replace('"', ''))
+                            float(col3.replace('"', ''))
+                        except ValueError:
+                            self._logger.warning('Invalid lon/lat value detected in ALA occurrence, ignoring %s', line)
+                            continue
                         new = '"%s", %s, %s' % (taxon_name, col2, col3)
                         f.write(new)
                     else:
