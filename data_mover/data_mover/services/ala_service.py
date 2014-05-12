@@ -113,7 +113,7 @@ class ALAService():
                             float(col2.replace('"', ''))
                             float(col3.replace('"', ''))
                         except ValueError:
-                            self._logger.warning('Invalid lon/lat value detected in ALA occurrence, ignoring %s', line)
+                            self._logger.debug('Invalid lon/lat value detected in ALA occurrence, ignoring %s', line)
                             continue
                         new = '"%s", %s, %s' % (taxon_name, col2, col3)
                         f.write(new)
