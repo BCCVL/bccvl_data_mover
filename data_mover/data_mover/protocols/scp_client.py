@@ -32,7 +32,7 @@ def scp_put(host, username, source_path, destination_path):
 
         ssh.connect(host, username=username)
         scp = SCPClient(ssh.get_transport())
-        scp.put(source_path, destination_path)
+        scp.put(source_path, destination_path, recursive=True)
         ssh.close()
     except:
         _logger.exception("Could not SCP file %s to destination %s:%s", source_path, host, destination_path)
@@ -64,7 +64,7 @@ def scp_get(host, username, source_path, destination_path):
 
         ssh.connect(host, username=username)
         scp = SCPClient(ssh.get_transport())
-        scp.get(source_path, destination_path)
+        scp.get(source_path, destination_path, recursive=True)
         ssh.close()
     except SCPException:
         _logger.warning("Could not SCP file %s:%s to local destination %s", host, source_path, destination_path)
