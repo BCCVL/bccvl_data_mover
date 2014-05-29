@@ -76,7 +76,10 @@ class ALAService():
         ala_dataset, taxon_name = self._dataset_factory.generate_dataset(lsid, destination_occurrence_path, destination_metadata_path, occurrence_path, metadata_path)
 
         # Normalize the occurrences csv file
-        self._normalize_occurrence(occurrence_path, taxon_name)
+        success = self._normalize_occurrence(occurrence_path, taxon_name)
+        if not success:
+            self._logger.warning("Could not normalize occurrence from ALA for LSID %s", lsid)
+            return False
 
         # Write the dataset to a file
         dataset_path = os.path.join(local_dest_dir, 'ala_dataset.json')
@@ -100,6 +103,10 @@ class ALAService():
             lines = f.readlines()
             f.seek(0)
             f.truncate()
+
+            if len(lines) == 0:
+                return False
+
             new_header = lines[0].replace('"Scientific Name"', SPECIES).replace('"Longitude - original"', LONGITUDE).replace('"Latitude - original"', LATITUDE)
             lines[0] = new_header
             for line in lines:
@@ -122,3 +129,5 @@ class ALAService():
                     f.write(u'\n')
                 else:
                     self._logger.warning('Nonconforming line found in ALA occurrences. Ignoring. %s', line)
+
+            return True
