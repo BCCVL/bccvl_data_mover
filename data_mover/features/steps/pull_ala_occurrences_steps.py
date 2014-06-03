@@ -6,8 +6,8 @@ from data_mover.util.file_utils import listdir_fullpath
 @when('I pull occurrences from ALA using the LSID "{lsid}"')
 def step_impl(context, lsid):
     context.temp_dir = tempfile.mkdtemp(suffix=__name__)
-    source = {'type':'ala', 'lsid':lsid}
-    destination = {'host':'local', 'path':context.temp_dir}
+    source = 'ala://ala?lsid=' + lsid
+    destination = 'scp://localhost' + context.temp_dir
     response = context.server_proxy.move(source, destination)
     context.response = response
     status = response['status']

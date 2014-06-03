@@ -4,6 +4,7 @@ import logging
 import shutil
 import sys
 import tempfile
+from urlparse import urlparse, parse_qs
 from data_mover.models.move_job import MoveJob
 from data_mover.protocols.http import http_get
 from data_mover.protocols.scp_client import scp_put, scp_get
@@ -18,17 +19,14 @@ class MoveService():
 
     _logger = logging.getLogger(__name__)
 
-    def __init__(self, move_job_dao, destination_manager, ala_service):
+    def __init__(self, move_job_dao, ala_service):
         """
         @param move_job_dao: The MoveJob data access object
         @type move_job_dao: MoveJobDAO
-        @param destination_manager: The Destination Manager
-        @type destination_manager: DestinationManager
         @param ala_service: The ALA Service
         @type ala_service: ALAService
         """
         self._move_job_dao = move_job_dao
-        self._destination_manager = destination_manager
         self._ala_service = ala_service
         self._sleep_time = 0
 
@@ -78,14 +76,12 @@ class MoveService():
         # Send the file(s) to the destination
         # TODO: support retries
 
-        destination = self._destination_manager.get_destination_by_name(move_job.destination['host'])
-        protocol = destination['protocol']
-
-        if protocol != 'scp' and protocol != 'local':
-            self._logger.error('Protocol %s is not a supported protocol.', protocol)
+        dest_url = urlparse(move_job.destination)
+        if dest_url.scheme != 'scp':
+            self._logger.error('Protocol %s is not a supported protocol.', dest_url.scheme)
             return
 
-        if 'zip' in move_job.destination and move_job.destination['zip'] is True:
+        if move_job.zip:
             file_paths = [self._build_zip_file(move_job.id, temp_dir)]
         else:
             file_paths = listdir_fullpath(temp_dir)
@@ -93,16 +89,17 @@ class MoveService():
         success_sent = 0
         for file_path in file_paths:
 
-            if protocol == 'scp':
-                host = destination['ip-address']
-                username = destination['authentication']['key-based']['username']
-                send_complete = scp_put(host, username, file_path, move_job.destination['path'])
+            if dest_url.scheme == 'scp':
+                host = dest_url.netloc
+                username = dest_url.username
+                password = dest_url.password
+                send_complete = scp_put(host, username, password, file_path, dest_url.path)
                 if send_complete:
                     success_sent += 1
 
-            elif protocol == 'local':
-                shutil.copy(file_path, move_job.destination['path'])
-                success_sent += 1
+            # elif protocol == 'local':
+            #     shutil.copy(file_path, move_job.destination['path'])
+            #     success_sent += 1
 
         shutil.rmtree(temp_dir)
 
@@ -113,12 +110,13 @@ class MoveService():
             self._logger.warning('Move job with id %s has failed', move_job.id)
             self._move_job_dao.update(move_job, status=MoveJob.STATUS_FAILED, end_timestamp=datetime.datetime.now(), reason='Unable to send to destination')
 
-    def _select_source(self, source_dict, dest_dict, move_job_id, local_dest_dir, file_id_in_set):
+    def _select_source(self, source, dest, move_job_id, local_dest_dir, file_id_in_set):
         """
         Parses the source dictionary provided and performs the correct action.
-        @param source_dict: The source dictionary
-        @type source_dict: dict
-        @param dest_dict:
+        @param source: The source
+        @type source: str or list
+        @param dest: The destination
+        @type dest: str
         @param move_job_id: The id of the move job
         @type move_job_id: int
         @param local_dest_dir: The local destination on disk to store files downloaded
@@ -127,30 +125,37 @@ class MoveService():
         @type file_id_in_set: int
         @return: True If the download was successful, False and a reason otherwise.
         """
-        if source_dict['type'] == 'ala':
-            if not self._download_from_ala(source_dict['lsid'], dest_dict['path'], local_dest_dir):
-                return False, 'Could not download LSID %s from ALA' % source_dict['lsid']
 
-        elif source_dict['type'] == 'url':
-            if not self._download_from_url(source_dict['url'], move_job_id, file_id_in_set, local_dest_dir):
-                return False, 'Could not download from URL %s' % source_dict['url']
+        if isinstance(source, str):
+            source_url = urlparse(source)
+            dest_url = urlparse(dest)
+            if source_url.scheme == 'ala':
+                lsid = parse_qs(source_url.query)['lsid'][0]
+                if not self._download_from_ala(lsid, dest_url.path, local_dest_dir):
+                    return False, 'Could not download LSID {0} from ALA'.format(lsid)
 
-        elif source_dict['type'] == 'scp':
-            if not self._download_from_scp(source_dict['host'], source_dict['path'], local_dest_dir):
-                return False, 'Could not download from remote SCP source %s' % source_dict['host']
+            elif source_url.scheme in ['http', 'https']:
+                if not self._download_from_url(source, move_job_id, file_id_in_set, local_dest_dir):
+                    return False, 'Could not download from URL {0}'.format(source)
 
-        elif source_dict['type'] == 'mixed':
-            sources_list = source_dict['sources']
+            elif source_url.scheme == 'scp':
+                if not self._download_from_scp(source, local_dest_dir):
+                    return False, 'Could not download from remote SCP source {0}'.format(source)
+
+            else:
+                return False, "Unknown source type '{0}'".format(source)
+
+        elif isinstance(source, list):
             i = 0
-            for source in sources_list:
-                success, reason = self._select_source(source, dest_dict, move_job_id, local_dest_dir, file_id_in_set + i)
+            for s in source:
+                success, reason = self._select_source(s, dest, move_job_id, local_dest_dir, file_id_in_set + i)
                 i += 1
                 if not success:
                     return False, reason
 
         else:
-            self._logger.warning("Move has failed for job with id %s. Unknown source type %s", move_job_id, source_dict['type'])
-            return False, 'Unknown source type %s' % source_dict['type']
+            self._logger.warning("Move has failed for job with id %s. Unknown source %s", move_job_id, source)
+            return False, "Unknown source type '{0}'".format(source)
 
         return True, ''
 
@@ -191,26 +196,21 @@ class MoveService():
             self._logger.warning("Could not download file: %s", url)
             return False
 
-    def _download_from_scp(self, host_name, path, local_dest_dir):
+    def _download_from_scp(self, scp_path, local_dest_dir):
         """
         Downloads files from a remote SCP source
-        @param host_name: The remote host to download from.
-        @type host_name: str
-        @param path: The path to retrieve from the remote host.
-        @type path: str
+        @param scp_path: The full SCP path to download from.
+        @type scp_path: str
         @param local_dest_dir: The local directory to store the files in (before they are sent to the destination)
         @type local_dest_dir: str
         @return: A list of the downloaded file paths.
         """
-        source = self._destination_manager.get_destination_by_name(host_name)
-
-        if source['protocol'] != 'scp':
-            self._logger.error('Protocol %s is not a supported source protocol.', source['protocol'])
-            return None
-
-        host = source['ip-address']
-        username = source['authentication']['key-based']['username']
-        return scp_get(host, username, path, local_dest_dir)
+        url = urlparse(scp_path)
+        host = url.netloc
+        username = url.username
+        password = url.password
+        path = url.path
+        return scp_get(host, username, password, path, local_dest_dir)
 
     def _build_zip_file(self, move_job_id, local_dest_dir):
         """

@@ -15,15 +15,12 @@ The data mover shall be asynchronous. When a request to move a file is made via 
     $ virtualenv .
     $ source bin/activate
 
-    # if you have an old virtualenv - note, it should always be safe to run this
-    $ pip install distribute --upgrade
-
     $ python bootstrap.py
     $ ./bin/buildout
 
-    (on development machies)
-    easy_install paste
-    python setup.py develop
+    (If there are buildout problems with -mno-fused-madd on OSX)
+    $ export CPPFLAGS=-Qunused-arguments
+    $ export CFLAGS=-Qunused-arguments
 
 
 **Configuration File**
@@ -32,16 +29,11 @@ You will need to configure the development.ini file.
 Make sure that you have the follow (or similar):
 
     sqlalchemy.url = sqlite:///production.sqlite
-    destination_manager.destinations = ./data_mover/destination_config_test.json
     ala_service.sleep_time = 10
 
 **Initializing the database**
 
-You will need to create:
-* database user: data_mover (with password data_mover)
-* database: data_mover (owner is data_mover)
-
-Then run:
+Run:
 
     $ ./bin/initialize_data_mover_db development.ini
 

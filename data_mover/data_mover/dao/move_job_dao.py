@@ -33,18 +33,20 @@ class MoveJobDAO():
             return session.query(MoveJob).get(id)
 
 
-    def create_new(self, source, destination):
+    def create_new(self, source, destination, zip):
         """
         Persists a new MoveJob to the database
-        @param source: The source dictionary
-        @type source: dict
-        @param destination: The destination dictionary
-        @type destination: dict
+        @param source: The source(s)
+        @type source: str or list
+        @param destination: The destination
+        @type destination: str
+        @param zip: To zip the source(s)
+        @type zip: bool
         @return: The newly persisted MoveJob
         """
         with self._lock:
             session = self._session_maker.generate_session()
-            new_move_job = MoveJob(source, destination)
+            new_move_job = MoveJob(source, destination, zip)
             session.add(new_move_job)
             session.flush()
             self._logger.info('Added new Move Job to the database with id %s', new_move_job.id)
