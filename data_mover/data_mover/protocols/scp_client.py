@@ -37,7 +37,7 @@ def scp_put(host, username, password, source_path, destination_path):
         scp.put(source_path, destination_path, recursive=True)
         ssh.close()
     except:
-        _logger.exception("Could not SCP file %s to destination %s:%s", source_path, host, destination_path)
+        _logger.exception("Could not SCP file %s to destination %s on %s as user %s", source_path, destination_path, host, username)
         return False
     return True
 
@@ -71,7 +71,7 @@ def scp_get(host, username, password, source_path, destination_path):
         scp.get(source_path, destination_path, recursive=True)
         ssh.close()
     except SCPException:
-        _logger.warning("Could not SCP file %s:%s to local destination %s", host, source_path, destination_path)
+        _logger.warning("Could not SCP file %s from %s to local destination %s as user %s", source_path, host, destination_path, username)
         return False
     return True
 
