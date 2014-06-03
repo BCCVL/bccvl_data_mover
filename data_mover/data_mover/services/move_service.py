@@ -90,7 +90,7 @@ class MoveService():
         for file_path in file_paths:
 
             if dest_url.scheme == 'scp':
-                host = dest_url.netloc
+                host = dest_url.hostname
                 username = dest_url.username
                 password = dest_url.password
                 send_complete = scp_put(host, username, password, file_path, dest_url.path)
@@ -206,7 +206,7 @@ class MoveService():
         @return: A list of the downloaded file paths.
         """
         url = urlparse(scp_path)
-        host = url.netloc
+        host = url.hostname
         username = url.username
         password = url.password
         path = url.path

@@ -84,7 +84,7 @@ class DataMoverServices(XMLRPCView):
                 return False, response.REASON_UNKNOWN_URL_SCHEME_2S.format('source', scheme)
 
             if scheme == 'scp':
-                if not url.netloc:
+                if not url.hostname:
                     return False, response.REASON_HOST_NOT_SPECIFIED_1S.format('source')
                 if not url.path:
                     return False, response.REASON_PATH_NOT_SPECIFIED_1S.format('source')
@@ -128,7 +128,7 @@ class DataMoverServices(XMLRPCView):
         if url.scheme != 'scp':
             return False, response.REASON_UNKNOWN_URL_SCHEME_2S.format('destination', url.scheme)
 
-        if not url.netloc:
+        if not url.hostname:
             return False, response.REASON_HOST_NOT_SPECIFIED_1S.format('destination')
 
         if not url.path:
