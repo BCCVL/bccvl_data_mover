@@ -1,14 +1,13 @@
+import csv
 import io
 import logging
 import os
-import re
 from data_mover.protocols.http import http_get_unzip, http_get
 from data_mover.services.dataset_serializer import serialize_dataset
 
-SPECIES = '"species"'
-LONGITUDE = '"lon"'
-LATITUDE = '"lat"'
-CSV_REGEX_PATTERN = re.compile('(".*")\s?,\s?(".*")\s?,\s?(".*")')
+SPECIES = 'species'
+LONGITUDE = 'lon'
+LATITUDE = 'lat'
 
 
 class ALAService():
@@ -96,38 +95,47 @@ class ALAService():
         species,lon,lat
         Also ensures the first column contains the same taxon name for each row.
         Sometimes ALA sends occurrences with empty lon/lat values. These are removed.
+        Also filters any occurrences which are tagged as erroneous by ALA.
         @param file_path: the path to the occurrence CSV file to normalize
         @type file_path: str
+        @param taxon_name: The actual taxon name to use for each occurrence row. Sometimes ALA mixes these up.
+        @type taxon_name: str
         """
-        with io.open(file_path, mode='r+') as f:
-            lines = f.readlines()
-            f.seek(0)
-            f.truncate()
+        # Build the normalized CSV in memory
+        new_csv = [[SPECIES, LONGITUDE, LATITUDE]]
 
-            if len(lines) == 0:
-                return False
+        with io.open(file_path, mode='r+') as csv_file:
+            csv_reader = csv.reader(csv_file)
 
-            new_header = lines[0].replace('"Scientific Name"', SPECIES).replace('"Longitude - original"', LONGITUDE).replace('"Latitude - original"', LATITUDE)
-            lines[0] = new_header
-            for line in lines:
-                match = re.match(CSV_REGEX_PATTERN, line)
-                if match:
-                    col1 = match.group(1)
-                    col2 = match.group(2)
-                    col3 = match.group(3)
-                    if col1.encode('UTF-8') != SPECIES:
-                        try:
-                            float(col2.replace('"', ''))
-                            float(col3.replace('"', ''))
-                        except ValueError:
-                            self._logger.debug('Invalid lon/lat value detected in ALA occurrence, ignoring %s', line)
-                            continue
-                        new = '"%s", %s, %s' % (taxon_name, col2, col3)
-                        f.write(new)
-                    else:
-                        f.write(match.group(0))
-                    f.write(u'\n')
-                else:
-                    self._logger.warning('Nonconforming line found in ALA occurrences. Ignoring. %s', line)
+            # skip the header
+            next(csv_reader)
+            for row in csv_reader:
+                lon = row[0]
+                lat = row[1]
 
+                if not self._is_number(lon) or not self._is_number(lat):
+                    continue
+
+                if 'true' in row[2:]:
+                    continue
+
+                new_csv.append([taxon_name, lon, lat])
+
+        if len(new_csv) == 1:
+            # Everything was filtered out!
+            return False
+
+        # Overwrite the CSV file
+        with io.open(file_path, mode='wb') as csv_file:
+            csv_writer = csv.writer(csv_file)
+            csv_writer.writerows(new_csv)
+
+        return True
+
+    @staticmethod
+    def _is_number(s):
+        try:
+            float(s)
             return True
+        except ValueError:
+            return False

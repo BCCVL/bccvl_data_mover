@@ -1,3 +1,4 @@
+import csv
 import unittest
 import logging
 import io
@@ -20,7 +21,7 @@ class TestALAService(unittest.TestCase):
         dataset_factory = DatasetFactory()
 
         ala_service = ALAService(dataset_factory)
-        ala_service._occurrence_url = "http://biocache.ala.org.au/ws/occurrences/index/download?q=lsid:${lsid}&fq=geospatial_kosher:true&fields=scientificName,decimalLongitude,decimalLatitude&qa=none&reasonTypeId=4"
+        ala_service._occurrence_url = "http://biocache.ala.org.au/ws/occurrences/index/download?qa=zeroCoordinates,badlyFormedBasisOfRecord,detectedOutlier,decimalLatLongCalculationFromEastingNorthingFailed,missingBasisOfRecord,decimalLatLongCalculationFromVerbatimFailed,coordinatesCentreOfCountry,geospatialIssue,coordinatesOutOfRange,speciesOutsideExpertRange,userVerified,processingError,decimalLatLongConverionFailed,coordinatesCentreOfStateProvince,habitatMismatch&q=lsid:${lsid}&fields=decimalLongitude,decimalLatitude&reasonTypeId=4"
         dataset_factory._occurrence_url = ala_service._occurrence_url
         ala_service._metadata_url = "http://bie.ala.org.au/ws/species/${lsid}.json"
 
@@ -58,7 +59,7 @@ class TestALAService(unittest.TestCase):
         dataset_factory = MagicMock(spec=DatasetFactory)
 
         ala_service = ALAService(dataset_factory)
-        ala_service._occurrence_url = "http://biocache.ala.org.au/ws/occurrences/index/download?q=lsid:${lsid}&fq=geospatial_kosher:true&fields=scientificName,decimalLongitude,decimalLatitude&qa=none&reasonTypeId=4"
+        ala_service._occurrence_url = "http://biocache.ala.org.au/ws/occurrences/index/download?qa=zeroCoordinates,badlyFormedBasisOfRecord,detectedOutlier,decimalLatLongCalculationFromEastingNorthingFailed,missingBasisOfRecord,decimalLatLongCalculationFromVerbatimFailed,coordinatesCentreOfCountry,geospatialIssue,coordinatesOutOfRange,speciesOutsideExpertRange,userVerified,processingError,decimalLatLongConverionFailed,coordinatesCentreOfStateProvince,habitatMismatch&q=lsid:${lsid}&fields=decimalLongitude,decimalLatitude&reasonTypeId=4"
         ala_service._metadata_url = "http://bie.ala.org.au/ws/species/${lsid}.json"
 
         dest_dir = '/tmp/'
@@ -73,7 +74,7 @@ class TestALAService(unittest.TestCase):
         dataset_factory = DatasetFactory()
 
         ala_service = ALAService(dataset_factory)
-        ala_service._occurrence_url = "http://biocache.ala.org.au/ws/occurrences/index/download?q=lsid:${lsid}&fq=geospatial_kosher:true&fields=scientificName,decimalLongitude,decimalLatitude&qa=none&reasonTypeId=4"
+        ala_service._occurrence_url = "http://biocache.ala.org.au/ws/occurrences/index/download?qa=zeroCoordinates,badlyFormedBasisOfRecord,detectedOutlier,decimalLatLongCalculationFromEastingNorthingFailed,missingBasisOfRecord,decimalLatLongCalculationFromVerbatimFailed,coordinatesCentreOfCountry,geospatialIssue,coordinatesOutOfRange,speciesOutsideExpertRange,userVerified,processingError,decimalLatLongConverionFailed,coordinatesCentreOfStateProvince,habitatMismatch&q=lsid:${lsid}&fields=decimalLongitude,decimalLatitude&reasonTypeId=4"
         dataset_factory._occurrence_url = ala_service._occurrence_url
         ala_service._metadata_url = "http://bie.ala.org.au/ws/species/${lsid}.json"
 
@@ -113,14 +114,14 @@ class TestALAService(unittest.TestCase):
         dataset_factory = DatasetFactory()
 
         ala_service = ALAService(dataset_factory)
-        ala_service._occurrence_url = "http://biocache.ala.org.au/ws/occurrences/index/download?q=lsid:${lsid}&fq=geospatial_kosher:true&fields=scientificName,decimalLongitude,decimalLatitude&qa=none&reasonTypeId=4"
+        ala_service._occurrence_url = "http://biocache.ala.org.au/ws/occurrences/index/download?qa=zeroCoordinates,badlyFormedBasisOfRecord,detectedOutlier,decimalLatLongCalculationFromEastingNorthingFailed,missingBasisOfRecord,decimalLatLongCalculationFromVerbatimFailed,coordinatesCentreOfCountry,geospatialIssue,coordinatesOutOfRange,speciesOutsideExpertRange,userVerified,processingError,decimalLatLongConverionFailed,coordinatesCentreOfStateProvince,habitatMismatch&q=lsid:${lsid}&fields=decimalLongitude,decimalLatitude&reasonTypeId=4"
         dataset_factory._occurrence_url = ala_service._occurrence_url
         ala_service._metadata_url = "http://bie.ala.org.au/ws/species/${lsid}.json"
 
         dest_dir = '/tmp/'
         local_dest_dir = tempfile.mkdtemp()
 
-        out_files = ala_service.download_occurrence_by_lsid(lsid, dest_dir, local_dest_dir)
+        ala_service.download_occurrence_by_lsid(lsid, dest_dir, local_dest_dir)
         out_files = listdir_fullpath(local_dest_dir)
         self.assertEqual(3, len(out_files))
 
@@ -146,14 +147,11 @@ class TestALAService(unittest.TestCase):
             self.assertEqual(1, header.count(LATITUDE))
 
         # The species column is consistent
+        species = set()
         with io.open(occurrence_file, mode='r+') as f:
-            lines = f.readlines()
-            expected_species_name = None
-            for line in lines:
-                values = line.split(',')
-                actual_species_name = values[0]
-                if actual_species_name != '"species"':
-                    if expected_species_name is None:
-                        expected_species_name = actual_species_name
-                    else:
-                        self.assertEqual(expected_species_name, actual_species_name)
+            csv_reader = csv.reader(f)
+            # skip header
+            next(csv_reader)
+            for row in csv_reader:
+                species.add(row[0])
+        self.assertEqual(1, len(species))

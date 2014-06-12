@@ -18,7 +18,7 @@ class TestDatasetFactory(unittest.TestCase):
         dataset_factory = DatasetFactory()
 
         ala_service = ALAService(dataset_factory)
-        ala_service._occurrence_url = "http://biocache.ala.org.au/ws/occurrences/index/download?q=lsid:${lsid}&fq=geospatial_kosher:true&fields=scientificName,decimalLongitude,decimalLatitude&qa=none&reasonTypeId=4"
+        ala_service._occurrence_url = "http://biocache.ala.org.au/ws/occurrences/index/download?qa=zeroCoordinates,badlyFormedBasisOfRecord,detectedOutlier,decimalLatLongCalculationFromEastingNorthingFailed,missingBasisOfRecord,decimalLatLongCalculationFromVerbatimFailed,coordinatesCentreOfCountry,geospatialIssue,coordinatesOutOfRange,speciesOutsideExpertRange,userVerified,processingError,decimalLatLongConverionFailed,coordinatesCentreOfStateProvince,habitatMismatch&q=lsid:${lsid}&fields=decimalLongitude,decimalLatitude&reasonTypeId=4"
         ala_service._metadata_url = "http://bie.ala.org.au/ws/species/${lsid}.json"
         dataset_factory._occurrence_url = ala_service._occurrence_url
 
@@ -45,7 +45,7 @@ class TestDatasetFactory(unittest.TestCase):
         self.assertTrue(os.path.isfile(dataset_file))
 
         dataset_factory = DatasetFactory()
-        dataset_factory._occurrence_url = "http://biocache.ala.org.au/ws/occurrences/index/download?q=lsid:${lsid}&fq=geospatial_kosher:true&fields=scientificName,decimalLongitude,decimalLatitude&qa=none&reasonTypeId=4"
+        dataset_factory._occurrence_url = "http://biocache.ala.org.au/ws/occurrences/index/download?qa=zeroCoordinates,badlyFormedBasisOfRecord,detectedOutlier,decimalLatLongCalculationFromEastingNorthingFailed,missingBasisOfRecord,decimalLatLongCalculationFromVerbatimFailed,coordinatesCentreOfCountry,geospatialIssue,coordinatesOutOfRange,speciesOutsideExpertRange,userVerified,processingError,decimalLatLongConverionFailed,coordinatesCentreOfStateProvince,habitatMismatch&q=lsid:${lsid}&fields=decimalLongitude,decimalLatitude&reasonTypeId=4"
 
         dest_occurrence_file = remote_dest_dir + '/occurrence.csv'
         dest_metadata_file = remote_dest_dir + '/metadata.json'
@@ -54,7 +54,7 @@ class TestDatasetFactory(unittest.TestCase):
 
         expected_title = "Red Kangaroo (Macropus rufus) occurrences"
         expected_description = "Observed occurrences for Red Kangaroo (Macropus rufus), imported from ALA on " + now.strftime('%d/%m/%Y')
-        expected_provenance_url = "http://biocache.ala.org.au/ws/occurrences/index/download?q=lsid:urn:lsid:biodiversity.org.au:afd.taxon:31a9b8b8-4e8f-4343-a15f-2ed24e0bf1ae&fq=geospatial_kosher:true&fields=scientificName,decimalLongitude,decimalLatitude&qa=none&reasonTypeId=4"
+        expected_provenance_url = dataset_factory._occurrence_url.replace("${lsid}", lsid)
 
         self.assertEqual(expected_title, ala_dataset.title)
         self.assertEqual(expected_description, ala_dataset.description)
