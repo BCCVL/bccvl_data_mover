@@ -3,7 +3,8 @@ import logging
 import mimetypes
 import os
 import requests
-import zlib
+import StringIO
+import zipfile
 
 _logger = logging.getLogger(__name__)
 
@@ -31,32 +32,37 @@ def http_get(url, dest_dir, dest_filename, dest_filename_suffix=None):
     return True
 
 
-def http_get_gunzip(url, dest_dir, dest_filename, dest_filename_suffix=None):
+def http_get_unzip(url, source_filenames, dest_dir, dest_filenames, dest_file_suffixes):
     """
-    Performs a HTTP-GET on the provided url and performs a gunzip on the content.
-    @param url: The URL to download and gunzip
+    Performs a HTTP-GET on the provided URL and expects a zip file in return.
+    It will unzip the zip file and will copy source_filenames to the destination directory named dest_filenames
+    @param url: The URL to download
     @type url: str
-    @param dest_dir: The local directory to store the obtained content.
+    @param source_filenames: The source filenames to extract
+    @type source_filenames: list
+    @param dest_dir: The name of the directory to store the retrieved files to.
     @type dest_dir: str
-    @param dest_filename: The name of the file to store the content in.
-    @type dest_filename: str
-    @param dest_filename_suffix: The suffix of the file name will be guessed by the content's mime type. Can be overridden by this argument.
-    @type dest_filename_suffix: str
-    @return: True if the GET was successful and the content was written to disk, FALSE otherwise.
+    @param dest_filenames: The dest filenames to write the source files to
+    @type dest_filenames: list
+    @param dest_file_suffixes: The file suffixes to write the destination filenames with.
+    @type dest_file_suffixes: list
     """
     raw_content, content_type = _inner_http_get(url)
     if raw_content is None:
         return False
 
     # Decompress content
-    decompressor = zlib.decompressobj(16 + zlib.MAX_WBITS)
-    decompressed_content = decompressor.decompress(raw_content)
+    with zipfile.ZipFile(StringIO.StringIO(raw_content)) as z:
+        for (source, dest, suffix) in zip(source_filenames, dest_filenames, dest_file_suffixes):
+            try:
+                z.getinfo(source)
+            except KeyError:
+                _logger.error("Cannot find file %s in downloaded zip file", source)
+                return False
 
-    if decompressed_content is None or not decompressed_content:
-        return False
-
-    file_suffix = _guess_file_suffix(content_type, dest_filename_suffix)
-    _write_content_to_file(decompressed_content, dest_dir, dest_filename, file_suffix)
+            z.extract(source, dest_dir)
+            file_suffix = _guess_file_suffix(content_type, suffix)
+            os.rename(os.path.join(dest_dir, source), os.path.join(dest_dir, dest + '.' + file_suffix))
 
     return True
 
@@ -68,7 +74,12 @@ def _inner_http_get(url):
     @return: Content and Content Type or None if unsuccessful
     """
     _logger.info('Performing HTTP GET to URL %s', url)
-    response = requests.get(url, verify=False)
+    try:
+        response = requests.get(url, verify=False, timeout=180)
+    except requests.Timeout:
+        _logger.warning('URL %s timed out', url)
+        return None, None
+
     if response.status_code is not 200:
         _logger.warning('Obtained status code %s from URL %s', response.status_code, url)
         return None, None

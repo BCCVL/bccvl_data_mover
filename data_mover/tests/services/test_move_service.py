@@ -4,7 +4,6 @@ import os
 import mock
 import tempfile
 from data_mover.dao.move_job_dao import MoveJobDAO
-from data_mover.destinations.destination_manager import DestinationManager
 from data_mover.models.move_job import MoveJob
 from data_mover.services.ala_service import ALAService
 from data_mover.services.move_service import MoveService
@@ -17,7 +16,7 @@ class TestMoveService(unittest.TestCase):
         logging.basicConfig()
 
     def test_download_source_url(self):
-        service = MoveService(None, None, None)
+        service = MoveService(None, None)
         service._tmp_dir = None
         temp_dir = tempfile.mkdtemp()
         result = service._download_from_url('http://www.example.com', 1234, 1, temp_dir)
@@ -27,14 +26,14 @@ class TestMoveService(unittest.TestCase):
         self.assertTrue(os.path.isfile(out_paths[0]))
 
     def test_download_source_url_fail(self):
-        service = MoveService(None, None, None)
+        service = MoveService(None, None)
         service._tmp_dir = None
         temp_dir = tempfile.mkdtemp()
         result = service._download_from_url('http://www.example.co', 1234, 1, temp_dir)
         self.assertFalse(result)
 
     def test_download_source_url_empty_response(self):
-        service = MoveService(None, None, None)
+        service = MoveService(None, None)
         service._tmp_dir = None
         # NOTE: We do not patch data_mover.protocols.http.http_get because it is imported in the move_service, so it is defined there (weird, i know)
         temp_dir = tempfile.mkdtemp()
@@ -46,14 +45,13 @@ class TestMoveService(unittest.TestCase):
 
     def test_worker_bad_source_type(self):
         move_job_dao = mock.MagicMock()
-        destination_manger = mock.MagicMock()
         ala_service = mock.MagicMock()
 
-        source = {'type':'bad'}
-        destination = {'host':'visualiser','path':'/usr/local/dataset/'}
-        move_job = MoveJob(source, destination)
+        source = 'bad'
+        destination = 'scp://visualiser/usr/local/dataset/'
+        move_job = MoveJob(source, destination, False)
 
-        to_test = MoveService(move_job_dao, destination_manger, ala_service)
+        to_test = MoveService(move_job_dao, ala_service)
         to_test._tmp_dir = None
 
         move_job_dao.update.return_value = move_job
@@ -62,19 +60,18 @@ class TestMoveService(unittest.TestCase):
 
         # This is how we declare multiple calls to the same method
         call1 = mock.call(move_job, status=MoveJob.STATUS_IN_PROGRESS, start_timestamp=mock.ANY)
-        call2 = mock.call(move_job, status=MoveJob.STATUS_FAILED, end_timestamp=mock.ANY, reason='Unknown source type bad')
+        call2 = mock.call(move_job, status=MoveJob.STATUS_FAILED, end_timestamp=mock.ANY, reason="Unknown source type 'bad'")
         move_job_dao.update.assert_has_calls([call1, call2])
 
     def test_worker_download_failed(self):
         move_job_dao = mock.MagicMock()
-        destination_manger = mock.MagicMock()
         ala_service = mock.MagicMock()
 
-        source = {'type':'url', 'url':'http://www.intersect.org.au'}
-        destination = {'host':'visualiser','path':'/usr/local/dataset/'}
-        move_job = MoveJob(source, destination)
+        source = 'http://www.intersect.org.au'
+        destination = 'scp://visualiser/usr/local/dataset/'
+        move_job = MoveJob(source, destination, False)
 
-        to_test = MoveService(move_job_dao, destination_manger, ala_service)
+        to_test = MoveService(move_job_dao, ala_service)
         to_test._tmp_dir = None
 
         to_test._download_from_url = mock.MagicMock(return_value=None)
@@ -88,268 +85,110 @@ class TestMoveService(unittest.TestCase):
 
     def test_worker_scp_ok(self):
         move_job_dao = mock.MagicMock(spec=MoveJobDAO)
-        destination_manger = mock.MagicMock(spec=DestinationManager)
         ala_service = mock.MagicMock(spec=ALAService)
 
-        source = {'type':'url', 'url':'http://www.intersect.org.au'}
-        destination = {'host':'visualiser','path':'/usr/local/dataset/'}
-        move_job = MoveJob(source, destination)
-        to_test = MoveService(move_job_dao, destination_manger, ala_service)
+        source = 'http://www.intersect.org.au'
+        destination = 'scp://localhost/usr/local/dataset/'
+        move_job = MoveJob(source, destination, False)
+        to_test = MoveService(move_job_dao, ala_service)
         to_test._tmp_dir = None
 
-        destination = {
-            'description': 'The visualiser component of the UI',
-            'ip-address': '127.0.0.1',
-            'protocol': 'scp',
-            'authentication': {
-                'key-based': {
-                    'username': 'root'
-                }
-            }
-        }
-
         move_job_dao.update.return_value = move_job
-        destination_manger.get_destination_by_name.return_value = destination
 
         with mock.patch('data_mover.services.move_service.scp_put') as mock_scp_put:
             mock_scp_put.return_value = True
             to_test.worker(move_job)
-            mock_scp_put.assert_called_with('127.0.0.1', 'root', mock.ANY, '/usr/local/dataset/')
+            mock_scp_put.assert_called_with('localhost', None, None, mock.ANY, '/usr/local/dataset/')
 
         call1 = mock.call(move_job, status=MoveJob.STATUS_IN_PROGRESS, start_timestamp=mock.ANY)
         call2 = mock.call(move_job, status=MoveJob.STATUS_COMPLETE, end_timestamp=mock.ANY)
 
         move_job_dao.update.assert_has_calls([call1, call2])
-        destination_manger.get_destination_by_name.assert_called_with('visualiser')
 
     def test_worker_creates_zip(self):
         move_job_dao = mock.MagicMock(spec=MoveJobDAO)
-        destination_manger = mock.MagicMock(spec=DestinationManager)
         ala_service = mock.MagicMock(spec=ALAService)
 
-        source = {'type':'url', 'url':'http://www.intersect.org.au'}
-        destination = {'host':'visualiser','path':'/usr/local/dataset/', 'zip':True}
-        move_job = MoveJob(source, destination)
+        source = 'http://www.intersect.org.au'
+        destination = 'scp://visualiser/usr/local/dataset/'
+        move_job = MoveJob(source, destination, True)
         move_job.id = 1
-        to_test = MoveService(move_job_dao, destination_manger, ala_service)
+        to_test = MoveService(move_job_dao, ala_service)
         to_test._tmp_dir = None
 
-        destination = {
-            'description': 'The visualiser component of the UI',
-            'ip-address': '127.0.0.1',
-            'protocol': 'scp',
-            'authentication': {
-                'key-based': {
-                    'username': 'root'
-                }
-            }
-        }
-
         move_job_dao.update.return_value = move_job
-        destination_manger.get_destination_by_name.return_value = destination
 
         with mock.patch('data_mover.services.move_service.scp_put') as mock_scp_put:
             mock_scp_put.return_value = True
             to_test.worker(move_job)
-            mock_scp_put.assert_called_with('127.0.0.1', 'root', mock.ANY, '/usr/local/dataset/')
+            mock_scp_put.assert_called_with('visualiser', None, None, mock.ANY, '/usr/local/dataset/')
 
         call1 = mock.call(move_job, status=MoveJob.STATUS_IN_PROGRESS, start_timestamp=mock.ANY)
         call2 = mock.call(move_job, status=MoveJob.STATUS_COMPLETE, end_timestamp=mock.ANY)
 
         move_job_dao.update.assert_has_calls([call1, call2])
-        destination_manger.get_destination_by_name.assert_called_with('visualiser')
 
     def test_worker_scp_failed(self):
         move_job_dao = mock.MagicMock(spec=MoveJobDAO)
-        destination_manger = mock.MagicMock(spec=DestinationManager)
         ala_service = mock.MagicMock(spec=ALAService)
 
-        source = {'type':'url', 'url':'http://www.intersect.org.au'}
-        destination = {'host':'visualiser','path':'/usr/local/dataset/'}
-        move_job = MoveJob(source, destination)
+        source = 'http://www.intersect.org.au'
+        destination = 'scp://localhost/usr/local/dataset/'
+        move_job = MoveJob(source, destination, False)
 
-        to_test = MoveService(move_job_dao, destination_manger, ala_service)
+        to_test = MoveService(move_job_dao, ala_service)
         to_test._tmp_dir = None
 
-        destination = {
-            'description': 'The visualiser component of the UI',
-            'ip-address': '127.0.0.1',
-            'protocol': 'scp',
-            'authentication': {
-                'key-based': {
-                    'username': 'root'
-                }
-            }
-        }
-
         move_job_dao.update.return_value = move_job
-        destination_manger.get_destination_by_name.return_value = destination
 
         with mock.patch('data_mover.services.move_service.scp_put') as mock_scp_put:
             mock_scp_put.return_value = False
             to_test.worker(move_job)
-            mock_scp_put.assert_called_with('127.0.0.1', 'root', mock.ANY, '/usr/local/dataset/')
+            mock_scp_put.assert_called_with('localhost', None, None, mock.ANY, '/usr/local/dataset/')
 
         call1 = mock.call(move_job, status=MoveJob.STATUS_IN_PROGRESS, start_timestamp=mock.ANY)
         call2 = mock.call(move_job, status=MoveJob.STATUS_FAILED, end_timestamp=mock.ANY, reason='Unable to send to destination')
 
         move_job_dao.update.assert_has_calls([call1, call2])
-        destination_manger.get_destination_by_name.assert_called_with('visualiser')
-
-    def test_worker_local_ok(self):
-        move_job_dao = mock.MagicMock(spec=MoveJobDAO)
-        destination_manger = mock.MagicMock(spec=DestinationManager)
-        ala_service = mock.MagicMock(spec=ALAService)
-
-        source = {'type':'url', 'url':'http://www.intersect.org.au'}
-        destination = {'host':'local','path':'/usr/local/dataset/'}
-        move_job = MoveJob(source, destination)
-        to_test = MoveService(move_job_dao, destination_manger, ala_service)
-        to_test._tmp_dir = None
-
-        destination = {
-            'description': 'The visualiser component of the UI',
-            'protocol': 'local'
-        }
-
-        move_job_dao.update.return_value = move_job
-        destination_manger.get_destination_by_name.return_value = destination
-
-        with mock.patch('data_mover.services.move_service.shutil') as mock_shutil:
-            to_test.worker(move_job)
-            mock_shutil.copy.assert_called_with(mock.ANY, '/usr/local/dataset/')
-
-        call1 = mock.call(move_job, status=MoveJob.STATUS_IN_PROGRESS, start_timestamp=mock.ANY)
-        call2 = mock.call(move_job, status=MoveJob.STATUS_COMPLETE, end_timestamp=mock.ANY)
-
-        move_job_dao.update.assert_has_calls([call1, call2])
-        destination_manger.get_destination_by_name.assert_called_with('local')
-
-    def test_worker_source_scp(self):
-        move_job_dao = mock.MagicMock(spec=MoveJobDAO)
-        destination_manger = mock.MagicMock(spec=DestinationManager)
-        ala_service = mock.MagicMock(spec=ALAService)
-
-        src_dict = {'type':'scp', 'host':'the_source', 'path':'/url/to/download.txt'}
-        dest_dict = {'host':'local','path':'/usr/local/destdir/'}
-
-        move_job = MoveJob(src_dict, dest_dict)
-        to_test = MoveService(move_job_dao, destination_manger, ala_service)
-        to_test._tmp_dir = None
-
-        destination = {
-            'description': 'The local machine',
-            'protocol': 'local'
-        }
-
-        source = {
-            'description': 'the_source machine',
-            'ip-address': '127.0.0.1',
-            'protocol': 'scp',
-            'authentication': {
-                'key-based': {
-                    'username': 'root'
-                }
-            }
-        }
-
-        def side_effect(*args, **kwargs):
-            if args[0] == 'the_source':
-                return source
-            if args[0] == 'local':
-                return destination
-
-        move_job_dao.update.return_value = move_job
-        destination_manger.get_destination_by_name.side_effect = side_effect
-
-        with mock.patch('data_mover.services.move_service.scp_get') as mock_scp_get:
-            mock_scp_get.return_value = True
-            with mock.patch('data_mover.services.move_service.listdir_fullpath') as mock_list_dir:
-                mock_list_dir.return_value = {'file1', 'file2'}
-                with mock.patch('data_mover.services.move_service.shutil.copy') as mock_copy_to_local:
-                    to_test.worker(move_job)
-                    copy_call_1 = mock.call('file1', '/usr/local/destdir/')
-                    copy_call_2 = mock.call('file2', '/usr/local/destdir/')
-                    mock_copy_to_local.assert_has_calls([copy_call_2, copy_call_1])
-                    mock_scp_get.assert_called_with('127.0.0.1', 'root', '/url/to/download.txt', mock.ANY)
-                    mock_list_dir.assert_called_with(mock.ANY)
-
-        call1 = mock.call(move_job, status=MoveJob.STATUS_IN_PROGRESS, start_timestamp=mock.ANY)
-        call2 = mock.call(move_job, status=MoveJob.STATUS_COMPLETE, end_timestamp=mock.ANY)
-
-        move_job_dao.update.assert_has_calls([call1, call2])
-        destination_manger.get_destination_by_name.assert_has_calls([mock.call('the_source'), mock.call('local')])
 
     def test_worker_source_scp_fails(self):
         move_job_dao = mock.MagicMock(spec=MoveJobDAO)
-        destination_manger = mock.MagicMock(spec=DestinationManager)
         ala_service = mock.MagicMock(spec=ALAService)
 
-        src_dict = {'type':'scp', 'host':'the_source', 'path':'/url/to/download.txt'}
-        dest_dict = {'host':'local','path':'/usr/local/destdir/'}
+        src_dict = 'scp://the_source/url/to/download.txt'
+        dest_dict = 'scp://local/usr/local/destdir/'
 
-        move_job = MoveJob(src_dict, dest_dict)
-        to_test = MoveService(move_job_dao, destination_manger, ala_service)
+        move_job = MoveJob(src_dict, dest_dict, False)
+        to_test = MoveService(move_job_dao, ala_service)
         to_test._tmp_dir = None
 
-        destination = {
-            'description': 'The local machine',
-            'protocol': 'local'
-        }
-
-        source = {
-            'description': 'the_source machine',
-            'ip-address': '127.0.0.1',
-            'protocol': 'scp',
-            'authentication': {
-                'key-based': {
-                    'username': 'root'
-                }
-            }
-        }
-
-        def side_effect(*args, **kwargs):
-            if args[0] == 'the_source':
-                return source
-            if args[0] == 'local':
-                return destination
-
         move_job_dao.update.return_value = move_job
-        destination_manger.get_destination_by_name.side_effect = side_effect
 
         with mock.patch('data_mover.services.move_service.scp_get') as mock_scp_get:
             mock_scp_get.return_value = False
             to_test.worker(move_job)
-            mock_scp_get.assert_called_with('127.0.0.1', 'root', '/url/to/download.txt', mock.ANY)
+            mock_scp_get.assert_called_with('the_source', None, None, '/url/to/download.txt', mock.ANY)
 
         call1 = mock.call(move_job, status=MoveJob.STATUS_IN_PROGRESS, start_timestamp=mock.ANY)
         call2 = mock.call(move_job, status=MoveJob.STATUS_FAILED, end_timestamp=mock.ANY, reason=mock.ANY)
 
         move_job_dao.update.assert_has_calls([call1, call2])
-        destination_manger.get_destination_by_name.assert_has_calls([mock.call('the_source')])
 
     def test_worker_ala_source(self):
         move_job_dao = mock.MagicMock(spec=MoveJobDAO)
-        destination_manger = mock.MagicMock(spec=DestinationManager)
         ala_service = mock.MagicMock(spec=ALAService)
 
         lsid = 'urn:lsid:biodiversity.org.au:afd.taxon:31a9b8b8-4e8f-4343-a15f-2ed24e0bf1ae'
 
-        src_dict = {'type':'ala', 'lsid':lsid}
-        dest_dict = {'host':'local','path':'/usr/local/destdir/'}
+        src_dict = 'ala://ala?lsid=' + lsid
+        dest_dict = 'scp://local/usr/local/destdir/'
 
-        destination = {
-            'description': 'The local machine',
-            'protocol': 'local'
-        }
-
-        move_job = MoveJob(src_dict, dest_dict)
-        to_test = MoveService(move_job_dao, destination_manger, ala_service)
+        move_job = MoveJob(src_dict, dest_dict, False)
+        to_test = MoveService(move_job_dao, ala_service)
         to_test._tmp_dir = None
 
         move_job_dao.update.return_value = move_job
         ala_service.download_occurrence_by_lsid.return_value = True
-        destination_manger.get_destination_by_name.return_value = destination
 
         to_test.worker(move_job)
 
@@ -360,25 +199,17 @@ class TestMoveService(unittest.TestCase):
 
     def test_worker_mixed_source(self):
         move_job_dao = mock.MagicMock(spec=MoveJobDAO)
-        destination_manger = mock.MagicMock(spec=DestinationManager)
         ala_service = mock.MagicMock(spec=ALAService)
 
-        file_1 = {'type':'scp', 'host':'the_source', 'path':'/url/to/download_1.txt'}
-        file_2 = {'type':'url', 'url':'http://www.someurl.com'}
-        file_3 = {'type':'ala', 'lsid':'some_lsid'}
-        src_dict = {'type':'mixed', 'sources':[file_1, file_2, file_3]}
-        dest_dict = {'host':'local','path':'/usr/local/destdir/'}
+        file_1 = 'scp://the_source/url/to/download_1.txt'
+        file_2 = 'http://www.someurl.com'
+        file_3 = 'ala://ala/?lsid=some_lsid'
+        src_dict = [file_1, file_2, file_3]
+        dest_dict = 'scp://local/usr/local/destdir/'
 
-        destination = {
-            'description': 'The local machine',
-            'protocol': 'local'
-        }
-
-        destination_manger.get_destination_by_name.return_value = destination
-
-        move_job = MoveJob(src_dict, dest_dict)
+        move_job = MoveJob(src_dict, dest_dict, False)
         move_job.id = 1234
-        to_test = MoveService(move_job_dao, destination_manger, ala_service)
+        to_test = MoveService(move_job_dao, ala_service)
         to_test._tmp_dir = None
         to_test._download_from_scp = mock.MagicMock(return_value=True)
         to_test._download_from_url = mock.MagicMock(return_value=True)
@@ -388,7 +219,7 @@ class TestMoveService(unittest.TestCase):
 
         to_test.worker(move_job)
 
-        to_test._download_from_scp.assert_called_with('the_source', '/url/to/download_1.txt', mock.ANY)
+        to_test._download_from_scp.assert_called_with(file_1, mock.ANY)
         to_test._download_from_url.assert_called_with('http://www.someurl.com', 1234, 2, mock.ANY)
         to_test._download_from_ala.assert_called_with('some_lsid', '/usr/local/destdir/', mock.ANY)
 

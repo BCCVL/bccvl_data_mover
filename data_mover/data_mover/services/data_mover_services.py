@@ -1,11 +1,8 @@
-import threading
-
-
+from concurrent.futures import ThreadPoolExecutor
 from pyramid_xmlrpc import XMLRPCView
-from data_mover.services.response import error_rejected, job_id_status, REASON_MISSING_PARAMS_1S,\
-    REASON_UNKNOWN_SOURCE_TYPE_1S, REASON_UNKNOWN_DESTINATION_1S, REASON_INVALID_PARAMS_1S, REASON_JOB_DOES_NOT_EXIST,\
-    REASON_UNKNOWN_SOURCE_1S
-from data_mover import ALA_SERVICE, DESTINATION_MANAGER, MOVE_JOB_DAO, MOVE_SERVICE
+from urlparse import urlparse, parse_qs
+from data_mover.services import response
+from data_mover import ALA_SERVICE, MOVE_JOB_DAO, MOVE_SERVICE
 
 
 class DataMoverServices(XMLRPCView):
@@ -18,8 +15,8 @@ class DataMoverServices(XMLRPCView):
         XMLRPCView.__init__(self, context, request)
         self._ala_service = ALA_SERVICE
         self._move_job_dao = MOVE_JOB_DAO
-        self._destination_manager = DESTINATION_MANAGER
         self._move_service = MOVE_SERVICE
+        self._executor = ThreadPoolExecutor(max_workers=3)
 
     def check_move_status(self, id=None):
         """
@@ -29,128 +26,115 @@ class DataMoverServices(XMLRPCView):
         @return: The status of the job
         """
         if id is None:
-            return error_rejected(REASON_MISSING_PARAMS_1S % 'id')
+            return response.error_rejected(response.REASON_MISSING_PARAMS_1S.format('id'))
         if not isinstance(id, int):
-            return error_rejected(REASON_INVALID_PARAMS_1S % 'id must be an int')
+            return response.error_rejected(response.REASON_INVALID_PARAMS_1S.format('id must be an int'))
 
         job = self._move_job_dao.find_by_id(id)
         if job is not None:
-            return job_id_status(job)
+            return response.job_id_status(job)
         else:
-            return error_rejected(REASON_JOB_DOES_NOT_EXIST)
+            return response.error_rejected(response.REASON_JOB_DOES_NOT_EXIST)
 
-    def move(self, source, destination):
+    def move(self, source, destination, zip=False):
         """
         Performs a "move" of a file from a source to a destination
-        @param destination: Dictionary describing the destination of the move. Must contain a host and a path.
-        @type destination: dict
-        @param source: Dictionary describing the source of the move. Refer to the README.md file, or the wiki page for details.
-        @type source: dict
+        @param source: URL describing the source of the move, or list of URLs.
+        @type source: str or list
+        @param destination: URL describing the destination of the move.
+        @type destination: str
+        @param zip: True to zip source to the destination.
+        @type zip: bool
         @return: The status of the move
         @rtype: dict
         """
         if source is None or destination is None:
-            return error_rejected(REASON_MISSING_PARAMS_1S % 'source and destination must not be None')
+            return response.error_rejected(response.REASON_MISSING_PARAMS_1S.format('source and destination must not be None'))
 
         source_valid, source_reason = self._validate_source_dict(source)
         if not source_valid:
-            return error_rejected(source_reason)
+            return response.error_rejected(source_reason)
 
-        destination_valid, destination_reason = self._validate_destination_dict(destination)
+        destination_valid, destination_reason = self._validate_destination(destination, zip)
         if not destination_valid:
-            return error_rejected(destination_reason)
+            return response.error_rejected(destination_reason)
 
-        move_job = self._move_job_dao.create_new(source, destination)
+        move_job = self._move_job_dao.create_new(source, destination, zip)
 
-        thread = threading.Thread(target=self._move_service.worker, args=(move_job,))
-        thread.start()
-        return job_id_status(move_job)
+        self._executor.submit(fn=self._move_service.worker, move_job=move_job)
+        return response.job_id_status(move_job)
 
     def _validate_source_dict(self, source, inner_source=False):
         """
         Validates the source dictionary that the data mover was called with.
-        @param source: The source dictionary
-        @type source: dict
+        @param source: The source
+        @type source: str or list
         @param inner_source: True if the source being validated is nested in a mixed source type.
         @type inner_source: bool
         @return: True if valid or False if invalid and reason as to why it was not valid.
         """
 
-        if not isinstance(source, dict):
-            return False, REASON_MISSING_PARAMS_1S % 'source must be of type dict'
+        if not isinstance(source, str) and (not isinstance(source, list) and not inner_source):
+            return False, response.REASON_MISSING_PARAMS_1S.format('source must be of type str or list')
 
-        try:
-            src_type = source['type']
-        except KeyError:
-            return False, REASON_MISSING_PARAMS_1S % 'source must specify a type'
+        if isinstance(source, str):
+            url = urlparse(source)
+            scheme = url.scheme
+            if scheme not in ['scp', 'http', 'https', 'ala']:
+                return False, response.REASON_UNKNOWN_URL_SCHEME_2S.format('source', scheme)
 
-        if not src_type:
-            return False, REASON_MISSING_PARAMS_1S % 'source must specify a type'
+            if scheme == 'scp':
+                if not url.hostname:
+                    return False, response.REASON_HOST_NOT_SPECIFIED_1S.format('source')
+                if not url.path:
+                    return False, response.REASON_PATH_NOT_SPECIFIED_1S.format('source')
 
-        if src_type not in ['ala', 'url', 'scp', 'mixed']:
-            return False, REASON_UNKNOWN_SOURCE_TYPE_1S % src_type
+            if scheme == 'ala':
+                if not url.query:
+                    return False, response.REASON_MISSING_PARAMS_1S.format('source ALA LSID')
+                query = parse_qs(url.query)
+                if not query['lsid']:
+                    return False, response.REASON_MISSING_PARAMS_1S.format('source ALA LSID')
 
-        if src_type == 'ala' and not 'lsid' in source:
-            return False, REASON_MISSING_PARAMS_1S % 'lsid must be provided with ala source'
+        elif isinstance(source, list) and not inner_source:
 
-        if src_type == 'url' and not 'url' in source:
-            return False, REASON_MISSING_PARAMS_1S % 'url must be provided with url source'
-
-        if src_type == 'scp':
-            if not 'host' in source or not 'path' in source:
-                return False, REASON_MISSING_PARAMS_1S % 'host and path must be provided with scp source'
-
-            source_host = self._destination_manager.get_destination_by_name(source['host'])
-            if source_host is None:
-                return False, REASON_UNKNOWN_SOURCE_1S % source['host']
-
-        if src_type == 'mixed':
-            if inner_source:
-                return False, REASON_INVALID_PARAMS_1S % 'mixed sources may not be nested'
-
-            if not 'sources' in source:
-                return False, REASON_MISSING_PARAMS_1S % 'sources must be provided with mixed source'
-
-            sources = source['sources']
-            if not isinstance(sources, list):
-                return False, REASON_MISSING_PARAMS_1S % 'sources must be of list type'
-
-            if len(filter(lambda x: x['type'] == 'ala', source['sources'])) > 1:
-                return False, 'Too many ALA jobs. Mixed sources can only contain a maximum of one ALA job.'
-
-            for s in sources:
+            if len(source) == 0:
+                return False, response.REASON_INVALID_PARAMS_1S.format('no sources selected')
+            for s in source:
                 source_valid, reason = self._validate_source_dict(s, True)
                 if not source_valid:
                     return False, reason
 
+            if len(filter(lambda x: urlparse(x).scheme == 'ala', source)) > 1:
+                return False, 'Too many ALA jobs. Mixed sources can only contain a maximum of one ALA job.'
+
+        else:
+            return False, response.REASON_UNKNOWN_SOURCE_TYPE_1S.format(source)
+
         return True, ''
 
-    def _validate_destination_dict(self, destination):
+    def _validate_destination(self, destination, zip):
         """
-        Validates the destination dictionary that the data mover was called with.
-        @param destination: The destination dictionary
-        @type destination: dict
+        Validates the destination that the data mover was called with.
+        @param destination: The destination
+        @type destination: str
         @return: True if valid or False if invalid and a reason as to why it was not valid.
         """
 
-        if not isinstance(destination, dict):
-            return False, REASON_MISSING_PARAMS_1S % 'destination must be of type dict'
+        if not isinstance(destination, str):
+            return False, response.REASON_MISSING_PARAMS_1S.format('destination must be of type str')
 
-        try:
-            dest_host = destination['host']
-            dest_path = destination['path']
-        except KeyError:
-            return False, REASON_MISSING_PARAMS_1S % 'destination must specify a host and path'
+        url = urlparse(destination)
+        if url.scheme != 'scp':
+            return False, response.REASON_UNKNOWN_URL_SCHEME_2S.format('destination', url.scheme)
 
-        if not dest_host or not dest_path:
-            return False, REASON_MISSING_PARAMS_1S % 'destination must specify a host and path'
+        if not url.hostname:
+            return False, response.REASON_HOST_NOT_SPECIFIED_1S.format('destination')
 
-        if 'zip' in destination:
-            if not isinstance(destination['zip'], bool):
-                return False, REASON_INVALID_PARAMS_1S % 'zip must be of type bool'
+        if not url.path:
+            return False, response.REASON_PATH_NOT_SPECIFIED_1S.format('destination')
 
-        destination_host = self._destination_manager.get_destination_by_name(dest_host)
-        if destination_host is None:
-            return False, REASON_UNKNOWN_DESTINATION_1S % dest_host
+        if not isinstance(zip, bool):
+            return False, response.REASON_INVALID_PARAMS_1S.format('zip must be of type bool')
 
         return True, ''

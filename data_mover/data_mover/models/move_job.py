@@ -1,6 +1,6 @@
 from data_mover import Base
 from data_mover.models.text_pickle_type import TextPickleType
-from sqlalchemy import Column, Integer, Text, DateTime
+from sqlalchemy import Column, Integer, Text, DateTime, Boolean
 import json
 
 
@@ -19,22 +19,26 @@ class MoveJob(Base):
     id = Column(Integer, primary_key=True)
     source = Column(TextPickleType(pickler=json))
     destination = Column(TextPickleType(pickler=json))
+    zip = Column(Boolean)
     status = Column(Text)
     start_timestamp = Column(DateTime)
     end_timestamp = Column(DateTime)
     reason = Column(Text)
 
-    def __init__(self, source, destination):
+    def __init__(self, source, destination, zip):
         """
         Constructor
-        @param source: the source dictionary
-        @type source: dict
-        @param destination: the destination dictionary
-        @type destination: dict
+        @param source: the source(s)
+        @type source: str or list
+        @param destination: the destination
+        @type destination: str
+        @param zip: To zip
+        @type zip: bool
         """
         self.id = None
         self.source = source
         self.destination = destination
+        self.zip = zip
         self.status = MoveJob.STATUS_PENDING
         self.start_timestamp = None
         self.end_timestamp = None

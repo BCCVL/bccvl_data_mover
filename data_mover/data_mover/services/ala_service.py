@@ -1,13 +1,14 @@
 import io
 import logging
 import os
-import json
-from data_mover.protocols.http import http_get_gunzip, http_get
+import re
+from data_mover.protocols.http import http_get_unzip, http_get
 from data_mover.services.dataset_serializer import serialize_dataset
 
-SPECIES = 'species'
-LONGITUDE = 'lon'
-LATITUDE = 'lat'
+SPECIES = '"species"'
+LONGITUDE = '"lon"'
+LATITUDE = '"lat"'
+CSV_REGEX_PATTERN = re.compile('(".*")\s?,\s?(".*")\s?,\s?(".*")')
 
 
 class ALAService():
@@ -52,7 +53,7 @@ class ALAService():
         # Get occurrence data
         occurrence_url = self._occurrence_url.replace("${lsid}", lsid)
         occurrence_file_name = 'ala_occurrence'
-        success = http_get_gunzip(occurrence_url, local_dest_dir, occurrence_file_name, 'csv')
+        success = http_get_unzip(occurrence_url, ['data.csv'], local_dest_dir, [occurrence_file_name], ['csv'])
         if not success:
             self._logger.warning("Could not download occurrence data from ALA for LSID %s", lsid)
             return False
@@ -75,7 +76,10 @@ class ALAService():
         ala_dataset, taxon_name = self._dataset_factory.generate_dataset(lsid, destination_occurrence_path, destination_metadata_path, occurrence_path, metadata_path)
 
         # Normalize the occurrences csv file
-        self._normalize_occurrence(occurrence_path, taxon_name)
+        success = self._normalize_occurrence(occurrence_path, taxon_name)
+        if not success:
+            self._logger.warning("Could not normalize occurrence from ALA for LSID %s", lsid)
+            return False
 
         # Write the dataset to a file
         dataset_path = os.path.join(local_dest_dir, 'ala_dataset.json')
@@ -84,13 +88,14 @@ class ALAService():
         f.close()
         return True
 
-    @staticmethod
-    def _normalize_occurrence(file_path, taxon_name):
+    def _normalize_occurrence(self, file_path, taxon_name):
         """
         Normalizes an occurrence CSV file by replacing the first line of content from:
-        raw_taxon_name,longitude,latitude
+        Scientific Name,Longitude - original,Latitude - original
         to:
         species,lon,lat
+        Also ensures the first column contains the same taxon name for each row.
+        Sometimes ALA sends occurrences with empty lon/lat values. These are removed.
         @param file_path: the path to the occurrence CSV file to normalize
         @type file_path: str
         """
@@ -98,10 +103,31 @@ class ALAService():
             lines = f.readlines()
             f.seek(0)
             f.truncate()
-            newHeader = lines[0].replace("taxon_name", SPECIES).replace("longitude", LONGITUDE).replace("latitude", LATITUDE)
-            lines[0] = newHeader
+
+            if len(lines) == 0:
+                return False
+
+            new_header = lines[0].replace('"Scientific Name"', SPECIES).replace('"Longitude - original"', LONGITUDE).replace('"Latitude - original"', LATITUDE)
+            lines[0] = new_header
             for line in lines:
-                values = line.split(',')
-                if values[0] != 'species':
-                    line = "%s, %s, %s" % (taxon_name, values[1], values[2])
-                f.write(line)
+                match = re.match(CSV_REGEX_PATTERN, line)
+                if match:
+                    col1 = match.group(1)
+                    col2 = match.group(2)
+                    col3 = match.group(3)
+                    if col1.encode('UTF-8') != SPECIES:
+                        try:
+                            float(col2.replace('"', ''))
+                            float(col3.replace('"', ''))
+                        except ValueError:
+                            self._logger.debug('Invalid lon/lat value detected in ALA occurrence, ignoring %s', line)
+                            continue
+                        new = '"%s", %s, %s' % (taxon_name, col2, col3)
+                        f.write(new)
+                    else:
+                        f.write(match.group(0))
+                    f.write(u'\n')
+                else:
+                    self._logger.warning('Nonconforming line found in ALA occurrences. Ignoring. %s', line)
+
+            return True

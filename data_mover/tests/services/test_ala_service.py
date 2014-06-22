@@ -20,9 +20,9 @@ class TestALAService(unittest.TestCase):
         dataset_factory = DatasetFactory()
 
         ala_service = ALAService(dataset_factory)
-        ala_service._occurrence_url = "http://biocache.ala.org.au/ws/webportal/occurrences.gz?q=lsid:${lsid}&fq=geospatial_kosher:true&fl=taxon_name,longitude,latitude&pageSize=999999999"
+        ala_service._occurrence_url = "http://biocache.ala.org.au/ws/occurrences/index/download?q=lsid:${lsid}&fq=geospatial_kosher:true&fields=scientificName,decimalLongitude,decimalLatitude&qa=none&reasonTypeId=4"
         dataset_factory._occurrence_url = ala_service._occurrence_url
-        ala_service._metadata_url = "http://bie.ala.org.au/species/${lsid}.json"
+        ala_service._metadata_url = "http://bie.ala.org.au/ws/species/${lsid}.json"
 
         dest_dir = '/tmp/'
         local_dest_dir = tempfile.mkdtemp()
@@ -58,8 +58,8 @@ class TestALAService(unittest.TestCase):
         dataset_factory = MagicMock(spec=DatasetFactory)
 
         ala_service = ALAService(dataset_factory)
-        ala_service._occurrence_url = "http://biocache.ala.org.au/ws/webportal/occurrences.gz?q=lsid:${lsid}&fq=geospatial_kosher:true&fl=raw_taxon_name,longitude,latitude&pageSize=999999999"
-        ala_service._metadata_url = "http://bie.ala.org.au/species/${lsid}.json"
+        ala_service._occurrence_url = "http://biocache.ala.org.au/ws/occurrences/index/download?q=lsid:${lsid}&fq=geospatial_kosher:true&fields=scientificName,decimalLongitude,decimalLatitude&qa=none&reasonTypeId=4"
+        ala_service._metadata_url = "http://bie.ala.org.au/ws/species/${lsid}.json"
 
         dest_dir = '/tmp/'
         local_dest_dir = tempfile.mkdtemp()
@@ -73,9 +73,9 @@ class TestALAService(unittest.TestCase):
         dataset_factory = DatasetFactory()
 
         ala_service = ALAService(dataset_factory)
-        ala_service._occurrence_url = "http://biocache.ala.org.au/ws/webportal/occurrences.gz?q=lsid:${lsid}&fq=geospatial_kosher:true&fl=taxon_name,longitude,latitude&pageSize=999999999"
+        ala_service._occurrence_url = "http://biocache.ala.org.au/ws/occurrences/index/download?q=lsid:${lsid}&fq=geospatial_kosher:true&fields=scientificName,decimalLongitude,decimalLatitude&qa=none&reasonTypeId=4"
         dataset_factory._occurrence_url = ala_service._occurrence_url
-        ala_service._metadata_url = "http://bie.ala.org.au/species/${lsid}.json"
+        ala_service._metadata_url = "http://bie.ala.org.au/ws/species/${lsid}.json"
 
         dest_dir = '/tmp/'
         local_dest_dir = tempfile.mkdtemp()
@@ -113,9 +113,9 @@ class TestALAService(unittest.TestCase):
         dataset_factory = DatasetFactory()
 
         ala_service = ALAService(dataset_factory)
-        ala_service._occurrence_url = "http://biocache.ala.org.au/ws/webportal/occurrences.gz?q=lsid:${lsid}&fq=geospatial_kosher:true&fl=taxon_name,longitude,latitude&pageSize=999999999"
+        ala_service._occurrence_url = "http://biocache.ala.org.au/ws/occurrences/index/download?q=lsid:${lsid}&fq=geospatial_kosher:true&fields=scientificName,decimalLongitude,decimalLatitude&qa=none&reasonTypeId=4"
         dataset_factory._occurrence_url = ala_service._occurrence_url
-        ala_service._metadata_url = "http://bie.ala.org.au/species/${lsid}.json"
+        ala_service._metadata_url = "http://bie.ala.org.au/ws/species/${lsid}.json"
 
         dest_dir = '/tmp/'
         local_dest_dir = tempfile.mkdtemp()
@@ -152,7 +152,7 @@ class TestALAService(unittest.TestCase):
             for line in lines:
                 values = line.split(',')
                 actual_species_name = values[0]
-                if actual_species_name != 'species':
+                if actual_species_name != '"species"':
                     if expected_species_name is None:
                         expected_species_name = actual_species_name
                     else:

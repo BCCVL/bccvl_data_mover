@@ -15,7 +15,7 @@ class TestMoveJobDAO(unittest.TestCase):
         session = MagicMock(spec=scoped_session)
         to_test = MoveJobDAO(session_maker)
 
-        found_move_job = MoveJob({}, {})
+        found_move_job = MoveJob("", "", False)
         found_move_job.id = 1
 
         session_maker.generate_session.return_value = session
@@ -27,28 +27,28 @@ class TestMoveJobDAO(unittest.TestCase):
         self.assertIs(found_move_job, out)
         session.query.return_value.get.assert_called_with(1)
 
-
     def test_create_new(self):
         session_maker = MagicMock(spec=SessionMaker)
         to_test = MoveJobDAO(session_maker)
 
-        source = {}
-        dest = {}
+        source = ""
+        dest = ""
+        zip = False
 
-        out = to_test.create_new(source, dest)
+        out = to_test.create_new(source, dest, zip)
 
         self.assertIsNotNone(out)
         self.assertEqual(source, out.source)
         self.assertEqual(dest, out.destination)
+        self.assertEqual(zip, out.zip)
         session_maker.generate_session.return_value.add.assert_called_with(ANY)
-
 
     def test_update(self):
         session = MagicMock(spec=scoped_session)
         session_maker = MagicMock(spec=SessionMaker)
         to_test = MoveJobDAO(session_maker)
 
-        existing_move_job = MoveJob({}, {})
+        existing_move_job = MoveJob("", "", False)
         status = MoveJob.STATUS_IN_PROGRESS
         start_timestamp = datetime.now() + timedelta(seconds=5000)
         end_timestamp = datetime.now() + timedelta(seconds=10000)

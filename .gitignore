@@ -77,3 +77,5 @@ data_mover/production.sqlite
 data_mover/test.sqlite
 .idea/dataSources.ids
 .idea/dataSources.xml
+destination_config.json
+*.db
