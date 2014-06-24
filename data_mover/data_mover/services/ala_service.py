@@ -101,6 +101,15 @@ class ALAService():
         @param taxon_name: The actual taxon name to use for each occurrence row. Sometimes ALA mixes these up.
         @type taxon_name: str
         """
+
+        if not os.path.isfile(file_path):
+            self._logger.warning("ALA occurrence file not found or does not exist")
+            return False
+
+        if os.path.getsize(file_path) == 0:
+            self._logger.warning("ALA occurrence file downloaded is empty (zero bytes)")
+            return False
+
         # Build the normalized CSV in memory
         new_csv = [[SPECIES, LONGITUDE, LATITUDE]]
 
