@@ -103,11 +103,11 @@ class ALAService():
         """
 
         if not os.path.isfile(file_path):
-            self._logger.warning("ALA occurrence file not found or does not exist")
+            self._logger.error("ALA occurrence file not found or does not exist")
             return False
 
         if os.path.getsize(file_path) == 0:
-            self._logger.warning("ALA occurrence file downloaded is empty (zero bytes)")
+            self._logger.error("ALA occurrence file downloaded is empty (zero bytes)")
             return False
 
         # Build the normalized CSV in memory
