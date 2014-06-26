@@ -8,15 +8,6 @@ from data_mover.util.file_utils import listdir_fullpath
 def step_impl(context):
     context.server_proxy = ServerProxy('http://0.0.0.0:8888/data_mover')
 
-@then('I wait {minutes} minutes')
-def step(context, minutes):
-    seconds = float(minutes) * 60
-    time.sleep(seconds)
-
-@then('I wait {seconds} seconds')
-def step(context, seconds):
-    time.sleep(float(seconds))
-
 @then('I should see "{num}" files in my temp directory')
 def step(context, num):
     files = listdir_fullpath(context.temp_dir)
@@ -59,3 +50,17 @@ def step(context, expected_reason):
 def step_impl(context):
     response = context.server_proxy.check_move_status(context.response['id'])
     context.response = response
+
+@then('I check if the status of the job is "{expected}" for at most {total_time} seconds')
+def step(context, expected, total_time):
+    end_time = time.time()+float(total_time)
+    while time.time() <= end_time:
+        context.response = context.server_proxy.check_move_status(context.response['id'])
+        if context.response['status'] == expected:
+            assert True
+            return
+        time.sleep(5)
+    context.response = context.server_proxy.check_move_status(context.response['id'])
+    assert expected == context.response['status']
+
+
