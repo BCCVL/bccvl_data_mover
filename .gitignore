@@ -79,3 +79,6 @@ data_mover/test.sqlite
 .idea/dataSources.xml
 destination_config.json
 *.db
+
+# Log files
+data_mover/data_mover_test.log
