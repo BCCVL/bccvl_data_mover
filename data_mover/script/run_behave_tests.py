@@ -14,7 +14,8 @@ class TestServer():
         self.process = None
 
     def start(self):
-        self.process = subprocess.Popen(['./bin/pserve', 'test.ini'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        stderr_file = os.open('./data_mover_test_stderr.log', 'w')
+        self.process = subprocess.Popen(['./bin/pserve', 'test.ini'], stdout=subprocess.PIPE, stderr=stderr_file)
         print 'Sleeping for 10 seconds'
         time.sleep(10)
 

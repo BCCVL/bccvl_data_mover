@@ -82,3 +82,4 @@ destination_config.json
 
 # Log files
 data_mover/data_mover_test.log
+data_mover/data_mover_test_stderr.log
