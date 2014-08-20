@@ -37,7 +37,7 @@ extras_require = {
 
 
 setup(name='data_mover',
-      version='0.5.3-dev',
+      version='1.6.1-dev',
       description='data_mover',
       long_description=README + '\n\n' + CHANGES,
       classifiers=[
