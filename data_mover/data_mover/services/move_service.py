@@ -67,48 +67,54 @@ class MoveService():
         # Get the file(s) from the source
         # TODO: support retries
 
-        success, reason = self._select_source(move_job.source, move_job.destination, move_job.id, temp_dir, 1)
+        try:
+            success, reason = self._select_source(move_job.source, move_job.destination, move_job.id, temp_dir, 1)
+        except Exception as e:
+            # catch any Exception here so that we can properly update the job state
+            # TODO: what about stack trace logging?
+            success, reason = False, e
         if not success:
             self._logger.warning('Could not fetch source file(s) for move job %s. Reason: %s', move_job.id, reason)
             self._move_job_dao.update(move_job, status=MoveJob.STATUS_FAILED, end_timestamp=datetime.datetime.now(), reason=reason)
-            return
 
-        # Send the file(s) to the destination
-        # TODO: support retries
-
-        dest_url = urlparse(move_job.destination)
-        if dest_url.scheme != 'scp':
-            self._logger.error('Protocol %s is not a supported protocol.', dest_url.scheme)
-            return
-
-        if move_job.zip:
-            file_paths = [self._build_zip_file(move_job.id, temp_dir)]
         else:
-            file_paths = listdir_fullpath(temp_dir)
+            # FIXME: need execption handling here as well to make sure job status gets updated
+            # Send the file(s) to the destination
+            # TODO: support retries
 
-        success_sent = 0
-        for file_path in file_paths:
+            dest_url = urlparse(move_job.destination)
+            if dest_url.scheme != 'scp':
+                self._logger.error('Protocol %s is not a supported protocol.', dest_url.scheme)
+                return
 
-            if dest_url.scheme == 'scp':
-                host = dest_url.hostname
-                username = dest_url.username
-                password = dest_url.password
-                send_complete = scp_put(host, username, password, file_path, dest_url.path)
-                if send_complete:
-                    success_sent += 1
+            if move_job.zip:
+                file_paths = [self._build_zip_file(move_job.id, temp_dir)]
+            else:
+                file_paths = listdir_fullpath(temp_dir)
 
-            # elif protocol == 'local':
-            #     shutil.copy(file_path, move_job.destination['path'])
-            #     success_sent += 1
+            success_sent = 0
+            for file_path in file_paths:
 
-        shutil.rmtree(temp_dir)
+                if dest_url.scheme == 'scp':
+                    host = dest_url.hostname
+                    username = dest_url.username
+                    password = dest_url.password
+                    send_complete = scp_put(host, username, password, file_path, dest_url.path)
+                    if send_complete:
+                        success_sent += 1
 
-        if success_sent == len(file_paths):
-            self._logger.info('Move job with id %s has been completed', move_job.id)
-            self._move_job_dao.update(move_job, status=MoveJob.STATUS_COMPLETE, end_timestamp=datetime.datetime.now())
-        else:
-            self._logger.warning('Move job with id %s has failed', move_job.id)
-            self._move_job_dao.update(move_job, status=MoveJob.STATUS_FAILED, end_timestamp=datetime.datetime.now(), reason='Unable to send to destination')
+                # elif protocol == 'local':
+                #     shutil.copy(file_path, move_job.destination['path'])
+                #     success_sent += 1
+
+            shutil.rmtree(temp_dir)
+
+            if success_sent == len(file_paths):
+                self._logger.info('Move job with id %s has been completed', move_job.id)
+                self._move_job_dao.update(move_job, status=MoveJob.STATUS_COMPLETE, end_timestamp=datetime.datetime.now())
+            else:
+                self._logger.warning('Move job with id %s has failed', move_job.id)
+                self._move_job_dao.update(move_job, status=MoveJob.STATUS_FAILED, end_timestamp=datetime.datetime.now(), reason='Unable to send to destination')
 
     def _select_source(self, source, dest, move_job_id, local_dest_dir, file_id_in_set):
         """
