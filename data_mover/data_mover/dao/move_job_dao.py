@@ -1,3 +1,4 @@
+import time
 import logging
 import threading
 import transaction
@@ -44,15 +45,27 @@ class MoveJobDAO():
         @type zip: bool
         @return: The newly persisted MoveJob
         """
+        
         with self._lock:
-            session = self._session_maker.generate_session()
-            new_move_job = MoveJob(source, destination, zip)
-            session.add(new_move_job)
-            session.flush()
-            self._logger.info('Added new Move Job to the database with id %s', new_move_job.id)
-            session.expunge(new_move_job)
-            transaction.commit()
-            return new_move_job
+            retries = 4
+            while retries:
+                try:               
+                    session = self._session_maker.generate_session()
+                    new_move_job = MoveJob(source, destination, zip)
+                    session.add(new_move_job)
+                    session.flush()
+                    session.expunge(new_move_job)
+                    transaction.commit()
+                    self._logger.info('Added new Move Job to the database with id %s', new_move_job.id)
+                    return new_move_job
+                except:
+                    retries =- 1
+                    session.expunge_all()
+                    self._logger.error('Attempt to add new Move Job to the database with id %s failed', new_move_job.id)                 
+                    if retries:
+                        time.sleep(0.1)
+                    else:
+                        raise
 
     def update(self, job, **kwargs):
         """
@@ -73,10 +86,21 @@ class MoveJobDAO():
             job.reason = kwargs['reason']
 
         with self._lock:
-            session = self._session_maker.generate_session()
-            session.add(job)
-            session.flush()
-            self._logger.info('Updated MoveJob with id %s', job.id)
-            session.expunge(job)
-            transaction.commit()
-            return job
+            retries = 4
+            while retries:
+                try:                        
+                    session = self._session_maker.generate_session()
+                    session.add(job)
+                    session.flush()
+                    session.expunge(job)
+                    transaction.commit()
+                    self._logger.info('Updated MoveJob with id %s', job.id)
+                    return job
+                except:
+                    retries =- 1
+                    session.expunge_all()
+                    self._logger.error('Attempt to update Move Job with id %s failed', job.id)                 
+                    if retries:
+                        time.sleep(0.1)
+                    else:
+                        raise
