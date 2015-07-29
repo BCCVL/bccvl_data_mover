@@ -8,6 +8,10 @@ from data_mover.services.dataset_serializer import serialize_dataset
 SPECIES = 'species'
 LONGITUDE = 'lon'
 LATITUDE = 'lat'
+UNCERTAINTY = 'uncertainty'
+EVENT_DATE = 'date'
+YEAR = 'year'
+MONTH = 'month'
 
 
 class ALAService():
@@ -90,9 +94,9 @@ class ALAService():
     def _normalize_occurrence(self, file_path, taxon_name):
         """
         Normalizes an occurrence CSV file by replacing the first line of content from:
-        Scientific Name,Longitude - original,Latitude - original
+        Scientific Name,Longitude - original,Latitude - original,Coordinate Uncertainty in Metres - parsed,Event Date - parsed,Year - parsed,Month - parsed
         to:
-        species,lon,lat
+        species,lon,lat,uncertainty,date,year,month
         Also ensures the first column contains the same taxon name for each row.
         Sometimes ALA sends occurrences with empty lon/lat values. These are removed.
         Also filters any occurrences which are tagged as erroneous by ALA.
@@ -111,7 +115,7 @@ class ALAService():
             return False
 
         # Build the normalized CSV in memory
-        new_csv = [[SPECIES, LONGITUDE, LATITUDE]]
+        new_csv = [[SPECIES, LONGITUDE, LATITUDE, UNCERTAINTY, EVENT_DATE, YEAR, MONTH]]
 
         with io.open(file_path, mode='r+') as csv_file:
             csv_reader = csv.reader(csv_file)
@@ -121,6 +125,10 @@ class ALAService():
             for row in csv_reader:
                 lon = row[0]
                 lat = row[1]
+                uncertainty = row[2]
+                date = row[3]
+                year = row[4]
+                month = row[5]
 
                 if not self._is_number(lon) or not self._is_number(lat):
                     continue
@@ -128,7 +136,7 @@ class ALAService():
                 if 'true' in row[2:]:
                     continue
 
-                new_csv.append([taxon_name, lon, lat])
+                new_csv.append([taxon_name, lon, lat, uncertainty, date, year, month])
 
         if len(new_csv) == 1:
             # Everything was filtered out!
