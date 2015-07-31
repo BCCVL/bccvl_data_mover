@@ -133,7 +133,7 @@ class ALAService():
                 if not self._is_number(lon) or not self._is_number(lat):
                     continue
 
-                if 'true' in row[2:]:
+                if 'true' in row[6:]:
                     continue
 
                 new_csv.append([taxon_name, lon, lat, uncertainty, date, year, month])
