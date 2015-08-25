@@ -80,7 +80,7 @@ class DataMoverServices(XMLRPCView):
         if isinstance(source, str):
             url = urlparse(source)
             scheme = url.scheme
-            if scheme not in ['scp', 'http', 'https', 'ala']:
+            if scheme not in ['scp', 'http', 'https', 'ala', 'swift']:
                 return False, response.REASON_UNKNOWN_URL_SCHEME_2S.format('source', scheme)
 
             if scheme == 'scp':
@@ -95,7 +95,14 @@ class DataMoverServices(XMLRPCView):
                 query = parse_qs(url.query)
                 if not query['lsid']:
                     return False, response.REASON_MISSING_PARAMS_1S.format('source ALA LSID')
-
+                                        
+            if scheme == 'swift':
+                # check that container and file are specified in swift url.
+                # i.e. swift://nectar/my-container/path/to/file
+                path_tokens = url.path.split('/', 2)
+                if len(path_tokens)  < 3 or len(path_tokens[1]) == 0 or len(path_tokens[2]) == 0:
+                    return False, response.REASON_INVALID_SWIFT_URL.format('source', source)
+                
         elif isinstance(source, list) and not inner_source:
 
             if len(source) == 0:
@@ -124,15 +131,20 @@ class DataMoverServices(XMLRPCView):
         if not isinstance(destination, str):
             return False, response.REASON_MISSING_PARAMS_1S.format('destination must be of type str')
 
-        url = urlparse(destination)
-        if url.scheme != 'scp':
+        url = urlparse(destination)            
+        if url.scheme == 'scp':
+            if not url.hostname:
+                return False, response.REASON_HOST_NOT_SPECIFIED_1S.format('destination')
+    
+            if not url.path:
+                return False, response.REASON_PATH_NOT_SPECIFIED_1S.format('destination')
+        elif url.scheme == 'swift':
+            # check that container and destination file are specified in swift url.
+            path_tokens = url.path.split('/', 2)
+            if len(path_tokens) < 3 or len(path_tokens[1]) == 0 or len(path_tokens[2]) == 0:
+                return False, response.REASON_INVALID_SWIFT_URL.format('destination', destination)
+        else:
             return False, response.REASON_UNKNOWN_URL_SCHEME_2S.format('destination', url.scheme)
-
-        if not url.hostname:
-            return False, response.REASON_HOST_NOT_SPECIFIED_1S.format('destination')
-
-        if not url.path:
-            return False, response.REASON_PATH_NOT_SPECIFIED_1S.format('destination')
 
         if not isinstance(zip, bool):
             return False, response.REASON_INVALID_PARAMS_1S.format('zip must be of type bool')

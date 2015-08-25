@@ -141,7 +141,8 @@ class TestDataMoverServices(unittest.TestCase):
         file2 = 'scp://visualiser/usr/local/data/occurrence/koalas.png'
         file3 = 'http://www.intersect.org.au/dingos.csv'
         file4 = 'scp://host_blah/usr/local/data/occurrence/dingos.png'
-        source = [file1, file2, file3, file4]
+        file5 = 'swift://nectar/container1/path/to/file.txt'
+        source = [file1, file2, file3, file4, file5]
 
         valid, reason = to_test._validate_source_dict(source)
 
@@ -181,6 +182,39 @@ class TestDataMoverServices(unittest.TestCase):
         self.assertFalse(valid)
         self.assertEqual(REASON_UNKNOWN_SOURCE_TYPE_1S.format("['scp://visualiser/usr/local/data/occurrence/koalas.png']"), reason)
 
+    def test_validate_source_dict_invalid_swift_url_1(self):
+        to_test = DataMoverServices(None, None)
+
+        file_1 = 'swift://nectar/container1'
+        source = [file_1]
+
+        valid, reason = to_test._validate_source_dict(source)
+
+        self.assertFalse(valid)
+        self.assertEqual(REASON_INVALID_SWIFT_URL.format("source", "'%s'" %file_1), reason)
+
+    def test_validate_source_dict_invalid_swift_url_2(self):
+        to_test = DataMoverServices(None, None)
+
+        file_1 = 'swift://nectar//file1'
+        source = [file_1]
+
+        valid, reason = to_test._validate_source_dict(source)
+
+        self.assertFalse(valid)
+        self.assertEqual(REASON_INVALID_SWIFT_URL.format("source", "'%s'" %file_1), reason)
+
+    def test_validate_source_dict_invalid_swift_url_3(self):
+        to_test = DataMoverServices(None, None)
+
+        file_1 = 'swift://nectar//'
+        source = [file_1]
+
+        valid, reason = to_test._validate_source_dict(source)
+
+        self.assertFalse(valid)
+        self.assertEqual(REASON_INVALID_SWIFT_URL.format("source", "'%s'" %file_1), reason)
+
     def test_validate_dest_dict_valid_1(self):
         to_test = DataMoverServices(None, None)
 
@@ -216,6 +250,42 @@ class TestDataMoverServices(unittest.TestCase):
 
         self.assertFalse(valid)
         self.assertEqual(REASON_INVALID_PARAMS_1S.format('zip must be of type bool'), reason)
+
+    def test_validate_dest_dict_swift_url(self):
+        to_test = DataMoverServices(None, None)
+
+        dest  = 'swift://nectar/container/path/to/file1'
+        valid, reason = to_test._validate_destination(dest, False)
+
+        self.assertTrue(valid)
+        self.assertEqual('', reason)
+
+    def test_validate_dest_dict_invalid_swift_url_1(self):
+        to_test = DataMoverServices(None, None)
+
+        dest  = 'swift://nectar/container'
+        valid, reason = to_test._validate_destination(dest, False)
+
+        self.assertFalse(valid)
+        self.assertEqual(REASON_INVALID_SWIFT_URL.format("destination", "'%s'" %dest), reason)
+
+    def test_validate_dest_dict_invalid_swift_url_2(self):
+        to_test = DataMoverServices(None, None)
+
+        dest  = 'swift://nectar//file1'
+        valid, reason = to_test._validate_destination(dest, False)
+
+        self.assertFalse(valid)
+        self.assertEqual(REASON_INVALID_SWIFT_URL.format("destination", "'%s'" %dest), reason)
+
+    def test_validate_dest_dict_invalid_swift_url_3(self):
+        to_test = DataMoverServices(None, None)
+
+        dest  = 'swift://nectar//'
+        valid, reason = to_test._validate_destination(dest, True)
+
+        self.assertFalse(valid)
+        self.assertEqual(REASON_INVALID_SWIFT_URL.format("destination", "'%s'" %dest), reason)
 
     def test_multiple_ALA_in_mixed_source(self):
         to_test = DataMoverServices(None, None)

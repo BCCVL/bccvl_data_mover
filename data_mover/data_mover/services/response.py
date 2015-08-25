@@ -5,6 +5,7 @@ REASON_UNKNOWN_SOURCE_TYPE_1S = "Unknown source type '{0}'"
 REASON_UNKNOWN_URL_SCHEME_2S = "Unknown {0} URL scheme '{1}'"
 REASON_HOST_NOT_SPECIFIED_1S = "Host not specified in '{0}'"
 REASON_PATH_NOT_SPECIFIED_1S = "Path not specified in '{0}'"
+REASON_INVALID_SWIFT_URL = "Invalid swift path in '{0}'"
 
 STATUS_REJECTED = 'REJECTED'
 
