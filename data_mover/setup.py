@@ -18,6 +18,8 @@ requires = [
     'paramiko',
     'scp',
     'futures',
+    'python-swiftclient',
+    'python-keystoneclient',
     ]
 
 

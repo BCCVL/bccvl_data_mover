@@ -19,7 +19,7 @@ class MoveService():
 
     _logger = logging.getLogger(__name__)
 
-    def __init__(self, move_job_dao, ala_service):
+    def __init__(self, move_job_dao, ala_service, swift_service):
         """
         @param move_job_dao: The MoveJob data access object
         @type move_job_dao: MoveJobDAO
@@ -28,6 +28,7 @@ class MoveService():
         """
         self._move_job_dao = move_job_dao
         self._ala_service = ala_service
+        self._swift_service = swift_service
         self._sleep_time = 0
 
     def configure(self, settings, key):
@@ -83,8 +84,12 @@ class MoveService():
             # TODO: support retries
 
             dest_url = urlparse(move_job.destination)
-            if dest_url.scheme != 'scp':
+            if dest_url.scheme not in ['scp', 'swift']:
                 self._logger.error('Protocol %s is not a supported protocol.', dest_url.scheme)
+                return
+                
+            if dest_url.scheme == 'swift' and not self._swift_service.has_credential():
+                self._logger.error('Credential for Nectar swift service is not configured.')
                 return
 
             if move_job.zip:
@@ -94,15 +99,16 @@ class MoveService():
 
             success_sent = 0
             for file_path in file_paths:
-
+                send_complete = False
                 if dest_url.scheme == 'scp':
                     host = dest_url.hostname
                     username = dest_url.username
                     password = dest_url.password
                     send_complete = scp_put(host, username, password, file_path, dest_url.path)
-                    if send_complete:
-                        success_sent += 1
-
+                elif dest_url.scheme == 'swift':
+                    send_complete = self._swift_service.upload_to_swift(file_path, dest_url.path)
+                if send_complete:
+                    success_sent += 1 
                 # elif protocol == 'local':
                 #     shutil.copy(file_path, move_job.destination['path'])
                 #     success_sent += 1
@@ -148,6 +154,9 @@ class MoveService():
                 if not self._download_from_scp(source, local_dest_dir):
                     return False, 'Could not download from remote SCP source {0}'.format(source)
 
+            elif source_url.scheme == 'swift':
+                if not self._swift_service.download_from_swift(source, local_dest_dir):
+                    return False, 'Could not download from remote SWIFT source {0}'.format(source)
             else:
                 return False, "Unknown source type '{0}'".format(source)
 
@@ -209,7 +218,7 @@ class MoveService():
         @type scp_path: str
         @param local_dest_dir: The local directory to store the files in (before they are sent to the destination)
         @type local_dest_dir: str
-        @return: A list of the downloaded file paths.
+        @return: True if download is successful. Otherwise False.
         """
         url = urlparse(scp_path)
         host = url.hostname

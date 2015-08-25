@@ -14,6 +14,7 @@ from data_mover.dao.move_job_dao import MoveJobDAO
 from data_mover.dao.session_maker import SessionMaker
 from data_mover.factory.dataset_factory import DatasetFactory
 from data_mover.services.ala_service import ALAService
+from data_mover.services.swift_service import SwiftService
 from data_mover.services.move_service import MoveService
 
 ### DATABASE AND MODEL SERVICES ###
@@ -25,7 +26,8 @@ ALA_DATASET_FACTORY = DatasetFactory()
 
 ### SERVICES AND MANAGERS ###
 ALA_SERVICE = ALAService(ALA_DATASET_FACTORY)
-MOVE_SERVICE = MoveService(MOVE_JOB_DAO, ALA_SERVICE)
+SWIFT_SERVICE = SwiftService()
+MOVE_SERVICE = MoveService(MOVE_JOB_DAO, ALA_SERVICE, SWIFT_SERVICE)
 
 from data_mover.services.data_mover_services import DataMoverServices
 
@@ -45,6 +47,7 @@ def main(global_config, **settings):
     SESSION_MAKER.configure(settings, 'sqlalchemy.')
     ALA_SERVICE.configure(settings, 'ala_service.')
     ALA_DATASET_FACTORY.configure(settings, 'ala_service.')
+    SWIFT_SERVICE.configure(setting, 'swift_service.')
     MOVE_SERVICE.configure(settings, 'tmp.')
 
     config = Configurator(settings=settings)
