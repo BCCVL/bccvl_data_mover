@@ -75,7 +75,7 @@ class MoveService():
             success, reason = False, e
         if not success:
             self._logger.warning('Could not fetch source file(s) for move job %s. Reason: %s', move_job.id, reason)
-            self._move_job_dao.update(move_job, status=MoveJob.STATUS_FAILED, end_timestamp=datetime.datetime.now(), reason=reason)
+            self._move_job_dao.update(move_job, status=MoveJob.STATUS_FAILED, end_timestamp=datetime.datetime.now(), reason=unicode(reason))
 
         else:
             # FIXME: need execption handling here as well to make sure job status gets updated
