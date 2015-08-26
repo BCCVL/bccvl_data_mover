@@ -98,8 +98,8 @@ class MoveJobDAO():
                     return job
                 except:
                     retries =- 1
-                    session.expunge_all()
                     self._logger.error('Attempt to update Move Job with id %s failed', job.id)                 
+                    session.expunge_all()
                     if retries:
                         time.sleep(0.1)
                     else:
