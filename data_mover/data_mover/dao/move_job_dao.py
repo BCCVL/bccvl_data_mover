@@ -45,11 +45,11 @@ class MoveJobDAO():
         @type zip: bool
         @return: The newly persisted MoveJob
         """
-        
+
         with self._lock:
             retries = 4
-            while retries:
-                try:               
+            while retries >= 0:
+                try:
                     session = self._session_maker.generate_session()
                     new_move_job = MoveJob(source, destination, zip)
                     session.add(new_move_job)
@@ -59,9 +59,9 @@ class MoveJobDAO():
                     self._logger.info('Added new Move Job to the database with id %s', new_move_job.id)
                     return new_move_job
                 except:
-                    retries =- 1
+                    retries -= 1
                     session.expunge_all()
-                    self._logger.error('Attempt to add new Move Job to the database with id %s failed', new_move_job.id)                 
+                    self._logger.error('Attempt to add new Move Job to the database with id %s failed', new_move_job.id)
                     if retries:
                         time.sleep(0.1)
                     else:
@@ -87,8 +87,8 @@ class MoveJobDAO():
 
         with self._lock:
             retries = 4
-            while retries:
-                try:                        
+            while retries >= 0:
+                try:
                     session = self._session_maker.generate_session()
                     session.add(job)
                     session.flush()
@@ -97,8 +97,8 @@ class MoveJobDAO():
                     self._logger.info('Updated MoveJob with id %s', job.id)
                     return job
                 except:
-                    retries =- 1
-                    self._logger.error('Attempt to update Move Job with id %s failed', job.id)                 
+                    retries -= 1
+                    self._logger.error('Attempt to update Move Job with id %s failed', job.id)
                     session.expunge_all()
                     if retries:
                         time.sleep(0.1)
