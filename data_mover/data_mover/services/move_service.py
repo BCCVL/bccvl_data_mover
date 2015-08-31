@@ -31,9 +31,17 @@ class MoveService():
         self._sleep_time = 0
 
     def configure(self, settings, key):
-        if key + 'dir' in settings and os.path.exists(settings[key + 'dir']):
+        if key + 'dir' in settings:
             self._tmp_dir = settings[key + 'dir']
-            self._logger.info("MoveService tmp directory has been set to: %s", self._tmp_dir)
+            if not os.path.exists(self._tmp_dir):
+                try:
+                    os.makedirs(self._tmp_dir, 0750)
+                except OSError, e:
+                    self._logger.warning("Can't create temp directory '%s': %s", self._tmp_dir, e)
+                    self._logger.warning("Using default local tmp directory.")
+                    self._tmp_dir = None
+            else:
+                self._logger.info("MoveService tmp directory has been set to: %s", self._tmp_dir)
         else:
             self._tmp_dir = None
             self._logger.warning("MoveService tmp directory was not specified or specified directory does not exist. Using default local tmp directory.")
