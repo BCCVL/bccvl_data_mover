@@ -32,9 +32,17 @@ class MoveService():
         self._sleep_time = 0
 
     def configure(self, settings, key):
-        if key + 'dir' in settings and os.path.exists(settings[key + 'dir']):
+        if key + 'dir' in settings:
             self._tmp_dir = settings[key + 'dir']
-            self._logger.info("MoveService tmp directory has been set to: %s", self._tmp_dir)
+            if not os.path.exists(self._tmp_dir):
+                try:
+                    os.makedirs(self._tmp_dir, 0750)
+                except OSError, e:
+                    self._logger.warning("Can't create temp directory '%s': %s", self._tmp_dir, e)
+                    self._logger.warning("Using default local tmp directory.")
+                    self._tmp_dir = None
+            else:
+                self._logger.info("MoveService tmp directory has been set to: %s", self._tmp_dir)
         else:
             self._tmp_dir = None
             self._logger.warning("MoveService tmp directory was not specified or specified directory does not exist. Using default local tmp directory.")
@@ -76,7 +84,7 @@ class MoveService():
             success, reason = False, e
         if not success:
             self._logger.warning('Could not fetch source file(s) for move job %s. Reason: %s', move_job.id, reason)
-            self._move_job_dao.update(move_job, status=MoveJob.STATUS_FAILED, end_timestamp=datetime.datetime.now(), reason=reason)
+            self._move_job_dao.update(move_job, status=MoveJob.STATUS_FAILED, end_timestamp=datetime.datetime.now(), reason=unicode(reason))
 
         else:
             # FIXME: need execption handling here as well to make sure job status gets updated
