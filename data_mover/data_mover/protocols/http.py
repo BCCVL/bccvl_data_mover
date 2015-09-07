@@ -22,7 +22,11 @@ def http_get(url, dest_dir, dest_filename, dest_filename_suffix=None):
     @return: True if the GET was successful and the content was written to disk, FALSE otherwise.
     """
     temp_file_path, content_type = _inner_http_get(url)
-    if temp_file_path is None or os.path.getsize(temp_file_path) == 0:
+    if temp_file_path is None:
+        return False
+         
+    if os.path.getsize(temp_file_path) == 0:
+        os.remove(temp_file_path)
         return False
 
     file_suffix = _guess_file_suffix(content_type, dest_filename_suffix)
@@ -51,19 +55,25 @@ def http_get_unzip(url, source_filenames, dest_dir, dest_filenames, dest_file_su
         return False
 
     # Decompress content
-    with zipfile.ZipFile(temp_file_path) as z:
-        for (source, dest, suffix) in zip(source_filenames, dest_filenames, dest_file_suffixes):
-            try:
+    success = True
+    try:
+        with zipfile.ZipFile(temp_file_path) as z:
+            for (source, dest, suffix) in zip(source_filenames, dest_filenames, dest_file_suffixes):
                 z.getinfo(source)
-            except KeyError:
-                _logger.error("Cannot find file %s in downloaded zip file", source)
-                return False
-
-            z.extract(source, dest_dir)
-            file_suffix = _guess_file_suffix(content_type, suffix)
-            os.rename(os.path.join(dest_dir, source), os.path.join(dest_dir, dest + '.' + file_suffix))
-
-    return True
+                z.extract(source, dest_dir)
+                file_suffix = _guess_file_suffix(content_type, suffix)
+                os.rename(os.path.join(dest_dir, source), os.path.join(dest_dir, dest + '.' + file_suffix))
+    except KeyError:
+        _logger.error("Cannot find file %s in downloaded zip file", source)
+        success = False
+    else:
+        _logger.error("The file %s is not a zip file", source)
+        success = False
+    
+    # Remove temp file
+    if os.path.exists(temp_file_path):
+        os.remove(temp_file_path)
+    return success
 
 
 def _inner_http_get(url):
