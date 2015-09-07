@@ -47,7 +47,7 @@ def main(global_config, **settings):
     SESSION_MAKER.configure(settings, 'sqlalchemy.')
     ALA_SERVICE.configure(settings, 'ala_service.')
     ALA_DATASET_FACTORY.configure(settings, 'ala_service.')
-    SWIFT_SERVICE.configure(setting, 'swift_service.')
+    SWIFT_SERVICE.configure(settings, 'swift_service.')
     MOVE_SERVICE.configure(settings, 'tmp.')
 
     config = Configurator(settings=settings)
