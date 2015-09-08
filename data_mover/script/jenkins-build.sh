@@ -39,7 +39,7 @@ find ./features -name "*.pyc" | xargs rm -rfv
 rm -rf ./epydoc
 
 echo "Building data_mover"
-"$PIP" install distribute --upgrade
+"$PIP" install --upgrade setuptools==0.9.8
 "$PYTHON" bootstrap.py
 "$BUILDOUT"
 
