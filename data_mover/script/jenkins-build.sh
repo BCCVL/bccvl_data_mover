@@ -21,12 +21,12 @@ echo "Using WORKSPACE $WORKSPACE"
 cd $WORKSPACE
 
 echo "Setting up virtualenv in $WORKSPACE"
-curl -O https://pypi.python.org/packages/source/v/virtualenv/virtualenv-1.9.tar.gz
-tar -xvzf virtualenv-1.9.tar.gz
-cd virtualenv-1.9
-python virtualenv.py -p "$(which python2.7)" "$DATA_MOVER_DIR"
+curl -O https://pypi.python.org/packages/source/v/virtualenv/virtualenv-12.0.7.tar.gz
+tar -xvzf virtualenv-12.0.7.tar.gz
+python virtualenv-12.0.7/virtualenv.py -p "$(which python2.7)" "$DATA_MOVER_DIR"
 cd "$DATA_MOVER_DIR"
 source bin/activate
+easy_install setuptools==0.9.8
 
 echo "Python version:"
 "$PYTHON" --version
@@ -39,8 +39,7 @@ find ./features -name "*.pyc" | xargs rm -rfv
 rm -rf ./epydoc
 
 echo "Building data_mover"
-"$PIP" install --upgrade setuptools==0.9.8
-"$PYTHON" bootstrap.py
+"$PYTHON" bootstrap.py -v 2.2.1
 "$BUILDOUT"
 
 # Build documentation
