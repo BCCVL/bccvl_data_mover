@@ -70,7 +70,7 @@ class TestSwiftService(unittest.TestCase):
                     'swift_service.nectar.auth_version' : 2,
                     'swift_service.nectar.tenant_name' : os.environ.get('NECTAR_TENANT_NAME'),
                     'swift_service.nectar.user' : os.environ.get('NECTAR_USER'),
-                    'swift_service.nectar.key' : 'Bad Password',
+                    'swift_service.nectar.key' : None,
         }
 
         swift_service = SwiftService()
