@@ -39,7 +39,7 @@ extras_require = {
 
 
 setup(name='data_mover',
-      version='1.7.0rc0',
+      version='1.7.0',
       description='data_mover',
       long_description=README + '\n\n' + CHANGES,
       classifiers=[
