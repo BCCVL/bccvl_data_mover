@@ -20,12 +20,12 @@ def step(context, source):
 def step(context, url, filename, content):
     temp_dir = tempfile.mkdtemp(suffix=__name__)
     temp_file_name = os.path.join(temp_dir, filename)
-    print "temp_file_name: " + temp_file_name
+    print("temp_file_name: " + temp_file_name)
     temp_file = open(temp_file_name, 'w')
     temp_file.write(content)
     temp_file.close()
     context.source = url + os.path.abspath(temp_file_name)
-    print context.source
+    print(context.source)
 
 @given('one of my sources starts with "{url}" and path of some temporary file named "{filename}" with content "{content}"')
 def step(context, url, filename, content):
