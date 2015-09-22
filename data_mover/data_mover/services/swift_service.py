@@ -1,4 +1,5 @@
 import logging
+import os
 from urlparse import urlparse
 from data_mover.protocols.swift_client import swift_put, swift_get
 
@@ -16,7 +17,7 @@ class SwiftService():
         self._tenant = None
         self._user = None
         self._key = None
-        
+
     def configure(self, settings, key):
         """
         Configures the Swift Service
@@ -25,12 +26,19 @@ class SwiftService():
         @param key: The key to use when extracting settings from the dictionary
         @type key: str
         """
+        # if settings are not in settings dictonary, try to find them in environment
+        for env in ('auth_url', 'tenant_name', 'tenant_id', 'user', 'key'):
+            envkey = 'NECTAR_' + env.upper()
+            setkey = key + 'nectar.' + env
+            if not settings.get(setkey):
+                if os.environ.get(envkey):
+                    settings[setkey] = os.environ[envkey]
         self._authurl = settings[key + 'nectar.auth_url']
         self._authver = settings[key + 'nectar.auth_version']
         self._tenant = settings[key + 'nectar.tenant_name']
         self._user = settings[key + 'nectar.user']
         self._key = settings[key + 'nectar.key']
-            
+
     def download_from_swift(self, swift_url, local_dest_dir):
         """
         Download files from a remote SWIFT source
@@ -39,20 +47,20 @@ class SwiftService():
         @param local_dest_dir: The local directory to store the files in (before they are sent to the destination)
         @type local_dest_dir: str
         @return: True if download is successful. Otherwise False.
-        """        
+        """
         if not self.has_credential():
             self._logger.error('Credential for Nectar swift service is not configured.')
             return False
-        
+
         # swift url: swift://nectar/my-container/path/to/file
-        path_tokens = urlparse(swift_url).path.split('/', 2)        
+        path_tokens = urlparse(swift_url).path.split('/', 2)
         container = path_tokens[1]
         src_path = path_tokens[2]
         return swift_get(self._authurl, self._user, self._key, self._tenant, self._authver, src_path, local_dest_dir, container)
 
     def has_credential(self):
         return self._authurl and self._authver and self._tenant and self._user and self._key
-        
+
     def upload_to_swift(self, local_src_path, dest_path):
         """
         Upload file to a remote SWIFT store
@@ -62,7 +70,7 @@ class SwiftService():
         @type dest_path: str
         @return: True if upload is successful. Otherwise False.
         """
-        path_tokens = dest_path.split('/', 2)  
+        path_tokens = dest_path.split('/', 2)
         container = path_tokens[1]
         dest_path = path_tokens[2]
         return swift_put(self._authurl, self._user, self._key, self._tenant, self._authver, local_src_path, dest_path, container)
