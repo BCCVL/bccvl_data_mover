@@ -1,10 +1,13 @@
 import logging
 import os
 import pwd
+import threading
 from paramiko import SSHClient, AutoAddPolicy
 from scp import SCPClient, SCPException
 
 _logger = logging.getLogger(__name__)
+
+SLOCK = threading.Lock()
 
 # NOTE: I have tried to refactor this code, but it does not work after refactoring :(
 
@@ -32,7 +35,12 @@ def scp_put(host, username, password, source_path, destination_path):
         if not username:
             username = _get_current_username()
 
-        ssh.connect(host, username=username, password=password)
+        SLOCK.acquire()
+        try:
+            ssh.connect(host, username=username, password=password)
+        finally:
+            SLOCK.release()
+
         scp = SCPClient(ssh.get_transport())
         scp.put(source_path, destination_path, recursive=True)
         ssh.close()
@@ -66,7 +74,12 @@ def scp_get(host, username, password, source_path, destination_path):
         if not username:
             username = _get_current_username()
 
-        ssh.connect(host, username=username, password=password)
+        SLOCK.acquire()
+        try:
+            ssh.connect(host, username=username, password=password)
+        finally:
+            SLOCK.release()
+
         scp = SCPClient(ssh.get_transport())
         scp.get(source_path, destination_path, recursive=True)
         ssh.close()
