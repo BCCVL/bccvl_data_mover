@@ -60,7 +60,7 @@ class ALAService():
         if not success:
             self._logger.warning("Could not download occurrence data from ALA for LSID %s", lsid)
             return False
-        self._logger.info("Completed download of raw occurrence data form ALA for LSID %s", lsid)
+        self._logger.info("Completed download of raw occurrence data from ALA for LSID %s", lsid)
 
         occurrence_path = os.path.join(local_dest_dir, occurrence_file_name + '.csv')
 
