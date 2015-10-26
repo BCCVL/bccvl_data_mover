@@ -130,7 +130,7 @@ class MoveService():
                     self._move_job_dao.update(move_job, status=MoveJob.STATUS_FAILED, end_timestamp=datetime.datetime.now(), reason='Unable to send to destination')
         finally:
             # Remove temporary directory
-            if os.path.exists(temp_dir)
+            if os.path.exists(temp_dir):
                 shutil.rmtree(temp_dir)
                 
     def _select_source(self, source, dest, move_job_id, local_dest_dir, file_id_in_set):
