@@ -39,13 +39,13 @@ class SwiftService():
         self._user = settings[key + 'nectar.user']
         self._key = settings[key + 'nectar.key']
 
-    def download_from_swift(self, swift_url, local_dest_dir):
+    def download_from_swift(self, swift_url, local_dest_path):
         """
         Download files from a remote SWIFT source
         @param swift_url: The full SWIFT path to download from.
         @type swift_url: str
-        @param local_dest_dir: The local directory to store the files in (before they are sent to the destination)
-        @type local_dest_dir: str
+        @param local_dest_path: The local destination to store the file(before they are sent to the destination)
+        @type local_dest_path: str
         @return: True if download is successful. Otherwise False.
         """
         if not self.has_credential():
@@ -56,7 +56,7 @@ class SwiftService():
         path_tokens = urlparse(swift_url).path.split('/', 2)
         container = path_tokens[1]
         src_path = path_tokens[2]
-        return swift_get(self._authurl, self._user, self._key, self._tenant, self._authver, src_path, local_dest_dir, container)
+        return swift_get(self._authurl, self._user, self._key, self._tenant, self._authver, src_path, local_dest_path, container)
 
     def has_credential(self):
         return self._authurl and self._authver and self._tenant and self._user and self._key

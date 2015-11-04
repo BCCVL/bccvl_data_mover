@@ -166,7 +166,8 @@ class MoveService():
                     return False, 'Could not download from remote SCP source {0}'.format(source)
 
             elif source_url.scheme == 'swift':
-                if not self._swift_service.download_from_swift(source, local_dest_dir):
+                filename = 'move_job_' + str(move_job_id) + '_' + str(file_id_in_set)
+                if not self._swift_service.download_from_swift(source, local_dest_dir + '/' + filename):
                     return False, 'Could not download from remote SWIFT source {0}'.format(source)
             else:
                 return False, "Unknown source type '{0}'".format(source)
