@@ -1,10 +1,6 @@
-from data_mover import Base
-from data_mover.models.text_pickle_type import TextPickleType
-from sqlalchemy import Column, Integer, Text, DateTime, Boolean
-import json
+import uuid
 
-
-class MoveJob(Base):
+class MoveJob():
     """
     Move Job model to store details about move operations and its status to a database.
     """
@@ -14,18 +10,7 @@ class MoveJob(Base):
     STATUS_FAILED = 'FAILED'
     STATUS_COMPLETE = 'COMPLETED'
 
-    __tablename__ = 'move_jobs'
-
-    id = Column(Integer, primary_key=True)
-    source = Column(TextPickleType(pickler=json))
-    destination = Column(TextPickleType(pickler=json))
-    zip = Column(Boolean)
-    status = Column(Text)
-    start_timestamp = Column(DateTime)
-    end_timestamp = Column(DateTime)
-    reason = Column(Text)
-
-    def __init__(self, source, destination, zip):
+    def __init__(self, source, destination, userid = None, zip = False):
         """
         Constructor
         @param source: the source(s)
@@ -35,7 +20,8 @@ class MoveJob(Base):
         @param zip: To zip
         @type zip: bool
         """
-        self.id = None
+        self.id = uuid.uuid4()  # random uuid
+        self.userid = userid
         self.source = source
         self.destination = destination
         self.zip = zip
@@ -53,3 +39,16 @@ class MoveJob(Base):
         if isinstance(other, MoveJob):
             return self.id != other.id
         return NotImplemented
+
+    def update(self, **kwargs):
+        if 'status' in kwargs:
+            self.status = kwargs['status']
+        if 'start_timestamp' in kwargs:
+            self.start_timestamp = kwargs['start_timestamp']
+        if 'end_timestamp' in kwargs:
+            self.end_timestamp = kwargs['end_timestamp']
+        if 'reason' in kwargs:
+            self.reason = kwargs['reason']
+
+    def isDone(self):
+        return self.status == self.STATUS_COMPLETE

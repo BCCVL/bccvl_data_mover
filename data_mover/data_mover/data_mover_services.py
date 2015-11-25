@@ -1,8 +1,12 @@
+import uuid
+from pyramid import security
 from concurrent.futures import ThreadPoolExecutor
 from pyramid_xmlrpc import XMLRPCView
 from urlparse import urlparse, parse_qs
-from data_mover.services import response
-from data_mover import ALA_SERVICE, MOVE_JOB_DAO, MOVE_SERVICE
+from data_mover import response
+from data_mover import MOVE_SERVICE
+from data_mover.move_job import MoveJob
+
 
 
 class DataMoverServices(XMLRPCView):
@@ -13,10 +17,12 @@ class DataMoverServices(XMLRPCView):
 
     def __init__(self, context, request):
         XMLRPCView.__init__(self, context, request)
-        self._ala_service = ALA_SERVICE
-        self._move_job_dao = MOVE_JOB_DAO
         self._move_service = MOVE_SERVICE
+        self._move_jobs = {}
         self._executor = ThreadPoolExecutor(max_workers=3)
+        self._user_id = None
+        if request:
+            self._user_id = security.authenticated_userid(request) or security.Everyone
 
     def check_move_status(self, id=None):
         """
@@ -27,12 +33,17 @@ class DataMoverServices(XMLRPCView):
         """
         if id is None:
             return response.error_rejected(response.REASON_MISSING_PARAMS_1S.format('id'))
-        if not isinstance(id, int):
-            return response.error_rejected(response.REASON_INVALID_PARAMS_1S.format('id must be an int'))
+        if not isinstance(id, uuid.UUID):
+            return response.error_rejected(response.REASON_INVALID_PARAMS_1S.format('id must be an UUID'))
 
-        job = self._move_job_dao.find_by_id(id)
+        job = self._move_jobs.get(id)
         if job is not None:
-            return response.job_id_status(job)
+            ret = response.job_id_status(job)
+
+            # Delete job if it is done
+            if job.isDone():
+                del self._move_jobs[id]
+            return ret
         else:
             return response.error_rejected(response.REASON_JOB_DOES_NOT_EXIST)
 
@@ -59,7 +70,8 @@ class DataMoverServices(XMLRPCView):
         if not destination_valid:
             return response.error_rejected(destination_reason)
 
-        move_job = self._move_job_dao.create_new(source, destination, zip)
+        move_job = MoveJob(source, destination, self._user_id, zip)
+        self._move_jobs[move_job.id] = move_job
 
         self._executor.submit(fn=self._move_service.worker, move_job=move_job)
         return response.job_id_status(move_job)
@@ -75,7 +87,7 @@ class DataMoverServices(XMLRPCView):
         """
 
         if not isinstance(source, str) and (not isinstance(source, list) and not inner_source):
-            return False, response.REASON_MISSING_PARAMS_1S.format('source must be of type str or list')
+            return False, response.REASON_INVALID_PARAMS_1S.format('source must be of type str or list')
 
         if isinstance(source, str):
             url = urlparse(source)

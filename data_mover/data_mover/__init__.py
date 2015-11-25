@@ -1,35 +1,14 @@
 import logging
-
 from pyramid.config import Configurator
-from sqlalchemy import engine_from_config
-from zope.sqlalchemy import ZopeTransactionExtension
+from data_mover.move_service import MoveService
+from data_mover.auth import AuthTktAuthenticationPolicy
+from pyramid.authorization import ACLAuthorizationPolicy
 
-from data_mover.models import Base
-
-from sqlalchemy.orm import scoped_session, sessionmaker
-
-DBSession = scoped_session(sessionmaker(extension=ZopeTransactionExtension()))
-
-from data_mover.dao.move_job_dao import MoveJobDAO
-from data_mover.dao.session_maker import SessionMaker
-from data_mover.factory.dataset_factory import DatasetFactory
-from data_mover.services.ala_service import ALAService
-from data_mover.services.swift_service import SwiftService
-from data_mover.services.move_service import MoveService
-
-### DATABASE AND MODEL SERVICES ###
-SESSION_MAKER = SessionMaker()
-MOVE_JOB_DAO = MoveJobDAO(SESSION_MAKER)
-
-## FACTORIES ##
-ALA_DATASET_FACTORY = DatasetFactory()
 
 ### SERVICES AND MANAGERS ###
-ALA_SERVICE = ALAService(ALA_DATASET_FACTORY)
-SWIFT_SERVICE = SwiftService()
-MOVE_SERVICE = MoveService(MOVE_JOB_DAO, ALA_SERVICE, SWIFT_SERVICE)
+MOVE_SERVICE = MoveService()
 
-from data_mover.services.data_mover_services import DataMoverServices
+from data_mover.data_mover_services import DataMoverServices
 
 
 def main(global_config, **settings):
@@ -40,17 +19,25 @@ def main(global_config, **settings):
     logger.info('* Starting DataMover Pyramid App *')
     logger.info('**********************************')
 
-    engine = engine_from_config(settings, 'sqlalchemy.')
-    DBSession.configure(bind=engine)
-    Base.metadata.bind = engine
+    # TODO: read config from ini file (settings)
+    authn_policy = AuthTktAuthenticationPolicy(
+        secret='secret',
+        callback=None,
+        cookie_name='__ac',
+        secure=True,
+        timeout=43200,
+        reissue_time=21600,
+        hashalg='md5',  # the only compatible way ... plone doesn't use hexdigest but pyramid does for other hash algorithms
+    )
 
-    SESSION_MAKER.configure(settings, 'sqlalchemy.')
-    ALA_SERVICE.configure(settings, 'ala_service.')
-    ALA_DATASET_FACTORY.configure(settings, 'ala_service.')
-    SWIFT_SERVICE.configure(settings, 'swift_service.')
-    MOVE_SERVICE.configure(settings, 'tmp.')
+    authz_policy = ACLAuthorizationPolicy()
+    
+    MOVE_SERVICE.configure(settings)
 
     config = Configurator(settings=settings)
+    config.set_authentication_policy(authn_policy)
+    config.set_authorization_policy(authz_policy)
+
     config.add_view(DataMoverServices, name='data_mover')
     config.scan()
     return config.make_wsgi_app()

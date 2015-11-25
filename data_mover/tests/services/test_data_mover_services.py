@@ -1,9 +1,10 @@
 import unittest
 import logging
 import mock
-from data_mover.services.data_mover_services import DataMoverServices
-from data_mover.services.response import *
-from data_mover.models.move_job import MoveJob
+import uuid
+from data_mover.data_mover_services import DataMoverServices
+from data_mover.response import *
+from data_mover.move_job import MoveJob
 
 
 class TestDataMoverServices(unittest.TestCase):
@@ -13,22 +14,24 @@ class TestDataMoverServices(unittest.TestCase):
 
     def test_xml_move(self):
         to_test = DataMoverServices(None, None)
-        to_test._move_job_dao = mock.MagicMock()
         to_test._executor = mock.MagicMock()
 
         dest = 'scp://visualiser/some/path'
         source = 'ala://ala/?lsid=lsid'
 
-        move_job = MoveJob(source, dest, False)
-        to_test._move_job_dao.create_new.return_value = move_job
+        move_job = MoveJob(source, dest, None, False)
 
         out = to_test.move(source, dest)
+
         self.assertIsNotNone(out)
         self.assertEqual(MoveJob.STATUS_PENDING, out['status'])
 
-        to_test._executor.submit.assert_called_with(fn=to_test._move_service.worker, move_job=move_job)
-        to_test._move_job_dao.create_new.assert_called_with(source, dest, False)
-
+        act_move_job = to_test._move_jobs[to_test._move_jobs.keys()[0]]
+        self.assertEqual(act_move_job.source, move_job.source)
+        self.assertEqual(act_move_job.destination, move_job.destination)
+        self.assertEqual(act_move_job.zip, move_job.zip)
+        self.assertEqual(act_move_job.userid, move_job.userid)
+        to_test._executor.submit.assert_called_with(fn=to_test._move_service.worker, move_job=act_move_job)
 
     def test_xml_move_bad_params(self):
         to_test = DataMoverServices(None, None)
@@ -85,37 +88,38 @@ class TestDataMoverServices(unittest.TestCase):
 
     def test_check_move_status(self):
         to_test = DataMoverServices(None, None)
-        to_test._move_job_dao = mock.MagicMock()
+        to_test._executor = mock.MagicMock()
 
-        source = 'some_source://'
-        destination = 'scp://some_host/some/path'
+        dest = 'scp://visualiser/some/path'
+        source = 'ala://ala/?lsid=lsid'
 
-        id = 1
-        job = MoveJob(source, destination, False)
-        job.id = id
-        job.status = MoveJob.STATUS_IN_PROGRESS
-        to_test._move_job_dao.find_by_id.return_value = job
+        out = to_test.move(source, dest)
+
+        self.assertIsNotNone(out)
+        self.assertEqual(MoveJob.STATUS_PENDING, out['status'])
+
+        id = to_test._move_jobs.keys()[0]
 
         out = to_test.check_move_status(id)
 
         self.assertIsNotNone(out)
-        self.assertEqual(MoveJob.STATUS_IN_PROGRESS, out['status'])
+        self.assertEqual(MoveJob.STATUS_PENDING, out['status'])
         self.assertEqual(id, out['id'])
-        to_test._move_job_dao.find_by_id.assert_called_with(id)
 
     def test_check_move_status_unknown_job(self):
         to_test = DataMoverServices(None, None)
-        to_test._move_job_dao = mock.MagicMock()
 
-        id = 1
-        to_test._move_job_dao.find_by_id.return_value = None
+        dest = 'scp://visualiser/some/path'
+        source = 'ala://ala/?lsid=lsid'
 
+        out = to_test.move(source, dest)
+
+        id = uuid.uuid4()
         out = to_test.check_move_status(id)
 
         self.assertIsNotNone(out)
         self.assertEqual(STATUS_REJECTED, out['status'])
         self.assertEqual(REASON_JOB_DOES_NOT_EXIST, out['reason'])
-        to_test._move_job_dao.find_by_id.assert_called_with(id)
 
 
     def test_check_move_status_no_id(self):
@@ -132,7 +136,7 @@ class TestDataMoverServices(unittest.TestCase):
         out = to_test.check_move_status('1')
         self.assertIsNotNone(out)
         self.assertEqual(STATUS_REJECTED, out['status'])
-        self.assertEqual(REASON_INVALID_PARAMS_1S.format('id must be an int'), out['reason'])
+        self.assertEqual(REASON_INVALID_PARAMS_1S.format('id must be an UUID'), out['reason'])
 
     def test_validate_source_dict_mixed(self):
         to_test = DataMoverServices(None, None)
@@ -148,17 +152,6 @@ class TestDataMoverServices(unittest.TestCase):
 
         self.assertTrue(valid)
         self.assertEqual('', reason)
-
-    def test_validate_source_dict_mixed_invalid_1(self):
-        to_test = DataMoverServices(None, None)
-
-        file_1 = 'scp://visualiser/usr/local/data/occurrence/koalas.csv'
-        source = [file_1]
-
-        valid, reason = to_test._validate_source_dict(source)
-
-        self.assertFalse(valid)
-        self.assertEqual(REASON_MISSING_PARAMS_1S.format('sources must be of list type', reason))
 
     def test_validate_source_dict_mixed_invalid_2(self):
         to_test = DataMoverServices(None, None)
@@ -237,12 +230,12 @@ class TestDataMoverServices(unittest.TestCase):
         to_test = DataMoverServices(None, None)
 
         dest = 'scp://the_host'
-        valid, reason = to_test._validate_destination(dest)
+        valid, reason = to_test._validate_destination(dest, False)
 
         self.assertFalse(valid)
-        self.assertEqual(REASON_MISSING_PARAMS_1S.format('destination must specify a host and path'), reason)
+        self.assertEqual(REASON_PATH_NOT_SPECIFIED_1S.format('destination'), reason)
 
-    def test_validate_dest_dict_invalid_2(self):
+    def test_validate_dest_dict_invalid_3(self):
         to_test = DataMoverServices(None, None)
 
         dest = 'scp://the_host/the_path'
