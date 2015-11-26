@@ -91,7 +91,7 @@ class DataMoverServices(XMLRPCView):
         if isinstance(source, str):
             url = urlparse(source)
             scheme = url.scheme
-            if scheme not in ['scp', 'http', 'https', 'ala', 'swift']:
+            if scheme not in ['scp', 'http', 'https', 'ala', 'swift+http', 'swift+https']
                 return False, response.REASON_UNKNOWN_URL_SCHEME_2S.format('source', scheme)
 
             if scheme == 'scp':
@@ -107,7 +107,7 @@ class DataMoverServices(XMLRPCView):
                 if not query['lsid']:
                     return False, response.REASON_MISSING_PARAMS_1S.format('source ALA LSID')
                                         
-            if scheme == 'swift':
+            if scheme in ('swift+http', 'swift+https'):
                 # check that container and file are specified in swift url.
                 # i.e. swift://nectar/my-container/path/to/file
                 path_tokens = url.path.split('/', 2)
@@ -149,7 +149,7 @@ class DataMoverServices(XMLRPCView):
     
             if not url.path:
                 return False, response.REASON_PATH_NOT_SPECIFIED_1S.format('destination')
-        elif url.scheme == 'swift':
+        elif url.scheme in ('swift+http', 'swift+https'):
             # check that container and destination file are specified in swift url.
             path_tokens = url.path.split('/', 2)
             if len(path_tokens) < 3 or len(path_tokens[1]) == 0 or len(path_tokens[2]) == 0:

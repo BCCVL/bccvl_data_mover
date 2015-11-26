@@ -77,8 +77,8 @@ def build_source(src, secret=None, userid=None, **kwargs):
     url = urlparse(src)
     if url.scheme in ('http', 'https'):
         source['cookies'] = get_cookies(secret, userid)
-    elif url.scheme == 'swift':
-        for swift_key in ['auth', 'user', 'key', 'os_tenant_name', 'auth_version']:
+    elif url.scheme in ('swift+http', 'swift+https'):
+        for swift_key in ['os_auth_url', 'os_username', 'os_password', 'os_tenant_name', 'os_auth_version']:
             if swift_key in kwargs:
                 source[swift_key] = kwargs[swift_key]
     return source        
@@ -90,8 +90,8 @@ def build_destination(dest, filename=None, **kwargs):
 
     # Create a cookies for http download from the plone server
     url = urlparse(dest)
-    if url.scheme == 'swift':
-        for swift_key in ['auth', 'user', 'key', 'os_tenant_name', 'auth_version']:
+    if url.scheme in ('swift+http', 'swift+https'):
+        for swift_key in ['os_auth_url', 'os_username', 'os_password', 'os_tenant_name', 'os_auth_version']:
             if swift_key in kwargs:
                 destination[swift_key] = kwargs[swift_key]
     return destination

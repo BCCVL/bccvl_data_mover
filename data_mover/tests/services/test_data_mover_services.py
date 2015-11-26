@@ -170,7 +170,7 @@ class TestDataMoverServices(unittest.TestCase):
         file2 = 'scp://visualiser/usr/local/data/occurrence/koalas.png'
         file3 = 'http://www.intersect.org.au/dingos.csv'
         file4 = 'scp://host_blah/usr/local/data/occurrence/dingos.png'
-        file5 = 'swift://nectar/container1/path/to/file.txt'
+        file5 = 'swift+http://nectar/container1/path/to/file.txt'
         source = [file1, file2, file3, file4, file5]
 
         valid, reason = to_test._validate_source_dict(source)
@@ -203,7 +203,7 @@ class TestDataMoverServices(unittest.TestCase):
     def test_validate_source_dict_invalid_swift_url_1(self):
         to_test = DataMoverServices(None, None)
 
-        file_1 = 'swift://nectar/container1'
+        file_1 = 'swift+http://nectar/container1'
         source = [file_1]
 
         valid, reason = to_test._validate_source_dict(source)
@@ -214,7 +214,7 @@ class TestDataMoverServices(unittest.TestCase):
     def test_validate_source_dict_invalid_swift_url_2(self):
         to_test = DataMoverServices(None, None)
 
-        file_1 = 'swift://nectar//file1'
+        file_1 = 'swift+http://nectar//file1'
         source = [file_1]
 
         valid, reason = to_test._validate_source_dict(source)
@@ -225,7 +225,7 @@ class TestDataMoverServices(unittest.TestCase):
     def test_validate_source_dict_invalid_swift_url_3(self):
         to_test = DataMoverServices(None, None)
 
-        file_1 = 'swift://nectar//'
+        file_1 = 'swift+http://nectar//'
         source = [file_1]
 
         valid, reason = to_test._validate_source_dict(source)
@@ -272,7 +272,7 @@ class TestDataMoverServices(unittest.TestCase):
     def test_validate_dest_dict_swift_url(self):
         to_test = DataMoverServices(None, None)
 
-        dest  = 'swift://nectar/container/path/to/file1'
+        dest  = 'swift+http://nectar/container/path/to/file1'
         valid, reason = to_test._validate_destination(dest, False)
 
         self.assertTrue(valid)
@@ -281,7 +281,7 @@ class TestDataMoverServices(unittest.TestCase):
     def test_validate_dest_dict_invalid_swift_url_1(self):
         to_test = DataMoverServices(None, None)
 
-        dest  = 'swift://nectar/container'
+        dest  = 'swift+http://nectar/container'
         valid, reason = to_test._validate_destination(dest, False)
 
         self.assertFalse(valid)
@@ -290,7 +290,7 @@ class TestDataMoverServices(unittest.TestCase):
     def test_validate_dest_dict_invalid_swift_url_2(self):
         to_test = DataMoverServices(None, None)
 
-        dest  = 'swift://nectar//file1'
+        dest  = 'swift+http://nectar//file1'
         valid, reason = to_test._validate_destination(dest, False)
 
         self.assertFalse(valid)
@@ -299,7 +299,7 @@ class TestDataMoverServices(unittest.TestCase):
     def test_validate_dest_dict_invalid_swift_url_3(self):
         to_test = DataMoverServices(None, None)
 
-        dest  = 'swift://nectar//'
+        dest  = 'swift+http://nectar//'
         valid, reason = to_test._validate_destination(dest, True)
 
         self.assertFalse(valid)

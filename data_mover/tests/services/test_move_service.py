@@ -17,8 +17,8 @@ def mock_build_source(src, secret=None, userid=None, **kwargs):
     url = urlparse(src)
     if url.scheme in ('http', 'https'):
         source['cookies'] = {}
-    elif url.scheme == 'swift':
-        for swift_key in ['auth', 'user', 'key', 'os_tenant_name', 'auth_version']:
+    elif url.scheme in ('swift+http', 'swift+https'):
+        for swift_key in ['os_auth_url', 'os_username', 'os_password', 'os_tenant_name', 'os_auth_version']:
             if swift_key in kwargs:
                 source[swift_key] = kwargs[swift_key]
     return source        
@@ -120,7 +120,7 @@ class TestMoveService(unittest.TestCase):
         file_1 = 'scp://the_source/url/to/download_1.txt'
         file_2 = 'http://www.someurl.com'
         file_3 = 'ala://ala/?lsid=some_lsid'
-        file_4 = 'swift://nectar/my_container/local/dataset/myfile'
+        file_4 = 'swift+http://nectar/my_container/local/dataset/myfile'
         file_5 = 'file:///tmp/filename'
         source = [file_1, file_2, file_3, file_4, file_5]
         destination = 'scp://localhost/usr/local/dataset/'
@@ -130,7 +130,7 @@ class TestMoveService(unittest.TestCase):
             service.worker(move_job)
             dest = build_destination(move_job.destination)
             calls = []
-            swift_settings = {'auth': 'nectar-auth-url', 'user': 'yliaw', 'key': 'password', 'os_tenant_name': 'tenant-name', 'auth_version': '2'}
+            swift_settings = {'os_auth_url': 'nectar-auth-url', 'os_username': 'yliaw', 'os_password': 'password', 'os_tenant_name': 'tenant-name', 'os_auth_version': '2'}
             for s in move_job.source:
                 src = mock_build_source(s, **swift_settings)
                 calls.append(mock.call(src, dest))
@@ -147,15 +147,15 @@ class TestMoveService(unittest.TestCase):
         file_1 = 'scp://the_source/url/to/download_1.txt'
         file_2 = 'http://www.someurl.com'
         file_3 = 'ala://ala/?lsid=some_lsid'
-        file_4 = 'swift://nectar/my_container/local/dataset/myfile'
+        file_4 = 'swift+http://nectar/my_container/local/dataset/myfile'
         file_5 = 'file:///tmp/filename'
         source = [file_1, file_2, file_3, file_4, file_5]
-        destination = 'swift://nectar/my_container2/myfile'
+        destination = 'swift+http://nectar/my_container2/myfile'
         move_job = MoveJob(source, destination, 'userid', False)
 
         with mock.patch('org.bccvl.movelib.move') as mock_move:
             service.worker(move_job)
-            swift_settings = {'auth': 'nectar-auth-url', 'user': 'yliaw', 'key': 'password', 'os_tenant_name': 'tenant-name', 'auth_version': '2'}
+            swift_settings = {'os_auth_url': 'nectar-auth-url', 'os_username': 'yliaw', 'os_password': 'password', 'os_tenant_name': 'tenant-name', 'os_auth_version': '2'}
             dest = build_destination(move_job.destination, **swift_settings)
             calls = []
 

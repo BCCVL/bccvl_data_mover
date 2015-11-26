@@ -62,11 +62,11 @@ class MoveService():
 
             # Validate the destination url
             dest_url = urlparse(move_job.destination)
-            if dest_url.scheme == 'swift' and not self._has_credential():
+            if dest_url.scheme in ('swift+http', 'swift+https') and not self._has_credential():
                 raise Exception('Credential for Nectar swift service is not configured.')
 
             # Download all the files from the sources to the destination
-            swift_settings = {'auth': self._authurl, 'user': self._user, 'key': self._key, 'os_tenant_name': self._tenant, 'auth_version': self._authver}
+            swift_settings = {'os_auth_url': self._authurl, 'os_username': self._user, 'os_password': self._key, 'os_tenant_name': self._tenant, 'os_auth_version': self._authver}
             destination = build_destination(move_job.destination, **swift_settings)
 
             for s in sourcelist:
