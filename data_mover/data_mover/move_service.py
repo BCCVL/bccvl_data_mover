@@ -21,6 +21,7 @@ class MoveService():
         self._tenant = None
         self._user = None
         self._key = None
+        self._cookie_secret = None
 
 
     def configure(self, settings):
@@ -38,8 +39,7 @@ class MoveService():
         self._key = settings['swift_service.nectar.key']
 
         # plone secret for cookie
-        if 'plone.cookie_secret' in settings:
-            self._cookie_secret = settings['plone.cookie_secret']
+        self._cookie_secret = settings.get('plone.cookie_secret')
 
     def worker(self, move_job):
         """
@@ -68,9 +68,9 @@ class MoveService():
             # Download all the files from the sources to the destination
             swift_settings = {'auth': self._authurl, 'user': self._user, 'key': self._key, 'os_tenant_name': self._tenant, 'auth_version': self._authver}
             destination = build_destination(move_job.destination, **swift_settings)
+
             for s in sourcelist:
                 source = build_source(s, userid=move_job.userid, secret=self._cookie_secret, **swift_settings)
-                print "source = ", source, destination
                 movelib.move(source, destination)
             move_job.update(status=MoveJob.STATUS_COMPLETE, start_timestamp=datetime.datetime.now())
         except Exception as e:

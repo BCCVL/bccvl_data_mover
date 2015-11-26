@@ -20,7 +20,7 @@ class MoveJob():
         @param zip: To zip
         @type zip: bool
         """
-        self.id = uuid.uuid4()  # random uuid
+        self.id = uuid.uuid4().hex  # random uuid
         self.userid = userid
         self.source = source
         self.destination = destination

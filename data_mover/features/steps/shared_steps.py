@@ -1,7 +1,6 @@
 from xmlrpclib import ServerProxy
 import time
 import os
-from data_mover.util.file_utils import listdir_fullpath
 
 
 @given('I am connected to the Data Mover server')
@@ -10,14 +9,14 @@ def step_impl(context):
 
 @then('I should see "{num}" files in my temp directory')
 def step(context, num):
-    files = listdir_fullpath(context.temp_dir)
+    files = [os.path.join(context.temp_dir, f) for f in os.listdir(context.temp_dir)]
     print("Number of files: " + str(len(files)))
     assert int(num) == len(files)
 
 @then('I should see a file with suffix "{suffix}" in my temp directory')
 def step(context, suffix):
     print('temp dir: ' + context.temp_dir)
-    files = listdir_fullpath(context.temp_dir)
+    files = [os.path.join(context.temp_dir, f) for f in os.listdir(context.temp_dir)]
     file_exist = len([i for i in files if i.endswith('.' + suffix)]) >= 1
     assert file_exist
 
@@ -43,8 +42,9 @@ def step(context, status_1, status_2):
 
 @then('I should see that the job reason is "{expected_reason}"')
 def step(context, expected_reason):
+    index = context.response['reason'].find(expected_reason)
     print('expected: "' + expected_reason + '" actual: "' + context.response['reason'] + '"')
-    assert  expected_reason == context.response['reason']
+    assert  index != -1
 
 @when('I check the status of the move job')
 def step_impl(context):

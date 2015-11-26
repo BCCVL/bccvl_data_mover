@@ -15,6 +15,8 @@ class TestDataMoverServices(unittest.TestCase):
     def test_xml_move(self):
         to_test = DataMoverServices(None, None)
         to_test._executor = mock.MagicMock()
+        to_test._move_jobs = {}
+
 
         dest = 'scp://visualiser/some/path'
         source = 'ala://ala/?lsid=lsid'
@@ -89,6 +91,7 @@ class TestDataMoverServices(unittest.TestCase):
     def test_check_move_status(self):
         to_test = DataMoverServices(None, None)
         to_test._executor = mock.MagicMock()
+        to_test._move_jobs = {}
 
         dest = 'scp://visualiser/some/path'
         source = 'ala://ala/?lsid=lsid'
@@ -106,6 +109,28 @@ class TestDataMoverServices(unittest.TestCase):
         self.assertEqual(MoveJob.STATUS_PENDING, out['status'])
         self.assertEqual(id, out['id'])
 
+        # job should still exists
+        out = to_test.check_move_status(id)
+        self.assertIsNotNone(out)
+        self.assertEqual(MoveJob.STATUS_PENDING, out['status'])
+        self.assertEqual(id, out['id'])
+
+        # Now update the move job to complete.
+        to_test._move_jobs[id].update(status=MoveJob.STATUS_COMPLETE)
+
+        # Check that the status is updated to complete
+        out = to_test.check_move_status(id)
+        self.assertIsNotNone(out)
+        self.assertEqual(MoveJob.STATUS_COMPLETE, out['status'])
+        self.assertEqual(id, out['id'])
+
+        # Do a 2nd status query, job shall not exist anymore.
+        out = to_test.check_move_status(id)
+        self.assertIsNotNone(out)
+        self.assertEqual(STATUS_REJECTED, out['status'])
+        self.assertEqual(REASON_JOB_DOES_NOT_EXIST, out['reason'])
+
+
     def test_check_move_status_unknown_job(self):
         to_test = DataMoverServices(None, None)
 
@@ -114,7 +139,7 @@ class TestDataMoverServices(unittest.TestCase):
 
         out = to_test.move(source, dest)
 
-        id = uuid.uuid4()
+        id = uuid.uuid4().hex
         out = to_test.check_move_status(id)
 
         self.assertIsNotNone(out)
@@ -133,10 +158,10 @@ class TestDataMoverServices(unittest.TestCase):
     def test_check_move_status_invalid_id(self):
         to_test = DataMoverServices(None, None)
 
-        out = to_test.check_move_status('1')
+        out = to_test.check_move_status(1234)
         self.assertIsNotNone(out)
         self.assertEqual(STATUS_REJECTED, out['status'])
-        self.assertEqual(REASON_INVALID_PARAMS_1S.format('id must be an UUID'), out['reason'])
+        self.assertEqual(REASON_INVALID_PARAMS_1S.format('id must be a string'), out['reason'])
 
     def test_validate_source_dict_mixed(self):
         to_test = DataMoverServices(None, None)

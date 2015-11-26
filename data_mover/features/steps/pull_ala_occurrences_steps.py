@@ -1,6 +1,5 @@
 import os
 import tempfile
-from data_mover.util.file_utils import listdir_fullpath
 
 
 @when('I pull occurrences from ALA using the LSID "{lsid}"')
@@ -16,7 +15,7 @@ def step_impl(context, lsid):
 
 @then('I should see the ALA files in my temp directory')
 def step_impl(context):
-    out_files = listdir_fullpath(context.temp_dir)
+    out_files = [os.path.join(context.temp_dir, f) for f in os.listdir(context.temp_dir)]
     occurrences_exist = 1 == len([i for i in out_files if i.endswith('ala_occurrence.csv')])
     metadata_exist = 1 == len([i for i in out_files if i.endswith('ala_metadata.json')])
     dataset_exist = 1 == len([i for i in out_files if i.endswith('ala_dataset.json')])

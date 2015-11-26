@@ -35,16 +35,6 @@ class TestServer():
             print >> sys.stderr, err
             print ""
 
-# Setup Database
-# Drop all tables in data_mover_test
-print "Setting up test database"
-try:
-    os.remove('test.sqlite')
-except OSError:
-    pass
-
-# Re-initialize db
-subprocess.call(['./bin/initialize_data_mover_db', 'test.ini'])
 
 # Start the test server
 print "Starting test server..."

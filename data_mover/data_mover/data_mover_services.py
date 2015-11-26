@@ -1,4 +1,3 @@
-import uuid
 from pyramid import security
 from concurrent.futures import ThreadPoolExecutor
 from pyramid_xmlrpc import XMLRPCView
@@ -14,11 +13,10 @@ class DataMoverServices(XMLRPCView):
     Contains methods that are callable from the XML RPC Interface
     See https://wiki.intersect.org.au/display/BCCVL/Data+Mover+and+Data+Movement+API
     """
-
+    _move_jobs = {}
     def __init__(self, context, request):
         XMLRPCView.__init__(self, context, request)
         self._move_service = MOVE_SERVICE
-        self._move_jobs = {}
         self._executor = ThreadPoolExecutor(max_workers=3)
         self._user_id = None
         if request:
@@ -33,8 +31,8 @@ class DataMoverServices(XMLRPCView):
         """
         if id is None:
             return response.error_rejected(response.REASON_MISSING_PARAMS_1S.format('id'))
-        if not isinstance(id, uuid.UUID):
-            return response.error_rejected(response.REASON_INVALID_PARAMS_1S.format('id must be an UUID'))
+        if not isinstance(id, str):
+            return response.error_rejected(response.REASON_INVALID_PARAMS_1S.format('id must be a string'))
 
         job = self._move_jobs.get(id)
         if job is not None:
@@ -59,6 +57,7 @@ class DataMoverServices(XMLRPCView):
         @return: The status of the move
         @rtype: dict
         """
+
         if source is None or destination is None:
             return response.error_rejected(response.REASON_MISSING_PARAMS_1S.format('source and destination must not be None'))
 
