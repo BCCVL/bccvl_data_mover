@@ -1,0 +1,5 @@
+[buildout]
+
+# Add the egg defined by setup.py in the current directory to the list of candidates.
+extends =
+    buildout.d/dev.cfg
