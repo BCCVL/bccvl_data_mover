@@ -1,7 +1,6 @@
 import os
 import datetime
 import logging
-import sys
 from urlparse import urlparse
 from org.bccvl import movelib
 from data_mover.move_job import MoveJob
@@ -16,13 +15,7 @@ class MoveService():
     _logger = logging.getLogger(__name__)
 
     def __init__(self):
-        self._authurl = None
-        self._authver = None
-        self._tenant = None
-        self._user = None
-        self._key = None
-        self._cookie_secret = None
-
+        self._config = {}
 
     def configure(self, settings):
         # setting for swift
@@ -32,14 +25,17 @@ class MoveService():
             if not settings.get(setkey):
                 if os.environ.get(envkey):
                     settings[setkey] = os.environ[envkey]
-        self._authurl = settings['swift_service.nectar.auth_url']
-        self._authver = str(settings['swift_service.nectar.auth_version'])
-        self._tenant = settings['swift_service.nectar.tenant_name']
-        self._user = settings['swift_service.nectar.user']
-        self._key = settings['swift_service.nectar.key']
-
-        # plone secret for cookie
-        self._cookie_secret = settings.get('plone.cookie_secret')
+        self._config['swift'] = {
+            'os_auth_url': settings['swift_service.nectar.auth_url'],
+            'os_auth_version': str(settings['swift_service.nectar.auth_version']),
+            'os_auth_tenant_name': settings['swift_service.nectar.tenant_name'],
+            'os_auth_username': settings['swift_service.nectar.user'],
+            'os_auth_password': settings['swift_service.nectar.key']
+        }
+        self._config['cookie'] = {
+            'secret': settings.get('authtkt.cookie.secret'),
+            'domain': settings.get('authtkt.cookie.domain')
+        }
 
     def worker(self, move_job):
         """
@@ -66,11 +62,10 @@ class MoveService():
                 raise Exception('Credential for Nectar swift service is not configured.')
 
             # Download all the files from the sources to the destination
-            swift_settings = {'os_auth_url': self._authurl, 'os_username': self._user, 'os_password': self._key, 'os_tenant_name': self._tenant, 'os_auth_version': self._authver}
-            destination = build_destination(move_job.destination, **swift_settings)
+            destination = build_destination(move_job.destination, self._config)
 
             for s in sourcelist:
-                source = build_source(s, userid=move_job.userid, secret=self._cookie_secret, **swift_settings)
+                source = build_source(s, move_job.userid, self._config)
                 movelib.move(source, destination)
             move_job.update(status=MoveJob.STATUS_COMPLETE, start_timestamp=datetime.datetime.now())
         except Exception as e:
@@ -78,6 +73,6 @@ class MoveService():
             reason = 'Move has failed for job with id {0}. Reason: {1}'.format(move_job.id, str(e))
             self._logger.warning(reason)
             move_job.update(status=MoveJob.STATUS_FAILED, end_timestamp=datetime.datetime.now(), reason=reason)
-    
+
     def _has_credential(self):
         return self._authurl and self._authver and self._tenant and self._user and self._key

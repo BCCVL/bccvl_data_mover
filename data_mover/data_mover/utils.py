@@ -1,5 +1,6 @@
+import Cookie
 from time import time
-from urlparse import urlparse
+from urlparse import urlsplit
 import socket
 import struct
 import hashlib
@@ -53,6 +54,7 @@ class AuthTkt(object):
     def _encode_ts(self, ts):
         return struct.pack('!I', ts)
 
+
 def get_cookies(secret, userid):
     ticket = AuthTkt(secret, userid)
     return dict(
@@ -70,28 +72,38 @@ def get_cookies(secret, userid):
         rest={'HttpOnly': None},
         rfc2109=False,)
 
-def build_source(src, secret=None, userid=None, **kwargs):
+
+def build_source(src, userid=None, settings=None):
     source = {'url': src}
-
     # Create a cookies for http download from the plone server
-    url = urlparse(src)
+    url = urlsplit(src)
+    if settings is None:
+        settings = {}
     if url.scheme in ('http', 'https'):
-        source['cookies'] = get_cookies(secret, userid)
+        cookie_settings = settings.get('cookie', {})
+        if url.hostname == cookie_settings.get('domain'):
+            source['cookies'] = get_cookies(cookie_settings,
+                                            userid)
+        source['verify'] = settings.get('ssl', {}).get('verify', True)
     elif url.scheme in ('swift+http', 'swift+https'):
-        for swift_key in ['os_auth_url', 'os_username', 'os_password', 'os_tenant_name', 'os_auth_version']:
-            if swift_key in kwargs:
-                source[swift_key] = kwargs[swift_key]
-    return source        
+        # TODO: should check swift host name as well
+        swift_settings = settings and settings.get('swift', {}) or {}
+        for key in ('os_auth_url', 'os_username', 'os_password', 'os_tenant_name'):
+            if key in swift_settings:
+                source[key] = swift_settings[key]
+    return source
 
-def build_destination(dest, filename=None, **kwargs):
+
+def build_destination(dest, settings=None):
     destination = {'url': dest}
-    if filename:
-        destination['filename'] = filename
-
     # Create a cookies for http download from the plone server
-    url = urlparse(dest)
+    url = urlsplit(dest)
+    if settings is None:
+        settings = {}
     if url.scheme in ('swift+http', 'swift+https'):
-        for swift_key in ['os_auth_url', 'os_username', 'os_password', 'os_tenant_name', 'os_auth_version']:
-            if swift_key in kwargs:
-                destination[swift_key] = kwargs[swift_key]
+        # TODO: should check swift host name as well
+        swift_settings = settings and settings.get('swift', {}) or {}
+        for key in ('os_auth_url', 'os_username', 'os_password', 'os_tenant_name'):
+            if key in swift_settings:
+                destination[key] = swift_settings[key]
     return destination
