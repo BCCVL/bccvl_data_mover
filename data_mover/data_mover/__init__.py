@@ -1,14 +1,15 @@
 import logging
-from pyramid.config import Configurator
-from data_mover.move_service import MoveService
-from data_mover.auth import AuthTktAuthenticationPolicy
+
 from pyramid.authorization import ACLAuthorizationPolicy
+from pyramid.config import Configurator
 
-
-### SERVICES AND MANAGERS ###
-MOVE_SERVICE = MoveService()
-
+from data_mover.auth import AuthTktAuthenticationPolicy
 from data_mover.data_mover_services import DataMoverServices
+from data_mover.move_service import MoveService
+
+
+###SERVICES AND MANAGERS ###
+MOVE_SERVICE = MoveService()
 
 
 def main(global_config, **settings):
@@ -21,7 +22,7 @@ def main(global_config, **settings):
 
     # TODO: read config from ini file (settings)
     authn_policy = AuthTktAuthenticationPolicy(
-        secret='secret',
+        secret=settings['authtkt.cookie.secret'],
         callback=None,
         cookie_name='__ac',
         secure=True,
@@ -31,7 +32,7 @@ def main(global_config, **settings):
     )
 
     authz_policy = ACLAuthorizationPolicy()
-    
+
     MOVE_SERVICE.configure(settings)
 
     config = Configurator(settings=settings)

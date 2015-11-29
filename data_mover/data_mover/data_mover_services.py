@@ -1,11 +1,10 @@
 from pyramid import security
 from concurrent.futures import ThreadPoolExecutor
 from pyramid_xmlrpc import XMLRPCView
-from urlparse import urlparse, parse_qs
+from urlparse import urlsplit, parse_qs
 from data_mover import response
 from data_mover import MOVE_SERVICE
 from data_mover.move_job import MoveJob
-
 
 
 class DataMoverServices(XMLRPCView):
@@ -13,7 +12,9 @@ class DataMoverServices(XMLRPCView):
     Contains methods that are callable from the XML RPC Interface
     See https://wiki.intersect.org.au/display/BCCVL/Data+Mover+and+Data+Movement+API
     """
+
     _move_jobs = {}
+
     def __init__(self, context, request):
         XMLRPCView.__init__(self, context, request)
         self._move_service = MOVE_SERVICE
@@ -89,7 +90,7 @@ class DataMoverServices(XMLRPCView):
             return False, response.REASON_INVALID_PARAMS_1S.format('source must be of type str or list')
 
         if isinstance(source, str):
-            url = urlparse(source)
+            url = urlsplit(source)
             scheme = url.scheme
             if scheme not in ['scp', 'http', 'https', 'ala', 'swift+http', 'swift+https']
                 return False, response.REASON_UNKNOWN_URL_SCHEME_2S.format('source', scheme)
@@ -106,14 +107,14 @@ class DataMoverServices(XMLRPCView):
                 query = parse_qs(url.query)
                 if not query['lsid']:
                     return False, response.REASON_MISSING_PARAMS_1S.format('source ALA LSID')
-                                        
+
             if scheme in ('swift+http', 'swift+https'):
                 # check that container and file are specified in swift url.
                 # i.e. swift://nectar/my-container/path/to/file
                 path_tokens = url.path.split('/', 2)
                 if len(path_tokens)  < 3 or len(path_tokens[1]) == 0 or len(path_tokens[2]) == 0:
                     return False, response.REASON_INVALID_SWIFT_URL.format('source', source)
-                
+
         elif isinstance(source, list) and not inner_source:
 
             if len(source) == 0:
@@ -123,7 +124,7 @@ class DataMoverServices(XMLRPCView):
                 if not source_valid:
                     return False, reason
 
-            if len(filter(lambda x: urlparse(x).scheme == 'ala', source)) > 1:
+            if len(filter(lambda x: urlsplit(x).scheme == 'ala', source)) > 1:
                 return False, 'Too many ALA jobs. Mixed sources can only contain a maximum of one ALA job.'
 
         else:
@@ -142,11 +143,11 @@ class DataMoverServices(XMLRPCView):
         if not isinstance(destination, str):
             return False, response.REASON_MISSING_PARAMS_1S.format('destination must be of type str')
 
-        url = urlparse(destination)            
+        url = urlsplit(destination)
         if url.scheme == 'scp':
             if not url.hostname:
                 return False, response.REASON_HOST_NOT_SPECIFIED_1S.format('destination')
-    
+
             if not url.path:
                 return False, response.REASON_PATH_NOT_SPECIFIED_1S.format('destination')
         elif url.scheme in ('swift+http', 'swift+https'):

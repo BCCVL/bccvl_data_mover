@@ -3,8 +3,6 @@ import time
 
 from pyramid.authentication import AuthTktAuthenticationPolicy as BasePolicy
 from pyramid.authentication import AuthTktCookieHelper as BaseCookieHelper
-from pyramid.authentication import VALID_TOKEN
-from pyramid.compat import text_type, ascii_native_
 
 
 class AuthTktAuthenticationPolicy(BasePolicy):
@@ -63,12 +61,12 @@ class AuthTktCookieHelper(BaseCookieHelper):
         except self.BadTicket:
             return None
 
-        now = self.now # service tests
+        now = self.now  # service tests
 
         if now is None:
             now = time.time()
 
-        if self.timeout and ( (timestamp + self.timeout) < now ):
+        if self.timeout and ((timestamp + self.timeout) < now):
             # the auth_tkt data has expired
             return None
 
@@ -84,15 +82,17 @@ class AuthTktCookieHelper(BaseCookieHelper):
         reissue = self.reissue_time is not None
 
         if reissue and not hasattr(request, '_authtkt_reissued'):
-            if ( (now - timestamp) > self.reissue_time ):
+            if ((now - timestamp) > self.reissue_time):
                 # See https://github.com/Pylons/pyramid/issues#issue/108
                 tokens = list(filter(None, tokens))
                 headers = self.remember(request, userid, max_age=self.max_age,
                                         tokens=tokens)
+
                 def reissue_authtkt(request, response):
                     if not hasattr(request, '_authtkt_reissue_revoked'):
                         for k, v in headers:
                             response.headerlist.append((k, v))
+
                 request.add_response_callback(reissue_authtkt)
                 request._authtkt_reissued = True
 

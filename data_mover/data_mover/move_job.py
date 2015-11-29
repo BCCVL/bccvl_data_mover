@@ -1,8 +1,10 @@
 import uuid
 
+
 class MoveJob():
     """
-    Move Job model to store details about move operations and its status to a database.
+    Move Job model to store details about move operations and its
+    status to a database.
     """
 
     STATUS_PENDING = 'PENDING'
@@ -10,7 +12,7 @@ class MoveJob():
     STATUS_FAILED = 'FAILED'
     STATUS_COMPLETE = 'COMPLETED'
 
-    def __init__(self, source, destination, userid = None, zip = False):
+    def __init__(self, source, destination, userid=None, zip=False):
         """
         Constructor
         @param source: the source(s)
