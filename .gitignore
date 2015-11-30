@@ -85,3 +85,5 @@ data_mover/data_mover_test.log
 data_mover/data_mover_test_stderr.log
 data_mover.ini
 data_mover_buildout.cfg
+buildout.cfg
+picked-versions.cfg
