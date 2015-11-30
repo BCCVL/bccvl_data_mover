@@ -92,7 +92,7 @@ class DataMoverServices(XMLRPCView):
         if isinstance(source, str):
             url = urlsplit(source)
             scheme = url.scheme
-            if scheme not in ['scp', 'http', 'https', 'ala', 'swift+http', 'swift+https']
+            if scheme not in ['scp', 'http', 'https', 'ala', 'swift+http', 'swift+https']:
                 return False, response.REASON_UNKNOWN_URL_SCHEME_2S.format('source', scheme)
 
             if scheme == 'scp':
