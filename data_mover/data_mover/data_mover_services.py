@@ -3,7 +3,6 @@ from concurrent.futures import ThreadPoolExecutor
 from pyramid_xmlrpc import XMLRPCView
 from urlparse import urlsplit, parse_qs
 from data_mover import response
-from data_mover import MOVE_SERVICE
 from data_mover.move_job import MoveJob
 
 
@@ -17,6 +16,7 @@ class DataMoverServices(XMLRPCView):
 
     def __init__(self, context, request):
         XMLRPCView.__init__(self, context, request)
+        from data_mover import MOVE_SERVICE
         self._move_service = MOVE_SERVICE
         self._executor = ThreadPoolExecutor(max_workers=3)
         self._user_id = None
