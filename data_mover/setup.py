@@ -20,7 +20,6 @@ requires = [
     'futures',
     'python-swiftclient',
     'python-keystoneclient',
-    'uuid',
     'org.bccvl.movelib',
     ]
 
