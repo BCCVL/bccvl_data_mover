@@ -3,8 +3,8 @@ import datetime
 import logging
 from urlparse import urlparse
 from org.bccvl import movelib
+from org.bccvl.movelib.utils import build_source, build_destination
 from data_mover.move_job import MoveJob
-from data_mover.utils import build_source, build_destination
 
 
 class MoveService():
@@ -34,7 +34,8 @@ class MoveService():
         }
         self._config['cookie'] = {
             'secret': settings.get('authtkt.cookie.secret'),
-            'domain': settings.get('authtkt.cookie.domain')
+            'domain': settings.get('authtkt.cookie.domain'),
+            'name': settings.get('authtkt.cookie.name')
         }
 
     def worker(self, move_job):

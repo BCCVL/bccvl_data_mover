@@ -1,13 +1,10 @@
 import unittest
 import logging
-import os
-import uuid
 import mock
-import tempfile
 from urlparse import urlparse
 from data_mover.move_job import MoveJob
 from data_mover.move_service import MoveService
-from data_mover.utils import build_source, build_destination
+from org.bccvl.movelib.utils import build_source, build_destination
 
 
 def mock_build_source(src, secret=None, userid=None, **kwargs):
@@ -21,14 +18,14 @@ def mock_build_source(src, secret=None, userid=None, **kwargs):
         for swift_key in ['os_auth_url', 'os_username', 'os_password', 'os_tenant_name', 'os_auth_version']:
             if swift_key in kwargs:
                 source[swift_key] = kwargs[swift_key]
-    return source        
+    return source
 
 class TestMoveService(unittest.TestCase):
 
     def setUp(self):
         logging.basicConfig()
-        self.settings = {'swift_service.nectar.auth_url': 'nectar-auth-url', 
-            'swift_service.nectar.user': 'yliaw', 'swift_service.nectar.key': 'password', 
+        self.settings = {'swift_service.nectar.auth_url': 'nectar-auth-url',
+            'swift_service.nectar.user': 'yliaw', 'swift_service.nectar.key': 'password',
             'swift_service.nectar.tenant_name': 'tenant-name', 'swift_service.nectar.auth_version': 2,
             'plone.cookie_secret': 'cookie-secret'}
 
@@ -40,7 +37,7 @@ class TestMoveService(unittest.TestCase):
     def test_configure(self):
         service = MoveService()
         service.configure(self.settings)
-        
+
         self.assertEqual(service._cookie_secret, self.settings['plone.cookie_secret'])
         self.assertEqual(service._authurl, self.settings['swift_service.nectar.auth_url'])
         self.assertEqual(service._authver, str(self.settings['swift_service.nectar.auth_version']))
@@ -166,4 +163,3 @@ class TestMoveService(unittest.TestCase):
 
         self.assertEqual(move_job.status, MoveJob.STATUS_COMPLETE)
         self.assertEqual(move_job.reason, None)
-
