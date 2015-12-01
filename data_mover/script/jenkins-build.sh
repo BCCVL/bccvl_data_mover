@@ -39,6 +39,7 @@ find ./features -name "*.pyc" | xargs rm -rfv
 rm -rf ./epydoc
 
 echo "Building data_mover"
+cp buildout.cfg.example buildout.cfg
 "$PYTHON" bootstrap.py -v 2.2.1
 "$BUILDOUT"
 
