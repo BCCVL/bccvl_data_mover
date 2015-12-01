@@ -28,9 +28,9 @@ class MoveService():
         self._config['swift'] = {
             'os_auth_url': settings['swift_service.nectar.auth_url'],
             'os_auth_version': str(settings['swift_service.nectar.auth_version']),
-            'os_auth_tenant_name': settings['swift_service.nectar.tenant_name'],
-            'os_auth_username': settings['swift_service.nectar.user'],
-            'os_auth_password': settings['swift_service.nectar.key']
+            'os_tenant_name': settings['swift_service.nectar.tenant_name'],
+            'os_username': settings['swift_service.nectar.user'],
+            'os_password': settings['swift_service.nectar.key']
         }
         self._config['cookie'] = {
             'secret': settings.get('authtkt.cookie.secret'),
@@ -47,7 +47,8 @@ class MoveService():
         try:
             # Need o handle a list of sources
             self._logger.info("Starting move for job with id %s", move_job.id)
-            move_job.update(status=MoveJob.STATUS_IN_PROGRESS, start_timestamp=datetime.datetime.now())
+            move_job.update(status=MoveJob.STATUS_IN_PROGRESS,
+                            start_timestamp=datetime.datetime.now())
 
             # source can be just 1 source or a list of sources
             if isinstance(move_job.source, str):
@@ -76,4 +77,4 @@ class MoveService():
             move_job.update(status=MoveJob.STATUS_FAILED, end_timestamp=datetime.datetime.now(), reason=reason)
 
     def _has_credential(self):
-        return self._authurl and self._authver and self._tenant and self._user and self._key
+        return bool(self._config.get('swift'))

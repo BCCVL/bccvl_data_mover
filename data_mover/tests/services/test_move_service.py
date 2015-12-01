@@ -1,34 +1,23 @@
 import unittest
 import logging
 import mock
-from urlparse import urlparse
 from data_mover.move_job import MoveJob
 from data_mover.move_service import MoveService
 from org.bccvl.movelib.utils import build_source, build_destination
 
 
-def mock_build_source(src, secret=None, userid=None, **kwargs):
-    source = {'url': src}
-
-    # Create a cookies for http download from the plone server
-    url = urlparse(src)
-    if url.scheme in ('http', 'https'):
-        source['cookies'] = {}
-    elif url.scheme in ('swift+http', 'swift+https'):
-        for swift_key in ['os_auth_url', 'os_username', 'os_password', 'os_tenant_name', 'os_auth_version']:
-            if swift_key in kwargs:
-                source[swift_key] = kwargs[swift_key]
-    return source
-
 class TestMoveService(unittest.TestCase):
 
     def setUp(self):
         logging.basicConfig()
-        self.settings = {'swift_service.nectar.auth_url': 'nectar-auth-url',
-            'swift_service.nectar.user': 'yliaw', 'swift_service.nectar.key': 'password',
-            'swift_service.nectar.tenant_name': 'tenant-name', 'swift_service.nectar.auth_version': 2,
-            'plone.cookie_secret': 'cookie-secret'}
-
+        self.settings = {
+            'swift_service.nectar.auth_url': 'nectar-auth-url',
+            'swift_service.nectar.user': 'username',
+            'swift_service.nectar.key': 'password',
+            'swift_service.nectar.tenant_name': 'tenant-name',
+            'swift_service.nectar.auth_version': 2,
+            'authtkt.cookie.secret': 'cookie-secret'
+        }
 
     def test_has_credential(self):
         service = MoveService()
@@ -38,12 +27,20 @@ class TestMoveService(unittest.TestCase):
         service = MoveService()
         service.configure(self.settings)
 
-        self.assertEqual(service._cookie_secret, self.settings['plone.cookie_secret'])
-        self.assertEqual(service._authurl, self.settings['swift_service.nectar.auth_url'])
-        self.assertEqual(service._authver, str(self.settings['swift_service.nectar.auth_version']))
-        self.assertEqual(service._tenant, self.settings['swift_service.nectar.tenant_name'])
-        self.assertEqual(service._user, self.settings['swift_service.nectar.user'])
-        self.assertEqual(service._key, self.settings['swift_service.nectar.key'])
+        cookie_settings = service._config['cookie']
+        swift_settings = service._config['swift']
+        self.assertEqual(cookie_settings['secret'],
+                         self.settings['authtkt.cookie.secret'])
+        self.assertEqual(swift_settings['os_auth_url'],
+                         self.settings['swift_service.nectar.auth_url'])
+        self.assertEqual(swift_settings['os_auth_version'],
+                         str(self.settings['swift_service.nectar.auth_version']))
+        self.assertEqual(swift_settings['os_tenant_name'],
+                         self.settings['swift_service.nectar.tenant_name'])
+        self.assertEqual(swift_settings['os_username'],
+                         self.settings['swift_service.nectar.user'])
+        self.assertEqual(swift_settings['os_password'],
+                         self.settings['swift_service.nectar.key'])
         self.assertTrue(service._has_credential())
 
     def test_worker_bad_source_type(self):
@@ -109,8 +106,7 @@ class TestMoveService(unittest.TestCase):
         self.assertEqual(move_job.status, MoveJob.STATUS_FAILED)
         self.assertEqual(move_job.reason, reason)
 
-    @mock.patch('data_mover.move_service.build_source', side_effect=mock_build_source)
-    def test_worker_mixed_source_scp_destination(self, dummy):
+    def test_worker_mixed_source_scp_destination(self):
         service = MoveService()
         service.configure(self.settings)
 
@@ -127,17 +123,15 @@ class TestMoveService(unittest.TestCase):
             service.worker(move_job)
             dest = build_destination(move_job.destination)
             calls = []
-            swift_settings = {'os_auth_url': 'nectar-auth-url', 'os_username': 'yliaw', 'os_password': 'password', 'os_tenant_name': 'tenant-name', 'os_auth_version': '2'}
             for s in move_job.source:
-                src = mock_build_source(s, **swift_settings)
+                src = build_source(s, None, service._config)
                 calls.append(mock.call(src, dest))
             mock_move.assert_has_calls(calls)
 
         self.assertEqual(move_job.status, MoveJob.STATUS_COMPLETE)
         self.assertEqual(move_job.reason, None)
 
-    @mock.patch('data_mover.move_service.build_source', side_effect=mock_build_source)
-    def test_worker_mixed_source_swift_destination(self, dummy):
+    def test_worker_mixed_source_swift_destination(self):
         service = MoveService()
         service.configure(self.settings)
 
@@ -152,12 +146,11 @@ class TestMoveService(unittest.TestCase):
 
         with mock.patch('org.bccvl.movelib.move') as mock_move:
             service.worker(move_job)
-            swift_settings = {'os_auth_url': 'nectar-auth-url', 'os_username': 'yliaw', 'os_password': 'password', 'os_tenant_name': 'tenant-name', 'os_auth_version': '2'}
-            dest = build_destination(move_job.destination, **swift_settings)
+            dest = build_destination(move_job.destination, service._config)
             calls = []
 
             for s in move_job.source:
-                src = mock_build_source(s, **swift_settings)
+                src = build_source(s, None, service._config)
                 calls.append(mock.call(src, dest))
             mock_move.assert_has_calls(calls)
 
