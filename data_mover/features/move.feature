@@ -8,7 +8,6 @@ Scenario: Move http://www.intersect.org.au to localhost
     Then I should see that the job status is either "PENDING" or "IN_PROGRESS"
     Then I check if the status of the job is "COMPLETED" for at most 10 seconds
     And I should see "1" files in my temp directory
-    And I should see a file with suffix "html" in my temp directory
 
 Scenario: Using SCP as a source and destination protocol
     Given I am connected to the Data Mover server
@@ -47,7 +46,7 @@ Scenario: Move http://www.intersect.org.a to localhost - Could not download from
     Then I should see that the job status is either "PENDING" or "IN_PROGRESS"
     Then I check if the status of the job is "FAILED" for at most 5 seconds
     And I should see "0" files in my temp directory
-    And I should see that the job reason is "('Connection aborted.', gaierror(-2, 'Name or service not known'))"
+    And I should see that the job reason is "[Errno -2] Name or service not known"
 
 Scenario: Move from multiple sources to localhost
     Given I am connected to the Data Mover server
@@ -61,7 +60,6 @@ Scenario: Move from multiple sources to localhost
     Then I check if the status of the job is "COMPLETED" for at most 300 seconds
     And I should see "5" files in my temp directory
     And I should see a file in my temp directory named "temp_file.txt" with content "this is the content of my temp file"
-    And I should see a file with suffix "html" in my temp directory
     And I should see the ALA files in my temp directory
 
 Scenario: Try to move multiple ALA files using the multiple sources
